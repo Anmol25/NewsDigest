@@ -1,26 +1,13 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from feeds import rss_feed
-import asyncio
+from feeds.rss_feed import RssFeed
 from sentence_transformers import SentenceTransformer
 import torch
+import yaml
 
-rss_feeds = {
-    "Top Stories": {
-        "Times Of India": "http://timesofindia.indiatimes.com/rssfeedstopstories.cms",
-        "Economic Times": "https://economictimes.indiatimes.com/rssfeedstopstories.cms",
-        "NDTV": "https://feeds.feedburner.com/ndtvnews-top-stories",
-        "India TV": "https://www.indiatvnews.com/rssnews/topstory.xml"
-    },
-    "Latest": {
-        "Times of India": "http://timesofindia.indiatimes.com/rssfeedmostrecent.cms",
-        "Economic Times": "https://economictimes.indiatimes.com/news/latest-news/rssfeeds/20989204.cms",
-        "NDTV": "https://feeds.feedburner.com/ndtvnews-latest",
-        "Hindustan Times": "https://www.hindustantimes.com/feeds/rss/latest/rssfeed.xml"
-    }
-}
 
-feedtest = rss_feed.RssFeed(rss_feeds)
+with open("feeds.yaml", 'r') as file:
+    rss_feeds = yaml.safe_load(file)
 
 model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
 
@@ -36,6 +23,15 @@ else:
 model.to(device)
 
 app = FastAPI()
+
+# Create RssFeed Object to store Articles
+articles = RssFeed()
+
+
+@app.on_event("startup")
+async def startup_event():
+    await articles.refresh_articles(rss_feeds, model, device)
+
 
 # Add CORS middleware
 app.add_middleware(
@@ -55,4 +51,4 @@ def index():
 
 @app.get("/test")
 def test():
-    return asyncio.run(feedtest.fetch_articles(model, device))
+    return articles.get_articles()
