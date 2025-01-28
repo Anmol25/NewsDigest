@@ -4,7 +4,16 @@ from scipy.spatial.distance import cosine
 
 class Deduplicator:
     @staticmethod
-    def deduplicate(input: list, model, device):
+    def deduplicate(input: list, model, device: str) -> list:
+        """
+        Remove Articles with very similiar articles using cosine similiarity
+        Args:
+            input: list of articles
+            model: Embedding creation model to be used remove duplicate headlines
+            device: Device to run model on (CPU/GPU)
+        Returns:
+            list: Articles after removing duplicate articles
+        """
         if len(input) > 0:
             # Generate embeddings
             titles = [item['title'] for item in input]

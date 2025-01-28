@@ -9,7 +9,7 @@ from .deduplicator import Deduplicator
 class FeedParser:
 
     @staticmethod
-    async def fetch_xml(url):
+    async def fetch_xml(url: str) -> str:
         """
         Function to fetch xml data from the given url
         Args:
@@ -22,7 +22,7 @@ class FeedParser:
                 return await response.text()
 
     @staticmethod
-    async def fetch_topics_feed(topic: dict):
+    async def fetch_topics_feed(topic: dict) -> dict:
         """
         Function to fetch xml feeds for given topic
         Args:
@@ -40,8 +40,15 @@ class FeedParser:
         return data
 
     @staticmethod
-    def extract_image_links(entry):
-        """Extract the first image URL found in enclosure or media:content tags."""
+    def extract_image_links(entry: str) -> str:
+        """
+        Extract the first image URL found in enclosure or media:content tags.
+
+        Args:
+            entry: xml data of rss feed
+        Returns:
+            str or None: url of image or None
+        """
         # Check enclosure tags first (common in RSS)
         for enclosure in entry.get('enclosures', []):
             if enclosure.get('type', '').startswith('image/'):
@@ -56,7 +63,17 @@ class FeedParser:
         return None
 
     @staticmethod
-    def parse_feed(pub_xml: dict, model, device):
+    def parse_feed(pub_xml: dict, model, device: str) -> list:
+        """
+        Parse and Extract metadata from feed.
+        Then Perform Deduplication and sort bases on publishing date.
+        Args:
+            pub_xml: Publisher and XML data in dict form
+            model: Embedding creation model to be used remove duplicate headlines
+            device: Device to run model on (CPU/GPU)
+        Return:
+            list: List of Articles
+        """
         result = []
         ist = pytz.timezone('Asia/Kolkata')
 
