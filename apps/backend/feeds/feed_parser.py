@@ -41,9 +41,9 @@ class FeedParser:
         return data
 
     @staticmethod
-    def extract_image_links(entry: str) -> str:
+    def extract_image_link(entry: str) -> str:
         """
-        Extract the first image URL found in enclosure or media:content tags.
+        Extract the image URL found in enclosure or media:content tags.
 
         Args:
             entry: xml data of rss feed
@@ -146,7 +146,7 @@ class FeedParser:
                     'title': entry.get('title'),
                     'link': entry.get('link'),
                     'published': published_time,
-                    'image_links': FeedParser.extract_image_links(entry),
+                    'image': FeedParser.extract_image_link(entry),
                     'source': publisher
                 }
                 result.append(metadata)

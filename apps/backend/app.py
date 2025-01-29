@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from feeds.rss_feed import RssFeed
 from sentence_transformers import SentenceTransformer
@@ -49,18 +49,12 @@ def index():
     return {"Welcome To News Aggregator Summarizar api"}
 
 
-@app.get("/test")
-def test():
-    return articles.get_articles()
-
-
 @app.get("/feed/")
 def retrieve_feed(topic: str):
-    if topic == "Top Stories":
-        return articles.get_articles()["Top Stories"]
-    elif topic == "Latest":
-        return articles.get_articles()["Latest"]
-    elif topic == "India":
-        return articles.get_articles()["India"]
-    else:
-        return []
+    try:
+        data = articles.get_articles()
+        if topic not in data:
+            raise HTTPException(status_code=404, detail="Topic not found")
+        return data[topic]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
