@@ -60,5 +60,7 @@ def retrieve_feed(topic: str):
         return articles.get_articles()["Top Stories"]
     elif topic == "Latest":
         return articles.get_articles()["Latest"]
+    elif topic == "India":
+        return articles.get_articles()["India"]
     else:
         return []

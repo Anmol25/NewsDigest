@@ -4,6 +4,7 @@ import pytz
 import feedparser
 from dateutil import parser
 from .deduplicator import Deduplicator
+import re
 
 
 class FeedParser:
@@ -62,13 +63,58 @@ class FeedParser:
         return None
 
     @staticmethod
+    def correct_time_components(s: str) -> str:
+        """
+        Correct invalid time components (hours >=24, minutes >=60, seconds >=60) in a datetime string.
+        Each invalid component is reset to '00' without affecting other parts.
+        """
+        time_pattern = re.compile(
+            r'(\d{1,2}):(\d{1,2}):(\d{1,2})(\.\d+)?(Z|[+-]\d{2}:?\d{2})?'
+        )
+        match = time_pattern.search(s)
+        if not match:
+            return s
+
+        hours, minutes, seconds, fractional, tz = match.groups()
+        fractional = fractional or ''
+        tz = tz or ''
+
+        # Correct hours
+        try:
+            hours_int = int(hours)
+            corrected_hours = '00' if hours_int >= 24 else f"{hours_int:02d}"
+        except ValueError:
+            corrected_hours = '00'
+
+        # Correct minutes
+        try:
+            minutes_int = int(minutes)
+            corrected_minutes = '00' if minutes_int >= 60 else f"{
+                minutes_int:02d}"
+        except ValueError:
+            corrected_minutes = '00'
+
+        # Correct seconds
+        try:
+            seconds_int = int(seconds)
+            corrected_seconds = '00' if seconds_int >= 60 else f"{
+                seconds_int:02d}"
+        except ValueError:
+            corrected_seconds = '00'
+
+        corrected_time = f"{corrected_hours}:{corrected_minutes}:{
+            corrected_seconds}{fractional}{tz}"
+        corrected_s = s[:match.start()] + corrected_time + s[match.end():]
+        return corrected_s
+
+    @staticmethod
     def parse_feed(pub_xml: dict, model, device: str) -> list:
         """
         Parse and Extract metadata from feed.
-        Then Perform Deduplication and sort bases on publishing date.
+        Then Perform Deduplication and sort based on publishing date.
         Args:
             pub_xml: Publisher and XML data in dict form
-            model: Embedding creation model to be used remove duplicate headlines
+            model: Embedding creation model to be used to remove duplicate headlines
             device: Device to run model on (CPU/GPU)
         Return:
             list: List of Articles
@@ -80,8 +126,18 @@ class FeedParser:
         for publisher, xml in pub_xml.items():
             feed = feedparser.parse(xml)
             for entry in feed.entries:
-                # Convert published time to IST
-                published_time = parser.parse(entry.get('published'))
+                # Process published time
+                published_str = entry.get('published')
+                corrected_str = FeedParser.correct_time_components(
+                    published_str)
+                try:
+                    published_time = parser.parse(corrected_str)
+                except ValueError:
+                    print(f"Skipping entry due to invalid date: {
+                          corrected_str}")
+                    continue
+
+                # Convert to IST
                 if published_time.tzinfo is None:  # Handle naive datetime
                     published_time = pytz.utc.localize(published_time)
                 published_time = published_time.astimezone(ist)
