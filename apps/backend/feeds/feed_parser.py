@@ -51,8 +51,7 @@ class FeedParser:
         """
         # Check enclosure tags first (common in RSS)
         for enclosure in entry.get('enclosures', []):
-            if enclosure.get('type', '').startswith('image/'):
-                return enclosure['url']
+            return enclosure['url']
 
         # Check media:content tags next (common in Media RSS)
         for media in entry.get('media_content', []):

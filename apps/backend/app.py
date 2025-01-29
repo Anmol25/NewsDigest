@@ -52,3 +52,13 @@ def index():
 @app.get("/test")
 def test():
     return articles.get_articles()
+
+
+@app.get("/feed/")
+def retrieve_feed(topic: str):
+    if topic == "Top Stories":
+        return articles.get_articles()["Top Stories"]
+    elif topic == "Latest":
+        return articles.get_articles()["Latest"]
+    else:
+        return []
