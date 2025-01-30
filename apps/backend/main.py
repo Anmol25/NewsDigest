@@ -1,9 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routers.feeds import router as feed_router
+from routers.summarizer import router as summarize_router
 
 app = FastAPI()
 app.include_router(feed_router)
+app.include_router(summarize_router)
 
 # Add CORS middleware
 app.add_middleware(
