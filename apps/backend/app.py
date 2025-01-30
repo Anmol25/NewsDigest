@@ -49,7 +49,7 @@ def index():
     return {"Welcome To News Aggregator Summarizar api"}
 
 
-@app.get("/feed/")
+@app.get("/feed/{topic}")
 def retrieve_feed(topic: str):
     try:
         data = articles.get_articles()
