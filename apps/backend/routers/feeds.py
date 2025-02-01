@@ -1,10 +1,9 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, FastAPI
 from feeds.rss_feed import RssFeed
 from sentence_transformers import SentenceTransformer
+from contextlib import asynccontextmanager
 import torch
 import yaml
-
-router = APIRouter()
 
 
 with open("feeds.yaml", 'r') as file:
@@ -27,9 +26,13 @@ sbert.to(device)
 articles = RssFeed()
 
 
-@router.on_event("startup")
-async def startup_event():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    print("Startup Triggered")
     await articles.refresh_articles(rss_feeds, sbert, device)
+    yield
+
+router = APIRouter(lifespan=lifespan)
 
 
 @router.get("/feed/{topic}")

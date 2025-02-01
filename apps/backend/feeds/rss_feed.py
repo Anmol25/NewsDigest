@@ -6,7 +6,6 @@ class RssFeed:
     def __init__(self):
         self._articles = None
 
-    @classmethod
     def get_articles(self):
         """
         Get Articles
@@ -15,7 +14,6 @@ class RssFeed:
         """
         return self._articles
 
-    @classmethod
     def set_articles(self, articles: dict):
         """
         Update Articles
@@ -42,13 +40,12 @@ class RssFeed:
             results.append(FeedParser.fetch_topics_feed(rss_feeds[topic]))
 
         responses = await asyncio.gather(*results)
-
+        print(len(responses))
         articles = {}
         for topic, xml_data in zip(rss_feeds, responses):
             articles[topic] = FeedParser.parse_feed(xml_data, model, device)
         return articles
 
-    @classmethod
     async def refresh_articles(self, feeds: dict, model, device: str) -> dict:
         """
         Refreshes and Updates Articles
