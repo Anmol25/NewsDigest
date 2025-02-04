@@ -108,11 +108,12 @@ class FeedParser:
         return corrected_s
 
     @staticmethod
-    def parse_feed(pub_xml: dict, model, device: str) -> list:
+    def parse_feed(topic: str, pub_xml: dict, model, device: str) -> list:
         """
         Parse and Extract metadata from feed.
         Then Perform Deduplication and sort based on publishing date.
         Args:
+            topic; Topic of article
             pub_xml: Publisher and XML data in dict form
             model: Embedding creation model to be used to remove duplicate headlines
             device: Device to run model on (CPU/GPU)
@@ -147,7 +148,8 @@ class FeedParser:
                     'link': entry.get('link'),
                     'published': published_time,
                     'image': FeedParser.extract_image_link(entry),
-                    'source': publisher
+                    'source': publisher,
+                    'topic': topic
                 }
                 result.append(metadata)
 

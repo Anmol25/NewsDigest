@@ -38,12 +38,13 @@ class RssFeed:
         results = []
         for topic in rss_feeds:
             results.append(FeedParser.fetch_topics_feed(rss_feeds[topic]))
-
+        # Get XML Data For Each Topic in list
         responses = await asyncio.gather(*results)
-        print(len(responses))
-        articles = {}
+        # Parse Feeds and append them all in list
+        articles = []
         for topic, xml_data in zip(rss_feeds, responses):
-            articles[topic] = FeedParser.parse_feed(xml_data, model, device)
+            articles.extend(FeedParser.parse_feed(
+                topic, xml_data, model, device))
         return articles
 
     async def refresh_articles(self, feeds: dict, model, device: str) -> dict:

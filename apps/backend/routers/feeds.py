@@ -35,12 +35,17 @@ async def lifespan(app: FastAPI):
 router = APIRouter(lifespan=lifespan)
 
 
-@router.get("/feed/{topic}")
-def retrieve_feed(topic: str):
-    try:
-        data = articles.get_articles()
-        if topic not in data:
-            raise HTTPException(status_code=404, detail="Topic not found")
-        return data[topic]
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+@router.get("/feed")
+def ret_feed():
+    data = articles.get_articles()
+    return data
+
+# @router.get("/feed/{topic}")
+# def retrieve_feed(topic: str):
+#     try:
+#         data = articles.get_articles()
+#         if topic not in data:
+#             raise HTTPException(status_code=404, detail="Topic not found")
+#         return data[topic]
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=str(e))
