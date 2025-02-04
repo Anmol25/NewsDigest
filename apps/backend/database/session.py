@@ -2,8 +2,21 @@ from contextlib import contextmanager
 from .base import SessionLocal
 
 
-@contextmanager
+# Database Session for FastAPI Path Dependency
 def get_db():
+    """
+    Yields Database session and ensures proper cleaning
+    """
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+# Database Session for non FastAPI path function
+@contextmanager
+def context_db():
     """
     Yields Database session and ensures proper cleaning
     """
