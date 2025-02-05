@@ -4,9 +4,9 @@ from sentence_transformers import SentenceTransformer
 from contextlib import asynccontextmanager
 import torch
 import yaml
-from database.session import get_db, context_db
+from database.session import get_db
+from database.operations import insert_to_db
 from database.models import Articles
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
 
@@ -35,21 +35,8 @@ async def lifespan(app: FastAPI):
     print("Startup Triggered")
     await articles.refresh_articles(rss_feeds, sbert, device)
     articles_list = articles.get_articles()
-    with context_db() as db:
-        for item in articles_list:
-            article = Articles(
-                title=item["title"],
-                link=item["link"],
-                published_date=item["published"],
-                image=item["image"],
-                source=item["source"],
-                topic=item["topic"]
-            )
-            try:
-                db.add(article)
-                db.commit()
-            except IntegrityError:
-                db.rollback()  # Rollback the transaction in case of a duplicate
+    # Insert to Database
+    insert_to_db(articles_list)
     yield
 
 router = APIRouter(lifespan=lifespan)
