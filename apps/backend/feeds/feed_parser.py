@@ -3,6 +3,7 @@ import asyncio
 import pytz
 import feedparser
 from dateutil import parser
+from dateutil import tz
 from .deduplicator import Deduplicator
 import re
 
@@ -108,6 +109,21 @@ class FeedParser:
         return corrected_s
 
     @staticmethod
+    def handle_time_str(dt_str):
+        try:
+            if "GMT +5:30" in dt_str:
+                dt_str = parser.parse(dt_str).replace(
+                    tzinfo=tz.gettz("Asia/Kolkata"))
+                return dt_str
+            else:
+                dt_str = parser.parse(dt_str)
+                return dt_str
+        except:
+            print(f"Skipping entry due to invalid date: {
+                dt_str}")
+            return None
+
+    @staticmethod
     def parse_feed(topic: str, pub_xml: dict, model, device: str) -> list:
         """
         Parse and Extract metadata from feed.
@@ -131,11 +147,10 @@ class FeedParser:
                 published_str = entry.get('published')
                 corrected_str = FeedParser.correct_time_components(
                     published_str)
-                try:
-                    published_time = parser.parse(corrected_str)
-                except ValueError:
-                    print(f"Skipping entry due to invalid date: {
-                          corrected_str}")
+                published_time = FeedParser.handle_time_str(corrected_str)
+
+                # If published date is null skip entry
+                if published_time == None:
                     continue
 
                 # Convert to IST

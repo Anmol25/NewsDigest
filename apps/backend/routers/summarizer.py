@@ -19,9 +19,9 @@ class ArticleUrl(BaseModel):
 @router.post("/summarize")
 def summarize(request: ArticleUrl, db: Session = Depends(get_db)):
     try:
-        # retirieve url
+        # Retrieve url
         url = request.url
-        # Check Entry of url in db
+        # Check Entry of url in DB
         stmt = select(exists().where(Articles.link == url))
         if (db.execute(stmt).scalar()):
             # Retrieve Summary if available
@@ -31,13 +31,14 @@ def summarize(request: ArticleUrl, db: Session = Depends(get_db)):
             if summary[0]:
                 return {"data": summary[0]}
             else:
-                # Generate summary and then add to db then return
+                # Generate summary and then add to DB
                 generated_summary = dbart.infer(url)
                 db.query(Articles).filter(Articles.link ==
                                           url).update({"summary": generated_summary})
                 db.commit()
+                # Return New generated summary
                 return {"data": generated_summary}
-        # Else generate summary and return summary
+        # If no entry then generate summary and return summary
         summary = dbart.infer(url)
         return {"data": summary}
     except Exception as e:

@@ -1,6 +1,7 @@
 from .session import context_db
 from .models import Articles
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy import desc
 
 
 def insert_to_db(articles: list):
@@ -22,3 +23,11 @@ def insert_to_db(articles: list):
                 db.commit()
             except IntegrityError:
                 db.rollback()  # Rollback the transaction in case of a duplicate
+
+
+def get_latest_time():
+    lastest_time = None
+    with context_db() as db:
+        lastest_time = db.query(Articles.published_date).order_by(
+            desc(Articles.published_date)).first()
+    return lastest_time[0]
