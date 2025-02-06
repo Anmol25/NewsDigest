@@ -1,32 +1,17 @@
-from fastapi import APIRouter, HTTPException, FastAPI, Depends
-from aggregator.feeds import Feeds
-from sentence_transformers import SentenceTransformer
-from contextlib import asynccontextmanager
-import torch
 import yaml
+from fastapi import APIRouter, HTTPException, FastAPI, Depends
+from contextlib import asynccontextmanager
+from sqlalchemy.orm import Session
+from sqlalchemy import desc
+from aggregator.feeds import Feeds
 from database.session import get_db
 from database.operations import insert_to_db, get_latest_time
 from database.models import Articles
-from sqlalchemy.orm import Session
-from sqlalchemy import desc
 
 with open("feeds.yaml", 'r') as file:
     rss_feeds = yaml.safe_load(file)
 
-sbert = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
-
-# Check if a GPU is available
-if torch.cuda.is_available():
-    device = torch.device("cuda")  # Use GPU
-    print("Using GPU:", torch.cuda.get_device_name(0))
-else:
-    device = torch.device("cpu")  # Use CPU
-    print("GPU not available, using CPU.")
-
-# Move the model to the GPU
-sbert.to(device)
-
-# Create RssFeed Object to store Articles
+# Create Feeds Object to fetch new Articles
 articles = Feeds()
 
 
@@ -34,7 +19,8 @@ articles = Feeds()
 async def lifespan(app: FastAPI):
     print("Startup Triggered")
     last_stored_time = get_latest_time()
-    await articles.refresh_articles(rss_feeds, sbert, device, last_stored_time)
+    print(last_stored_time)
+    await articles.refresh_articles(rss_feeds, last_stored_time)
     articles_list = articles.get_articles()
     # Insert to Database
     # Check if list is not empty then update DB

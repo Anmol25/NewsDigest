@@ -1,11 +1,21 @@
 import asyncio
+import torch
 from .feed_parser import FeedParser  # Relative import
 from datetime import datetime
+from sentence_transformers import SentenceTransformer
 
 
 class Feeds:
     def __init__(self):
+        model_name = "sentence-transformers/all-MiniLM-L6-v2"
         self._articles = None
+        self._device = torch.device(
+            "cuda" if torch.cuda.is_available() else "cpu")
+        self._model = SentenceTransformer(model_name).to(self._device)
+        if str(self._device) == "cuda":
+            print("SentenceBert Using GPU")
+        else:
+            print("SentenceBert Using CPU")
 
     def get_articles(self):
         """
@@ -23,8 +33,7 @@ class Feeds:
         """
         self._articles = articles
 
-    @staticmethod
-    async def fetch_articles(feeds: dict, model, device: str, last_stored_time: datetime) -> dict:
+    async def fetch_articles(self, feeds: dict, last_stored_time: datetime) -> dict:
         """
         Fetch and Parse RSS Feeds
 
@@ -45,10 +54,10 @@ class Feeds:
         articles = []
         for topic, xml_data in zip(rss_feeds, responses):
             articles.extend(FeedParser.parse_feed(
-                topic, xml_data, model, device, last_stored_time))
+                topic, xml_data, self._model, self._device, last_stored_time))
         return articles
 
-    async def refresh_articles(self, feeds: dict, model, device: str, last_stored_time: datetime) -> dict:
+    async def refresh_articles(self, feeds: dict,  last_stored_time: datetime) -> dict:
         """
         Refreshes and Updates Articles
 
@@ -57,5 +66,5 @@ class Feeds:
             model: Embedding creation model to be used remove duplicate headlines
             device: Device to run model on (CPU/GPU) 
         """
-        articles = await Feeds.fetch_articles(feeds, model, device, last_stored_time)
+        articles = await self.fetch_articles(feeds, last_stored_time)
         self._articles = articles

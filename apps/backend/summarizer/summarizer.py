@@ -15,6 +15,10 @@ class Summarizer:
         # print(self.tokenizer)
         self.model = BartForConditionalGeneration.from_pretrained(
             model_name).to(self.device)
+        if str(self.device) == "cuda":
+            print("DistillBart Using GPU")
+        else:
+            print("DistillBart Using CPU")
 
     @staticmethod
     async def __fetch_article(url: str):
