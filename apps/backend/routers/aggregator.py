@@ -7,26 +7,36 @@ from aggregator.feeds import Feeds
 from database.session import get_db
 from database.operations import insert_to_db, get_latest_time
 from database.models import Articles
+import asyncio
 
-with open("feeds.yaml", 'r') as file:
-    rss_feeds = yaml.safe_load(file)
 
 # Create Feeds Object to fetch new Articles
 articles = Feeds()
 
 
+async def refresh_feeds(sleep_time=(15*60)):  # Refresh After 15 minutes
+    while True:
+        print("Refreshing Feeds")
+        with open("feeds.yaml", 'r') as file:
+            rss_feeds = yaml.safe_load(file)
+        last_stored_time = get_latest_time()
+        print(last_stored_time)
+        await articles.refresh_articles(rss_feeds, last_stored_time)
+        articles_list = articles.get_articles()
+        # Insert to Database
+        # Check if list is not empty then update DB
+        if articles_list:
+            insert_to_db(articles_list)
+        # Sleep for specified time
+        await asyncio.sleep(sleep_time)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("Startup Triggered")
-    last_stored_time = get_latest_time()
-    print(last_stored_time)
-    await articles.refresh_articles(rss_feeds, last_stored_time)
-    articles_list = articles.get_articles()
-    # Insert to Database
-    # Check if list is not empty then update DB
-    if articles_list:
-        insert_to_db(articles_list)
+    task = asyncio.create_task(refresh_feeds())
     yield
+    task.cancel()
 
 router = APIRouter(lifespan=lifespan)
 
