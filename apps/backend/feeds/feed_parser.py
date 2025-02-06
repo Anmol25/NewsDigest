@@ -2,6 +2,7 @@ import aiohttp
 import asyncio
 import pytz
 import feedparser
+from datetime import datetime
 from dateutil import parser
 from dateutil import tz
 from .deduplicator import Deduplicator
@@ -124,12 +125,12 @@ class FeedParser:
             return None
 
     @staticmethod
-    def parse_feed(topic: str, pub_xml: dict, model, device: str) -> list:
+    def parse_feed(topic: str, pub_xml: dict, model, device: str, last_stored_time: datetime) -> list:
         """
         Parse and Extract metadata from feed.
         Then Perform Deduplication and sort based on publishing date.
         Args:
-            topic; Topic of article
+            topic: Topic of article
             pub_xml: Publisher and XML data in dict form
             model: Embedding creation model to be used to remove duplicate headlines
             device: Device to run model on (CPU/GPU)
@@ -149,7 +150,7 @@ class FeedParser:
                     published_str)
                 published_time = FeedParser.handle_time_str(corrected_str)
 
-                # If published date is null skip entry
+                # If published date is None skip entry
                 if published_time == None:
                     continue
 
@@ -157,6 +158,12 @@ class FeedParser:
                 if published_time.tzinfo is None:  # Handle naive datetime
                     published_time = pytz.utc.localize(published_time)
                 published_time = published_time.astimezone(ist)
+
+                # If last_stored_time exist (DB is not empty)
+                if last_stored_time:
+                    # Check published date is after last stored time in database.
+                    if published_time <= last_stored_time:
+                        continue
 
                 metadata = {
                     'title': entry.get('title'),
@@ -168,10 +175,10 @@ class FeedParser:
                 }
                 result.append(metadata)
 
-        print("Length Before: ", len(result))
+        print(f"{topic}'s Length Before: ", len(result))
         # Deduplication using cosine similarity
         result = Deduplicator.deduplicate(result, model, device)
         # Sort by published time (newest first)
         result.sort(key=lambda x: x['published'], reverse=True)
-        print("Length After: ", len(result))
+        print(f"{topic}'s Length After: ", len(result))
         return result

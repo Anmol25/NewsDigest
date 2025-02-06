@@ -1,5 +1,6 @@
 import asyncio
 from .feed_parser import FeedParser  # Relative import
+from datetime import datetime
 
 
 class RssFeed:
@@ -23,7 +24,7 @@ class RssFeed:
         self._articles = articles
 
     @staticmethod
-    async def fetch_articles(feeds: dict, model, device: str) -> dict:
+    async def fetch_articles(feeds: dict, model, device: str, last_stored_time: datetime) -> dict:
         """
         Fetch and Parse RSS Feeds
 
@@ -44,10 +45,10 @@ class RssFeed:
         articles = []
         for topic, xml_data in zip(rss_feeds, responses):
             articles.extend(FeedParser.parse_feed(
-                topic, xml_data, model, device))
+                topic, xml_data, model, device, last_stored_time))
         return articles
 
-    async def refresh_articles(self, feeds: dict, model, device: str) -> dict:
+    async def refresh_articles(self, feeds: dict, model, device: str, last_stored_time: datetime) -> dict:
         """
         Refreshes and Updates Articles
 
@@ -56,5 +57,5 @@ class RssFeed:
             model: Embedding creation model to be used remove duplicate headlines
             device: Device to run model on (CPU/GPU) 
         """
-        articles = await RssFeed.fetch_articles(feeds, model, device)
+        articles = await RssFeed.fetch_articles(feeds, model, device, last_stored_time)
         self._articles = articles

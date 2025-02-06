@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 import torch
 import yaml
 from database.session import get_db
-from database.operations import insert_to_db
+from database.operations import insert_to_db, get_latest_time
 from database.models import Articles
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
@@ -33,10 +33,13 @@ articles = RssFeed()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("Startup Triggered")
-    await articles.refresh_articles(rss_feeds, sbert, device)
+    last_stored_time = get_latest_time()
+    await articles.refresh_articles(rss_feeds, sbert, device, last_stored_time)
     articles_list = articles.get_articles()
     # Insert to Database
-    insert_to_db(articles_list)
+    # Check if list is not empty then update DB
+    if articles_list:
+        insert_to_db(articles_list)
     yield
 
 router = APIRouter(lifespan=lifespan)

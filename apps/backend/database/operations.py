@@ -30,4 +30,7 @@ def get_latest_time():
     with context_db() as db:
         lastest_time = db.query(Articles.published_date).order_by(
             desc(Articles.published_date)).first()
-    return lastest_time[0]
+    # Return Latest Time if found
+    if lastest_time:
+        return lastest_time[0]
+    return None
