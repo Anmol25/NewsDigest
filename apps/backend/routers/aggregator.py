@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, FastAPI, Depends
-from feeds.rss_feed import RssFeed
+from aggregator.feeds import Feeds
 from sentence_transformers import SentenceTransformer
 from contextlib import asynccontextmanager
 import torch
@@ -27,7 +27,7 @@ else:
 sbert.to(device)
 
 # Create RssFeed Object to store Articles
-articles = RssFeed()
+articles = Feeds()
 
 
 @asynccontextmanager

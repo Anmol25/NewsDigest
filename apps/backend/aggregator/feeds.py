@@ -3,7 +3,7 @@ from .feed_parser import FeedParser  # Relative import
 from datetime import datetime
 
 
-class RssFeed:
+class Feeds:
     def __init__(self):
         self._articles = None
 
@@ -57,5 +57,5 @@ class RssFeed:
             model: Embedding creation model to be used remove duplicate headlines
             device: Device to run model on (CPU/GPU) 
         """
-        articles = await RssFeed.fetch_articles(feeds, model, device, last_stored_time)
+        articles = await Feeds.fetch_articles(feeds, model, device, last_stored_time)
         self._articles = articles
