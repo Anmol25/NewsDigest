@@ -1,6 +1,6 @@
 import asyncio
 import torch
-from .feed_parser import FeedParser  # Relative import
+from .feed_parser import FeedParser
 from datetime import datetime
 from sentence_transformers import SentenceTransformer
 

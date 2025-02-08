@@ -1,4 +1,5 @@
 import yaml
+import asyncio
 from fastapi import APIRouter, HTTPException, FastAPI, Depends
 from contextlib import asynccontextmanager
 from sqlalchemy.orm import Session
@@ -7,24 +8,29 @@ from aggregator.feeds import Feeds
 from database.session import get_db
 from database.operations import insert_to_db, get_latest_time
 from database.models import Articles
-import asyncio
 
 
 # Create Feeds Object to fetch new Articles
 articles = Feeds()
 
 
-async def refresh_feeds(sleep_time=(15*60)):  # Refresh After 15 minutes
+async def refresh_feeds(sleep_time: int = (15*60)):
+    """
+    Automatically Fetch Feeds and Insert To DataBase after a specified time.
+    Args:
+        sleep_time (int) = Time in Seconds 
+    """
     while True:
         print("Refreshing Feeds")
+        # Load Feed links
         with open("feeds.yaml", 'r') as file:
             rss_feeds = yaml.safe_load(file)
+        # Get Time of most updated article from Database
         last_stored_time = get_latest_time()
-        print(last_stored_time)
+        # Get new Articles from Feeds
         await articles.refresh_articles(rss_feeds, last_stored_time)
         articles_list = articles.get_articles()
         # Insert to Database
-        # Check if list is not empty then update DB
         if articles_list:
             insert_to_db(articles_list)
         # Sleep for specified time
@@ -33,7 +39,9 @@ async def refresh_feeds(sleep_time=(15*60)):  # Refresh After 15 minutes
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    print("Startup Triggered")
+    """
+    Run refresh_feeds function on startup and clean it on shutting down 
+    """
     task = asyncio.create_task(refresh_feeds())
     yield
     task.cancel()
@@ -41,21 +49,24 @@ async def lifespan(app: FastAPI):
 router = APIRouter(lifespan=lifespan)
 
 
-@router.get("/feed")
-def ret_feed():
-    data = articles.get_articles()
-    return data
-
-
 @router.get("/feed/{topic}")
-def retrieve_feed(topic: str, db: Session = Depends(get_db)):
+def retrieve_feed(topic: str, db: Session = Depends(get_db)) -> list:
+    """
+    Retrieve Feed of specific topic from Database.
+    Args:
+        topic (str): Topic of Feed.
+        db (Session): Create Database Session.
+    Returns:
+        articles_list (list): List of article of requested topic. 
+    """
     try:
         data = db.query(Articles.title, Articles.link, Articles.published_date,
                         Articles.image, Articles.source, Articles.topic).filter(Articles.topic == topic).order_by(desc(Articles.published_date)).all()
         if not data:
-            raise HTTPException(status_code=404, detail="Topic not found")
+            raise HTTPException(
+                status_code=404, detail=f"{topic}'s Feed not found")
         # Convert result into dictionaries for FastAPI serialization
-        data_dict = [
+        articles_list = [
             {
                 'title': item.title,
                 'link': item.link,
@@ -66,6 +77,6 @@ def retrieve_feed(topic: str, db: Session = Depends(get_db)):
             }
             for item in data
         ]
-        return data_dict
+        return articles_list
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
