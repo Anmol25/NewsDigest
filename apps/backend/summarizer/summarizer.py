@@ -1,8 +1,13 @@
 import torch
 import aiohttp
+import logging
+import asyncio
 from transformers import BartTokenizer, BartForConditionalGeneration
 from newspaper import Article
-import asyncio
+
+logger = logging.getLogger(__name__)
+# Disable debug warning of urlib3
+logging.getLogger("urllib3").setLevel(logging.WARNING)
 
 
 class Summarizer:
@@ -16,9 +21,9 @@ class Summarizer:
         self.model = BartForConditionalGeneration.from_pretrained(
             model_name).to(self.device)
         if str(self.device) == "cuda":
-            print("DistillBart Using GPU")
+            logger.info("DistilBART is Using GPU")
         else:
-            print("DistillBart Using CPU")
+            logger.info("DistilBART is Using CPU")
 
     @staticmethod
     async def __fetch_article(url: str):
@@ -29,9 +34,12 @@ class Summarizer:
         Return:
             str: HTML content of article
         """
-        async with aiohttp.ClientSession(headers={"User-Agent": "Mozilla/5.0"}) as session:
-            async with session.get(url) as response:
-                return await response.text()
+        try:
+            async with aiohttp.ClientSession(headers={"User-Agent": "Mozilla/5.0"}) as session:
+                async with session.get(url) as response:
+                    return await response.text()
+        except Exception as e:
+            logger.error(f"Unexpected Error in fetching article html: {e}")
 
     @staticmethod
     def __get_article(url: str):
@@ -42,14 +50,17 @@ class Summarizer:
         Returns:
             text: Text content of Article
         """
-        # Fetch Article Html content
-        article_html = asyncio.run(Summarizer.__fetch_article(url))
-        # Parse HTML content
-        article = Article('')
-        article.set_html(article_html)
-        article.parse()
-        text = article.text
-        return text
+        try:
+            # Fetch Article Html content
+            article_html = asyncio.run(Summarizer.__fetch_article(url))
+            # Parse HTML content
+            article = Article('')
+            article.set_html(article_html)
+            article.parse()
+            text = article.text
+            return text
+        except Exception as e:
+            logger.error(f"Error in Parsing Article: {e}")
 
     def summarize(self, article):
         """
@@ -59,25 +70,30 @@ class Summarizer:
         Returns:
             summary: Summary of Article
         """
-        # Tokenize Article
-        inputs = self.tokenizer(article, return_tensors="pt",
-                                max_length=1024, truncation=True, padding="longest")
-        inputs = {key: value.to(self.device) for key, value in inputs.items()}
-        # Generate Summary
-        # Generate summary
-        summary_ids = self.model.generate(
-            inputs["input_ids"],
-            min_length=100,       # Forces a longer summary
-            max_length=200,      # Upper limit
-            num_beams=4,         # Beam search for better quality
-            length_penalty=1.2,  # Controls summary length (lower = longer)
-            early_stopping=True
-        )
-        # Decode and print summary
-        summary = self.tokenizer.decode(
-            summary_ids[0], skip_special_tokens=True)
-        # print(summary)
-        return summary
+        try:
+            # Tokenize Article
+            inputs = self.tokenizer(article, return_tensors="pt",
+                                    max_length=1024, truncation=True, padding="longest")
+            inputs = {key: value.to(self.device)
+                      for key, value in inputs.items()}
+            # Generate Summary
+            # Generate summary
+            summary_ids = self.model.generate(
+                inputs["input_ids"],
+                min_length=100,       # Forces a longer summary
+                max_length=200,      # Upper limit
+                num_beams=4,         # Beam search for better quality
+                length_penalty=1.2,  # Controls summary length (lower = longer)
+                early_stopping=True
+            )
+            # Decode and print summary
+            summary = self.tokenizer.decode(
+                summary_ids[0], skip_special_tokens=True)
+            # print(summary)
+            return summary
+        except Exception as e:
+            logger.error(f"Error in Generating Summary: {e}")
+            return None
 
     def infer(self, url: str) -> str:
         """
@@ -87,8 +103,11 @@ class Summarizer:
         Return:
             summary: Summary of article
         """
-        # Fetch Article
-        article = Summarizer.__get_article(url)
-        # Generate Summary
-        summary = self.summarize(article)
-        return summary
+        try:
+            # Fetch Article
+            article = Summarizer.__get_article(url)
+            # Generate Summary
+            summary = self.summarize(article)
+            return summary
+        except Exception as e:
+            logger.error(f"Unexpected error in getting summary: {e}")
