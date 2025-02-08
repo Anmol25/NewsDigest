@@ -1,5 +1,6 @@
 import yaml
 import asyncio
+import logging
 from fastapi import APIRouter, HTTPException, FastAPI, Depends
 from contextlib import asynccontextmanager
 from sqlalchemy.orm import Session
@@ -9,7 +10,7 @@ from database.session import get_db
 from database.operations import insert_to_db, get_latest_time
 from database.models import Articles
 
-
+logger = logging.getLogger(__name__)
 # Create Feeds Object to fetch new Articles
 articles = Feeds()
 
@@ -21,7 +22,8 @@ async def refresh_feeds(sleep_time: int = (15*60)):
         sleep_time (int) = Time in Seconds 
     """
     while True:
-        print("Refreshing Feeds")
+        logger.debug("Refreshing Feeds")
+        # print("Refreshing Feeds")
         # Load Feed links
         with open("feeds.yaml", 'r') as file:
             rss_feeds = yaml.safe_load(file)

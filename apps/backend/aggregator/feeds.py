@@ -3,6 +3,9 @@ import torch
 from .feed_parser import FeedParser
 from datetime import datetime
 from sentence_transformers import SentenceTransformer
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class Feeds:
@@ -66,5 +69,8 @@ class Feeds:
             model: Embedding creation model to be used remove duplicate headlines
             device: Device to run model on (CPU/GPU) 
         """
-        articles = await self.fetch_articles(feeds, last_stored_time)
-        self._articles = articles
+        try:
+            articles = await self.fetch_articles(feeds, last_stored_time)
+            self._articles = articles
+        except Exception as e:
+            logger.error(f"Error in Refreshing Articles: {e}")
