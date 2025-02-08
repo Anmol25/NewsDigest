@@ -1,7 +1,10 @@
+import logging
 from .session import context_db
 from .models import Articles
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import desc
+
+logger = logging.getLogger(__name__)
 
 
 def update_entry(article, db):
@@ -21,7 +24,8 @@ def update_entry(article, db):
             db.commit()
     except Exception as e:
         db.rollback()
-        print(f"Cannot Update, Unexpected Error Occured! {e}")
+        logger.error(
+            f"Cannot Update artice in Database, Unexpected Error Occured! {e}")
 
 
 def handle_update(article, db):
@@ -34,59 +38,62 @@ def handle_update(article, db):
             Articles.link == article.link).first()
         # If article not found in DB(Unexpected error occured) - Skip entry
         if time_in_db == None:
-            print("Skipped Due to Unexpected error")
             return
 
+        # Set Time from DB and from new article entry
         time_in_db = time_in_db[0]
-        print("Handling Update")
-        print("DB_TIME: ", time_in_db)
         time_in_article = article.published_date
-        print("NEW_TIME: ", time_in_article)
 
         # Check if Time in DB is same as new article entry(Duplicate) - Skip update
         if time_in_db == time_in_article:
-            print("Duplicate Entry Skipping")
             return
         # Check if Time in DB greater than new article - Retain DB entry
         elif time_in_db > time_in_article:
-            print("Retaining DB entry (Already Up to date)")
             return
         # If new article entry time is after previous time(Update) - Update entry
         elif time_in_db < time_in_article:
-            print("Updating Entry in DB")
             update_entry(article, db)
     except Exception as e:
-        print(f"Error in update: {e}")
+        print(f"Error in updating article in Database: {e}")
 
 
 def insert_to_db(articles: list):
     """
     Insert a List of New Articles to Database
     """
-    with context_db() as db:
-        for item in articles:
-            article = Articles(
-                title=item["title"],
-                link=item["link"],
-                published_date=item["published"],
-                image=item["image"],
-                source=item["source"],
-                topic=item["topic"]
-            )
-            try:
-                db.add(article)
-                db.commit()
-            except IntegrityError:
-                db.rollback()  # Rollback
-                handle_update(article, db)
+    try:
+        with context_db() as db:
+            for item in articles:
+                article = Articles(
+                    title=item["title"],
+                    link=item["link"],
+                    published_date=item["published"],
+                    image=item["image"],
+                    source=item["source"],
+                    topic=item["topic"]
+                )
+                try:
+                    db.add(article)
+                    db.commit()
+                except IntegrityError:
+                    db.rollback()  # Rollback
+                    handle_update(article, db)
+        logger.debug("Inserted Articles to Database Successfully")
+    except Exception as e:
+        logger.error(f"Unexpected error in inserting data to Database: {e}")
 
 
 def get_latest_time():
-    lastest_time = None
-    with context_db() as db:
-        lastest_time = db.query(Articles.published_date).order_by(
-            desc(Articles.published_date)).first()
-    # Return Latest Time if found
-    if lastest_time:
-        return lastest_time[0]
-    return None
+    try:
+        lastest_time = None
+        with context_db() as db:
+            lastest_time = db.query(Articles.published_date).order_by(
+                desc(Articles.published_date)).first()
+        # Return Latest Time if found
+        if lastest_time:
+            logger.debug(f"Latest Time fetched: {lastest_time[0]}")
+            return lastest_time[0]
+        logger.debug("No time found because Database is empty!")
+        return None
+    except Exception as e:
+        logger.error(f"Error in Getting latest time from Database: {e}")

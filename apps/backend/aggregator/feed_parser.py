@@ -194,10 +194,8 @@ class FeedParser:
 
             # Deduplication using cosine similarity
             result = Deduplicator.deduplicate(result, model, device)
-            # # Sort by published time (newest first)
-            # result.sort(key=lambda x: x['published'], reverse=True)
             logger.debug(
-                f"{topic}'s Feed Parsed Successfully!")
+                f"{topic}'s Feed Parsed Successfully!, Total Articles:{len(result)}")
             return result
         except Exception as e:
             logger.error(f"Error in Parsing Feed: {e}")
