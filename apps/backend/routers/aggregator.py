@@ -22,23 +22,26 @@ async def refresh_feeds(sleep_time: int = (15*60)):
     Args:
         sleep_time (int) = Time in Seconds 
     """
-    while True:
-        logger.debug("Refreshing Feeds")
-        # Load Feed links
-        with open("feeds.yaml", 'r') as file:
-            rss_feeds = yaml.safe_load(file)
-        # Get Time of most updated article from Database
-        last_stored_time = get_latest_time()
-        # Get new Articles from Feeds
-        await articles.refresh_articles(rss_feeds, last_stored_time)
-        articles_list = articles.get_articles()
-        # Insert to Database
-        if articles_list:
-            insert_to_db(articles_list)
-        logger.debug(
-            f"Refreshed Feeds Successfully, Next Refresh in {int(sleep_time/60)} minutes")
-        # Sleep for specified time
-        await asyncio.sleep(sleep_time)
+    try:
+        while True:
+            logger.debug("Refreshing Feeds")
+            # Load Feed links
+            with open("feeds.yaml", 'r') as file:
+                rss_feeds = yaml.safe_load(file)
+            # Get Time of most updated article from Database
+            last_stored_time = get_latest_time()
+            # Get new Articles from Feeds
+            await articles.refresh_articles(rss_feeds, last_stored_time)
+            articles_list = articles.get_articles()
+            # Insert to Database
+            if articles_list:
+                insert_to_db(articles_list)
+            logger.info(
+                f"Refreshed Feeds Successfully, Next Refresh in {int(sleep_time/60)} minutes")
+            # Sleep for specified time
+            await asyncio.sleep(sleep_time)
+    except Exception as e:
+        logger.error(f"Error in executing refresh feeds task.: {e}")
 
 
 @asynccontextmanager

@@ -18,11 +18,11 @@ handlers:
     formatter: detailed
     filename: errors.log
     mode: a
-# loggers:
-#   routers:
-#     level: DEBUG
-#     handlers: [console, file]
-#     propagate: no
+loggers:
+  urllib3:
+    level: ERROR
+    handlers: [console, file]
+    propagate: no
 root:
   level: DEBUG
   handlers: [console, file]

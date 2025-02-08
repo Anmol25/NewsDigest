@@ -16,9 +16,9 @@ class Feeds:
             "cuda" if torch.cuda.is_available() else "cpu")
         self._model = SentenceTransformer(model_name).to(self._device)
         if str(self._device) == "cuda":
-            print("SentenceBert Using GPU")
+            logger.info("SentenceTransformer is Using GPU")
         else:
-            print("SentenceBert Using CPU")
+            logger.info("SentenceTransformer is Using CPU")
 
     def get_articles(self):
         """
