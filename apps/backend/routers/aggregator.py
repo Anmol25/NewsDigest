@@ -11,6 +11,7 @@ from database.operations import insert_to_db, get_latest_time
 from database.models import Articles
 
 logger = logging.getLogger(__name__)
+
 # Create Feeds Object to fetch new Articles
 articles = Feeds()
 
@@ -23,7 +24,6 @@ async def refresh_feeds(sleep_time: int = (15*60)):
     """
     while True:
         logger.debug("Refreshing Feeds")
-        # print("Refreshing Feeds")
         # Load Feed links
         with open("feeds.yaml", 'r') as file:
             rss_feeds = yaml.safe_load(file)
@@ -35,6 +35,8 @@ async def refresh_feeds(sleep_time: int = (15*60)):
         # Insert to Database
         if articles_list:
             insert_to_db(articles_list)
+        logger.debug(
+            f"Refreshed Feeds Successfully, Next Refresh in {int(sleep_time/60)} minutes")
         # Sleep for specified time
         await asyncio.sleep(sleep_time)
 

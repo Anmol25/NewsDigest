@@ -47,18 +47,21 @@ class Feeds:
         Returns:
             data: Articles Topicwise in a dict format
         """
-        rss_feeds = feeds
-        results = []
-        for topic in rss_feeds:
-            results.append(FeedParser.fetch_topics_feed(rss_feeds[topic]))
-        # Get XML Data For Each Topic in list
-        responses = await asyncio.gather(*results)
-        # Parse Feeds and append them all in list
-        articles = []
-        for topic, xml_data in zip(rss_feeds, responses):
-            articles.extend(FeedParser.parse_feed(
-                topic, xml_data, self._model, self._device, last_stored_time))
-        return articles
+        try:
+            rss_feeds = feeds
+            results = []
+            for topic in rss_feeds:
+                results.append(FeedParser.fetch_topics_feed(rss_feeds[topic]))
+            # Get XML Data For Each Topic in list
+            responses = await asyncio.gather(*results)
+            # Parse Feeds and append them all in list
+            articles = []
+            for topic, xml_data in zip(rss_feeds, responses):
+                articles.extend(FeedParser.parse_feed(
+                    topic, xml_data, self._model, self._device, last_stored_time))
+            return articles
+        except Exception as e:
+            logger.error(f"Error in Fetching Feeds: {e}")
 
     async def refresh_articles(self, feeds: dict,  last_stored_time: datetime) -> dict:
         """
@@ -72,5 +75,6 @@ class Feeds:
         try:
             articles = await self.fetch_articles(feeds, last_stored_time)
             self._articles = articles
+            logger.debug("Saved New Articles")
         except Exception as e:
             logger.error(f"Error in Refreshing Articles: {e}")

@@ -1,5 +1,8 @@
 import numpy as np
+import logging
 from scipy.spatial.distance import cosine
+
+logger = logging.getLogger(__name__)
 
 
 class Deduplicator:
@@ -14,24 +17,29 @@ class Deduplicator:
         Returns:
             list: Articles after removing duplicate articles
         """
-        if len(input) > 0:
-            # Generate embeddings
-            titles = [item['title'] for item in input]
+        try:
+            len_before = len(input)
+            if len_before > 0:
+                # Generate embeddings
+                titles = [item['title'] for item in input]
 
-            embeddings = model.encode(titles, device=device)
+                embeddings = model.encode(titles, device=device)
 
-            # Find duplicates using cosine similarity
-            to_remove = set()
-            for i in range(len(embeddings)):
-                for j in range(i+1, len(embeddings)):
-                    similarity = 1 - cosine(embeddings[i], embeddings[j])
-                    if similarity > 0.85:
-                        to_remove.add(j)
+                # Find duplicates using cosine similarity
+                to_remove = set()
+                for i in range(len(embeddings)):
+                    for j in range(i+1, len(embeddings)):
+                        similarity = 1 - cosine(embeddings[i], embeddings[j])
+                        if similarity > 0.85:
+                            to_remove.add(j)
 
-            # Filter out duplicates
-            input = [item for idx, item in enumerate(
-                input) if idx not in to_remove]
-
-            return input
-        else:
-            return []
+                # Filter out duplicates
+                input = [item for idx, item in enumerate(
+                    input) if idx not in to_remove]
+                len_after = len(input)
+                logger.debug(f"Duplicates Removed: {(len_before - len_after)}")
+                return input
+            else:
+                return []
+        except Exception as e:
+            logger.error(f"Error in Deduplicating Feed: {e}")
