@@ -25,6 +25,10 @@ class Deduplicator:
 
                 embeddings = model.encode(titles, device=device)
 
+                # Save Embeddings in feed
+                [input.update({"embeddings": emb})
+                 for input, emb in zip(input, embeddings)]
+
                 # Find duplicates using cosine similarity
                 to_remove = set()
                 for i in range(len(embeddings)):

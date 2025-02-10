@@ -20,6 +20,7 @@ def update_entry(article, db):
             old_entry.image = article.image
             old_entry.source = article.source
             old_entry.topic = article.topic
+            old_entry.embeddings = article.embeddings
             old_entry.summary = None
             db.commit()
     except Exception as e:
@@ -70,7 +71,8 @@ def insert_to_db(articles: list):
                     published_date=item["published"],
                     image=item["image"],
                     source=item["source"],
-                    topic=item["topic"]
+                    topic=item["topic"],
+                    embeddings=item["embeddings"]
                 )
                 try:
                     db.add(article)
