@@ -2,11 +2,13 @@ import logger
 from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from routers.auth import router as auth_router
 from routers.aggregator import router as feed_router
 from routers.summarizer import router as summarize_router
 
 
 app = FastAPI()
+app.include_router(auth_router)
 app.include_router(feed_router)
 app.include_router(summarize_router)
 

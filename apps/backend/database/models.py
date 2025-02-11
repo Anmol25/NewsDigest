@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, Text
+from sqlalchemy import Column, Integer, String, DateTime, Text, Boolean
 from pgvector.sqlalchemy import Vector
 from .base import Base
 
@@ -15,3 +15,14 @@ class Articles(Base):
     topic = Column(String(50), nullable=False)
     embeddings = Column(Vector(384), nullable=False)
     summary = Column(Text, nullable=True)
+
+
+class Users(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String, unique=True, index=True)
+    fullname = Column(String, nullable=False)
+    email = Column(String, unique=True, index=True)
+    hashed_password = Column(String)
+    is_active = Column(Boolean, default=True)
