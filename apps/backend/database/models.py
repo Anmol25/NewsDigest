@@ -26,3 +26,13 @@ class Users(Base):
     email = Column(String, unique=True, index=True)
     hashed_password = Column(String)
     is_active = Column(Boolean, default=True)
+
+
+class UserHistory(Base):
+    __tablename__ = "userhistory"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, nullable=False)
+    article_id = Column(Integer, nullable=False)
+    link = Column(String(512), nullable=False, unique=True)
+    watched_at = Column(DateTime(timezone=True), nullable=False)

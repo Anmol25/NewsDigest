@@ -1,9 +1,12 @@
 import logging
 from .session import context_db
-from .models import Articles, Users
+from .models import Articles, Users, UserHistory
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import desc
+from sqlalchemy.orm import Session
 from users.schemas import UserCreate
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 logger = logging.getLogger(__name__)
 
@@ -102,7 +105,7 @@ def get_latest_time():
         logger.error(f"Error in Getting latest time from Database: {e}")
 
 
-def create_user_in_db(user: UserCreate, db):
+def create_user_in_db(user: UserCreate, db: Session):
     try:
         UserDB = Users(
             username=user.username,
@@ -120,3 +123,33 @@ def create_user_in_db(user: UserCreate, db):
         return True
     except Exception as e:
         logger.error("UnExpected Error occured while Creating user: {e}")
+
+
+def update_user_history(db: Session, url: str, userid: int, art_id):
+    try:
+        # Check is already in history -> Update Time
+        hist_item = db.query(UserHistory).filter(
+            (UserHistory.user_id == userid) & (UserHistory.link == url)).first()
+        if hist_item:
+            try:
+                hist_item.watched_at = datetime.now(ZoneInfo("UTC"))
+                db.commit()
+            except Exception as e:
+                db.rollback()
+                logger.error(f"Cannot Update Time of User Hitory: {e}")
+        else:
+            # Else Add to DB
+            try:
+                user_hist = UserHistory(
+                    user_id=userid,
+                    link=url,
+                    article_id=art_id,
+                    watched_at=datetime.now(ZoneInfo("UTC"))
+                )
+                db.add(user_hist)
+                db.commit()
+            except Exception as e:
+                db.rollback()
+                logger.error(f"Cannot add article to user history: {e}")
+    except Exception as e:
+        logger.error(f"Unexpected error while updating user history: {e}")
