@@ -152,3 +152,27 @@ def update_user_history(db: Session, userid: int, art_id):
                 logger.error(f"Cannot add article to user history: {e}")
     except Exception as e:
         logger.error(f"Unexpected error while updating user history: {e}")
+
+
+def get_user_history(userid: int, db: Session):
+    try:
+        history = []
+        hist_list = db.query(UserHistory).filter(
+            UserHistory.user_id == userid).order_by(desc(UserHistory.watched_at)).all()
+        for item in hist_list:
+            article = db.query(Articles).filter(
+                Articles.id == item.article_id).first()
+            if article:
+                hist_item = {
+                    "title": article.title,
+                    "link": article.link,
+                    "image": article.image,
+                    "published_date": article.published_date,
+                    "source": article.source,
+                    "watched_at": item.watched_at
+                }
+                history.append(hist_item)
+        return history
+    except Exception as e:
+        logger.error(f"Unexpected error while retrieving user history: {e}")
+        return []

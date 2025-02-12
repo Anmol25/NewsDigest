@@ -1,12 +1,15 @@
+import logging
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from datetime import timedelta
 from database.session import get_db
 from database.models import Users
-from database.operations import create_user_in_db
+from database.operations import create_user_in_db, get_user_history
 from sqlalchemy.orm import Session
 from users.schemas import Token, User, UserCreate
 from users.services import authenticate_user, create_access_token, get_current_active_user, get_password_hash
+
+logger = logging.getLogger(__name__)
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
@@ -42,3 +45,13 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
 async def read_users_me(current_user: Users = Depends(get_current_active_user)):
     current_user = User.model_validate(current_user)
     return current_user
+
+
+@router.get("/userhistory")
+async def get_current_user_history(current_user: Users = Depends(get_current_active_user), db: Session = Depends(get_db)):
+    try:
+        if current_user:
+            history = get_user_history(current_user.id, db)
+            return history
+    except Exception as e:
+        logger.error(f"Error in retrieving current user history: {e}")
