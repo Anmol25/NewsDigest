@@ -125,11 +125,11 @@ def create_user_in_db(user: UserCreate, db: Session):
         logger.error("UnExpected Error occured while Creating user: {e}")
 
 
-def update_user_history(db: Session, url: str, userid: int, art_id):
+def update_user_history(db: Session, userid: int, art_id):
     try:
         # Check is already in history -> Update Time
         hist_item = db.query(UserHistory).filter(
-            (UserHistory.user_id == userid) & (UserHistory.link == url)).first()
+            (UserHistory.user_id == userid) & (UserHistory.article_id == art_id)).first()
         if hist_item:
             try:
                 hist_item.watched_at = datetime.now(ZoneInfo("UTC"))
@@ -142,7 +142,6 @@ def update_user_history(db: Session, url: str, userid: int, art_id):
             try:
                 user_hist = UserHistory(
                     user_id=userid,
-                    link=url,
                     article_id=art_id,
                     watched_at=datetime.now(ZoneInfo("UTC"))
                 )

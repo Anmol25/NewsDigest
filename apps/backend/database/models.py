@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, Text, Boolean
+from sqlalchemy import Column, Integer, String, DateTime, Text, Boolean, ForeignKey
 from pgvector.sqlalchemy import Vector
 from .base import Base
 
@@ -31,8 +31,9 @@ class Users(Base):
 class UserHistory(Base):
     __tablename__ = "userhistory"
 
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, nullable=False)
-    article_id = Column(Integer, nullable=False)
-    link = Column(String(512), nullable=False, unique=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey(
+        "users.id", ondelete="CASCADE"), nullable=False)
+    article_id = Column(Integer, ForeignKey(
+        "articles.id", ondelete="CASCADE"), nullable=False)
     watched_at = Column(DateTime(timezone=True), nullable=False)

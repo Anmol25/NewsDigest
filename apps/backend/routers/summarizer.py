@@ -29,7 +29,7 @@ def summarize(request: ArticleUrl, db: Session = Depends(get_db), current_user: 
         article = db.query(Articles).filter(Articles.link == url).first()
         if article:
             # Update user history:
-            update_user_history(db, url, current_user.id, article.id)
+            update_user_history(db, current_user.id, article.id)
             # Retrieve Summary if available
             if article.summary:
                 return {"data": article.summary}
