@@ -1,8 +1,9 @@
 import logging
 from .session import context_db
-from .models import Articles
+from .models import Articles, Users
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import desc
+from users.schemas import UserCreate
 
 logger = logging.getLogger(__name__)
 
@@ -99,3 +100,23 @@ def get_latest_time():
         return None
     except Exception as e:
         logger.error(f"Error in Getting latest time from Database: {e}")
+
+
+def create_user_in_db(user: UserCreate, db):
+    try:
+        UserDB = Users(
+            username=user.username,
+            fullname=user.fullname,
+            email=user.email,
+            hashed_password=user.password,
+            is_active=True
+        )
+        try:
+            db.add(UserDB)
+            db.commit()
+        except:
+            db.rollback()
+            return False
+        return True
+    except Exception as e:
+        logger.error("UnExpected Error occured while Creating user: {e}")
