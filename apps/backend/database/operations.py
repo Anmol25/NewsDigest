@@ -1,4 +1,5 @@
 import logging
+from fastapi import HTTPException
 from .session import context_db
 from .models import Articles, Users, UserHistory
 from sqlalchemy.exc import IntegrityError
@@ -103,6 +104,23 @@ def get_latest_time():
         return None
     except Exception as e:
         logger.error(f"Error in Getting latest time from Database: {e}")
+
+
+def check_user_in_db(user: UserCreate, db: Session):
+    try:
+        errors = []
+        # Check Email
+        exist_user = db.query(Users).filter(Users.email == user.email).first()
+        if exist_user:
+            errors.append("Email already exists on server")
+        exist_user = db.query(Users).filter(
+            Users.username == user.username).first()
+        if exist_user:
+            errors.append("Username already exists on server")
+        errors = ", ".join(errors)
+        return errors
+    except Exception as e:
+        logger.error(f"Error in Checking User in Database: {e}")
 
 
 def create_user_in_db(user: UserCreate, db: Session):
