@@ -10,7 +10,9 @@ from aggregator.model import SBERT
 from aggregator.search import search_similar_items
 from database.session import get_db
 from database.operations import insert_to_db, get_latest_time
-from database.models import Articles
+from database.models import Articles, Users
+from users.services import get_current_active_user
+from users.recommendation import Recommendar
 
 logger = logging.getLogger(__name__)
 
@@ -113,3 +115,9 @@ async def search_article(query: str, db: Session = Depends(get_db)):
         return similar_items
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/foryou")
+async def personalized_feed(current_user: Users = Depends(get_current_active_user), db: Session = Depends(get_db)):
+    feed = Recommendar.get_recommendations(current_user, db)
+    return feed
