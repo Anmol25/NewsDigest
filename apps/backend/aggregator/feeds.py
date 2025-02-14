@@ -9,16 +9,19 @@ logger = logging.getLogger(__name__)
 
 
 class Feeds:
-    def __init__(self):
-        model_name = "sentence-transformers/all-MiniLM-L6-v2"
+    def __init__(self, sbert: object):
         self._articles = None
-        self._device = torch.device(
-            "cuda" if torch.cuda.is_available() else "cpu")
-        self._model = SentenceTransformer(model_name).to(self._device)
-        if str(self._device) == "cuda":
-            logger.info("SentenceTransformer is Using GPU")
-        else:
-            logger.info("SentenceTransformer is Using CPU")
+        self._model = sbert.model
+        self._device = sbert.device
+        # model_name = "sentence-transformers/all-MiniLM-L6-v2"
+        # self._articles = None
+        # self._device = torch.device(
+        #     "cuda" if torch.cuda.is_available() else "cpu")
+        # self._model = SentenceTransformer(model_name).to(self._device)
+        # if str(self._device) == "cuda":
+        #     logger.info("SentenceTransformer is Using GPU")
+        # else:
+        #     logger.info("SentenceTransformer is Using CPU")
 
     def get_articles(self):
         """

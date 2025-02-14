@@ -6,14 +6,18 @@ from contextlib import asynccontextmanager
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
 from aggregator.feeds import Feeds
+from aggregator.model import SBERT
 from database.session import get_db
 from database.operations import insert_to_db, get_latest_time
 from database.models import Articles
 
 logger = logging.getLogger(__name__)
 
+# Create Sentence Transformer model instance
+sbert = SBERT()
+
 # Create Feeds Object to fetch new Articles
-articles = Feeds()
+articles = Feeds(sbert)
 
 
 async def refresh_feeds(sleep_time: int = (15*60)):
@@ -87,3 +91,8 @@ def retrieve_feed(topic: str, db: Session = Depends(get_db)) -> list:
         return articles_list
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/search")
+async def search_article(query: str):
+    pass

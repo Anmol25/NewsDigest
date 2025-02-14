@@ -53,5 +53,6 @@ async def get_current_user_history(current_user: Users = Depends(get_current_act
         if current_user:
             history = get_user_history(current_user.id, db)
             return history
+        return []
     except Exception as e:
         logger.error(f"Error in retrieving current user history: {e}")
