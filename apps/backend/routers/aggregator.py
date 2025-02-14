@@ -119,5 +119,12 @@ async def search_article(query: str, db: Session = Depends(get_db)):
 
 @router.get("/foryou")
 async def personalized_feed(current_user: Users = Depends(get_current_active_user), db: Session = Depends(get_db)):
-    feed = Recommendar.get_recommendations(current_user, db)
-    return feed
+    try:
+        feed = Recommendar.get_recommendations(current_user, db)
+        print(feed)
+        if not feed:
+            raise HTTPException(
+                status_code=204, detail="User History Empty. Read articles to create personalized feed.")
+        return feed
+    except Exception as e:
+        logger.error(f"Error in generating personalize feed: {e}")
