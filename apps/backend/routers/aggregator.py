@@ -96,6 +96,14 @@ def retrieve_feed(topic: str, db: Session = Depends(get_db)) -> list:
 
 @router.post("/search")
 async def search_article(query: str, db: Session = Depends(get_db)):
+    """
+    Search similar articles in database
+    Args:
+        query (str): Query for which articles need to be search.
+        db (Session): Database session variable.
+    Returns:
+        similar_items (list): List of similar articles
+    """
     try:
         similar_items = search_similar_items(
             query, sbert.model, sbert.device, db)

@@ -18,41 +18,57 @@ router = APIRouter()
 
 @router.post("/create_user")
 async def create_user(response: UserCreate, db: Session = Depends(get_db)):
-    user = response
-    # Hash Password
-    user.password = get_password_hash(user.password)
-    # Create User in DB
-    user_created = create_user_in_db(user, db)
-    if user_created:
+    """Create a new User"""
+    try:
+        user = response
+        # Hash Password
+        user.password = get_password_hash(user.password)
+        # Create User in DB
+        user_created = create_user_in_db(user, db)
+        if not user_created:
+            raise HTTPException(status_code=409, detail="User Already Exists")
         return {"response": "User Successfully created"}
-    else:
-        return {"response": "User Already exist"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post("/token", response_model=Token)
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(),  db: Session = Depends(get_db)):
-    user = authenticate_user(db, form_data.username, form_data.password)
-    if not user:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                            detail="Incorrect username or password", headers={"WWW-Authenticate": "Bearer"})
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(
-        data={"sub": user.username}, expires_delta=access_token_expires)
-    return {"access_token": access_token, "token_type": "bearer"}
+    """Create a new Access Token"""
+    try:
+        user = authenticate_user(db, form_data.username, form_data.password)
+        if not user:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                                detail="Incorrect username or password", headers={"WWW-Authenticate": "Bearer"})
+        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token = create_access_token(
+            data={"sub": user.username}, expires_delta=access_token_expires)
+        return {"access_token": access_token, "token_type": "bearer"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/users/me/", response_model=User)
 async def read_users_me(current_user: Users = Depends(get_current_active_user)):
-    current_user = User.model_validate(current_user)
-    return current_user
+    """Returns current user details"""
+    try:
+        current_user = User.model_validate(current_user)
+        if not current_user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="User not logged in.")
+        return current_user
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/userhistory")
 async def get_current_user_history(current_user: Users = Depends(get_current_active_user), db: Session = Depends(get_db)):
+    """Returns the History of current history."""
     try:
         if current_user:
             history = get_user_history(current_user.id, db)
             return history
-        return []
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="User not logged in.")
     except Exception as e:
         logger.error(f"Error in retrieving current user history: {e}")
