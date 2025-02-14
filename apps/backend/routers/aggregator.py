@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import desc
 from aggregator.feeds import Feeds
 from aggregator.model import SBERT
+from aggregator.search import search_similar_items
 from database.session import get_db
 from database.operations import insert_to_db, get_latest_time
 from database.models import Articles
@@ -94,5 +95,13 @@ def retrieve_feed(topic: str, db: Session = Depends(get_db)) -> list:
 
 
 @router.post("/search")
-async def search_article(query: str):
-    pass
+async def search_article(query: str, db: Session = Depends(get_db)):
+    try:
+        similar_items = search_similar_items(
+            query, sbert.model, sbert.device, db)
+        if not similar_items:
+            raise HTTPException(
+                status_code=404, detail=f"Relevant Results not found")
+        return similar_items
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
