@@ -18,3 +18,49 @@ India:
   Hindustan Times: https://www.hindustantimes.com/feeds/rss/india-news/rssfeed.xml
   India TV: https://www.indiatvnews.com/rssnews/topstory-india.xml
   Zee News: https://zeenews.india.com/rss/india-national-news.xml
+
+World:
+  The Times Of India: http://timesofindia.indiatimes.com/rssfeeds/296589292.cms
+  NDTV: https://feeds.feedburner.com/ndtvnews-world-news
+  Firstpost: https://www.firstpost.com/commonfeeds/v1/mfp/rss/world.xml
+  India Today: https://www.indiatoday.in/rss/1206577
+  Hindustan Times: https://www.hindustantimes.com/feeds/rss/videos/world-news/rssfeed.xml
+  India TV: https://www.indiatvnews.com/rssnews/topstory-world.xml
+  Zee News: https://zeenews.india.com/rss/world-news.xml
+
+Economy:
+  The Times Of India: https://timesofindia.indiatimes.com/rssfeeds/1898055.cms
+  NDTV: https://feeds.feedburner.com/ndtvprofit-latest
+  Firstpost: https://www.firstpost.com/commonfeeds/v1/mfp/rss/business.xml
+  India Today: https://www.indiatoday.in/rss/1206513
+  Hindustan Times: https://www.hindustantimes.com/feeds/rss/business/rssfeed.xml
+  India TV: https://www.indiatvnews.com/rssnews/topstory-business.xml
+  Zee News: https://zeenews.india.com/rss/business.xml
+
+Science:
+  The Times Of India: http://timesofindia.indiatimes.com/rssfeeds/-2128672765.cms
+  Hindustan Times: https://www.hindustantimes.com/feeds/rss/science/rssfeed.xml
+  Zee News: https://zeenews.india.com/rss/science-environment-news.xml
+
+Tech:
+  The Times Of India: http://timesofindia.indiatimes.com/rssfeeds/66949542.cms
+  NDTV: https://feeds.feedburner.com/gadgets360-latest
+  Firstpost: https://www.firstpost.com/commonfeeds/v1/mfp/rss/tech.xml
+  Hindustan Times: https://www.hindustantimes.com/feeds/rss/technology/rssfeed.xml
+  Zee News: https://zeenews.india.com/rss/technology-news.xml
+
+Sports:
+  The Times Of India: http://timesofindia.indiatimes.com/rssfeeds/4719148.cms
+  NDTV: https://feeds.feedburner.com/ndtvsports-latest
+  Firstpost: https://www.firstpost.com/commonfeeds/v1/mfp/rss/sports.xml
+  India Today: https://www.indiatoday.in/rss/1206550
+  Hindustan Times: https://www.hindustantimes.com/feeds/rss/sports/rssfeed.xml
+  India TV: https://www.indiatvnews.com/rssnews/topstory-sports.xml
+  Zee News: https://zeenews.india.com/rss/sports-news.xml
+
+Entertainment:
+  The Times Of India: http://timesofindia.indiatimes.com/rssfeeds/1081479906.cms
+  Firstpost: https://www.firstpost.com/commonfeeds/v1/mfp/rss/entertainment.xml
+  Hindustan Times: https://www.hindustantimes.com/feeds/rss/entertainment/rssfeed.xml
+  India TV: https://www.indiatvnews.com/rssnews/topstory-entertainment.xml
+  Zee News: https://zeenews.india.com/rss/entertainment-news.xml
