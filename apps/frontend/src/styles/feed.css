@@ -3,6 +3,10 @@
     padding-left: 260px;
 }
 
+.FeedTitle{
+    text-align: center;
+}
+
 .FeedList{
     width: 100%;
     display: grid;

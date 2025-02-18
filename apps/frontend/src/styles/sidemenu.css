@@ -17,10 +17,19 @@ ul{
     list-style-type: none;
 }
 
-li{
-    border: 1px solid black;
+.topic-li{
     margin: 30px auto;
     cursor: pointer;
     border-radius: 20px;
     padding: 14px;
+    background-color: #B0FFCD;
+}
+
+.topic-li:hover{
+    background-color: #36d470;
+    transition: background-color 0.3s ease;
+}
+
+.active{
+    background-color: #36d470;
 }
