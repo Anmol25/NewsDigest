@@ -3,13 +3,13 @@ import '../styles/News.css'
 function News(props){
     return(
         <div className="NewsBlock">
-            <img  src={props.image} alt="News-Image" />
-            <p>Title: {props.title}</p>
-            <div>
+            <img className='NewsImage' src={props.image} alt="News-Image" />
+            <p className="NewsTitle">{props.title}</p>
+            <div className="NewsInfo">
                 <p>Source: {props.link}</p>
                 <p>Time: {props.time}</p>
             </div>
-            <button>Summarize</button>
+            <button className="SummarizeButton">Summarize</button>
         </div>
     )
 }
