@@ -6,7 +6,7 @@ function News(props){
             <img className='NewsImage' src={props.image} alt="News-Image" />
             <p className="NewsTitle">{props.title}</p>
             <div className="NewsInfo">
-                <p>Source: {props.link}</p>
+                <p>Source: {props.source}</p>
                 <p>Time: {props.time}</p>
             </div>
             <button className="SummarizeButton">Summarize</button>
