@@ -1,4 +1,5 @@
 import logo from '../assets/logo.png';
+import profile from '../assets/defaultphoto.jpg';
 import '../styles/navbar.css';
 
 function Navbar(){
@@ -9,7 +10,8 @@ function Navbar(){
                 <input type="text" placeholder="Search" name="search"/>
                 <button className='searchbutton' type="submit">Search</button>
             </form>
-            <p className='profile'>Profile</p>
+            <img className='profile' src={profile} alt="Profile" />
+            {/* <p className='profile'>Profile</p> */}
         </div>
     )
 }

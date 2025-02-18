@@ -47,10 +47,15 @@
     width: 100%;
     padding: 10px;
     height: 50px;
-    background-color: #77B254;
+    background-color: #2ED86E;
     color: #fff;
     border: none;
     border-radius: 0 0 15px 15px;
     cursor: pointer;
     font-size: 1.2rem;
+}
+
+.SummarizeButton:hover{
+    transition: background-color 0.3s ease;
+    background-color: #09B74C;
 }
