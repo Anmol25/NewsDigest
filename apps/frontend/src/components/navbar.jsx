@@ -9,7 +9,7 @@ function Navbar(){
                 <input type="text" placeholder="Search" name="search"/>
                 <button className='searchbutton' type="submit">Search</button>
             </form>
-            <p>Profile</p>
+            <p className='profile'>Profile</p>
         </div>
     )
 }
