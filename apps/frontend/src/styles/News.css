@@ -12,6 +12,11 @@
     overflow: hidden;
 }
 
+.NewsBlock:hover{
+    transition: transform 0.3s ease;
+    transform: scale(1.05);
+}
+
 .NewsImage{
     margin: 0;
     width: 100%;
@@ -47,7 +52,7 @@
     width: 100%;
     padding: 10px;
     height: 50px;
-    background-color: #2ED86E;
+    background-color: #36d470;
     color: #fff;
     border: none;
     border-radius: 0 0 15px 15px;
