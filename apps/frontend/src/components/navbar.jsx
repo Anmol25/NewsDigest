@@ -7,7 +7,7 @@ function Navbar(){
             <img className='logo' src={logo} alt="News Digest"/>
             <form className='Searchbar'>
                 <input type="text" placeholder="Search" name="search"/>
-                <button type="submit">Search</button>
+                <button className='searchbutton' type="submit">Search</button>
             </form>
             <p>Profile</p>
         </div>

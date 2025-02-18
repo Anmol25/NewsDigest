@@ -3,7 +3,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border: 1px solid black;
+    border-bottom: 1px solid black;
 }
 .logo{
     width: 250px;
@@ -20,7 +20,7 @@ input{
     padding: 10px;
     border-radius: 20px 0 0 20px;
 }
-button{
+.searchbutton{
     padding: 10px;
     background-color: #f1f1f1;
     border: none;
