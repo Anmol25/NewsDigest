@@ -1,39 +1,28 @@
 import "../styles/feed.css";
 import News from "./News";
-
+import getFeed from "../services/api";
+import { useEffect, useState } from "react";
 
 function Feed({topic}){
 
-    const topicfeed = topic;
+    const [feed, setFeed] = useState([]);
+
+    useEffect(() => {
+        getFeed(topic).then(data => setFeed(data));
+    }, [topic]);
+
+    
     
     return (
         <div className="Feed">
-            <h1 className="FeedTitle">{topicfeed}</h1>
+            <h1 className="FeedTitle">{topic}</h1>
             <div className="FeedList">
-                <News image="https://static.toiimg.com/photo/msid-118344813,imgsize-35574.cms" title="BBA student driving Audi crashes into scooty in Delhi; 1 critical"
-                link="link" />
-                <News image="https://static.toiimg.com/photo/msid-118344813,imgsize-35574.cms" title="BBA student driving Audi crashes into scooty in Delhi; 1 critical"
-                link="link" />
-                <News image="https://static.toiimg.com/photo/msid-118344813,imgsize-35574.cms" title="BBA student driving Audi crashes into scooty in Delhi; 1 critical"
-                link="link" />
-                <News image="https://static.toiimg.com/photo/msid-118344813,imgsize-35574.cms" title="BBA student driving Audi crashes into scooty in Delhi; 1 critical"
-                link="link" />
-                <News image="https://static.toiimg.com/photo/msid-118344813,imgsize-35574.cms" title="BBA student driving Audi crashes into scooty in Delhi; 1 critical"
-                link="link" />
-                <News image="https://static.toiimg.com/photo/msid-118344813,imgsize-35574.cms" title="BBA student driving Audi crashes into scooty in Delhi; 1 critical"
-                link="link" />
-                <News image="https://static.toiimg.com/photo/msid-118344813,imgsize-35574.cms" title="BBA student driving Audi crashes into scooty in Delhi; 1 critical"
-                link="link" />
-                <News image="https://static.toiimg.com/photo/msid-118344813,imgsize-35574.cms" title="BBA student driving Audi crashes into scooty in Delhi; 1 critical"
-                link="link" />
-                <News image="https://static.toiimg.com/photo/msid-118344813,imgsize-35574.cms" title="BBA student driving Audi crashes into scooty in Delhi; 1 critical"
-                link="link" />
-                <News image="https://static.toiimg.com/photo/msid-118344813,imgsize-35574.cms" title="BBA student driving Audi crashes into scooty in Delhi; 1 critical"
-                link="link" />
-                <News image="https://static.toiimg.com/photo/msid-118344813,imgsize-35574.cms" title="BBA student driving Audi crashes into scooty in Delhi; 1 critical"
-                link="link" />
-                <News image="https://static.toiimg.com/photo/msid-118344813,imgsize-35574.cms" title="BBA student driving Audi crashes into scooty in Delhi; 1 critical"
-                link="link" />
+                {feed.map((item, index) => (
+                    <News key={index} image={item.image} title={item.title} source={item.source} time={item.published_date} />
+                ))}
+                {feed.length === 0 && (
+                    <p>No news found</p>
+                )}
             </div>
         </div>
     )
