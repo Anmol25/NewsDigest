@@ -1,10 +1,10 @@
 .NewsBlock{
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: space-between;
     padding: 0;
     width: 100%;
-    height: 350px;
+    height: 400px;
     margin: 0px;
     border-radius: 15px;
     border: 1px solid #e0e0e0;
@@ -21,15 +21,17 @@
 .NewsImage{
     margin: 0;
     width: 100%;
-    height: 230px;
+    height: 250px;
     object-fit: cover;
 }
 
 .NewsTitle{
-    padding: 10px;
+    width: 100%;
+    padding: 5px 10px;
     padding-bottom: 0;
     font-size: 1.2rem;
     font-weight: 700;
+    align-self: flex-start;
     margin: 0;
 }
 
