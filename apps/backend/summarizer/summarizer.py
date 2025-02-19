@@ -14,12 +14,15 @@ class Summarizer:
 
     def __init__(self):
         model_name = "sshleifer/distilbart-cnn-12-6"
+        cache_dir = "./model/DistilBART"
+
         self.device = torch.device(
             "cuda" if torch.cuda.is_available() else "cpu")
-        self.tokenizer = BartTokenizer.from_pretrained(model_name)
+        self.tokenizer = BartTokenizer.from_pretrained(
+            model_name, cache_dir=cache_dir)
         # print(self.tokenizer)
         self.model = BartForConditionalGeneration.from_pretrained(
-            model_name).to(self.device)
+            model_name, cache_dir=cache_dir).to(self.device)
         if str(self.device) == "cuda":
             logger.info("DistilBART is Using GPU")
         else:

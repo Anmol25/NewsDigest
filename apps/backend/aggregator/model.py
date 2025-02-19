@@ -9,9 +9,12 @@ class SBERT:
 
     def __init__(self):
         self.model_name = "sentence-transformers/all-MiniLM-L6-v2"
+        self.cache_dir = "./model/SentenceTransformer"
+
         self.device = torch.device(
             "cuda" if torch.cuda.is_available() else "cpu")
-        self.model = SentenceTransformer(self.model_name).to(self.device)
+        self.model = SentenceTransformer(
+            self.model_name, cache_folder=self.cache_dir).to(self.device)
         if str(self.device) == "cuda":
             logger.info("SentenceTransformer is Using GPU")
         else:
