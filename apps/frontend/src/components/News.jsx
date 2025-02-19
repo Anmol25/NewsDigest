@@ -1,4 +1,5 @@
 import '../styles/News.css'
+import handleFallbackImage from '../services/handlefallback_img';
 
 function News(props){
 
@@ -13,17 +14,19 @@ function News(props){
         });
 
 
-        return formattedTime;
+        return `${formattedTime} IST`;
     }
+
+    const fallbackImage = handleFallbackImage(props.source);
 
 
     return(
         <div className="NewsBlock">
-            <img className='NewsImage' src={props.image} alt="News-Image" />
+            <img className='NewsImage' src={props.image || fallbackImage} alt="News-Image" />
             <p className="NewsTitle">{props.title}</p>
             <div className="NewsInfo">
                 {/* Source and time */}
-                <p>{props.source}</p> 
+                <p>{props.source || "Unknown"}</p> 
                 <p>{published_date(props.time)}</p>
             </div>
             <button className="SummarizeButton">Summarize</button>
