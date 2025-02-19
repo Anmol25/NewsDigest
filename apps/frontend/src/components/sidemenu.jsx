@@ -14,7 +14,7 @@ function SideMenu({changeTopic}){
 
     return (
         <div className="SideMenu">
-            <ul>
+            <ul className="SideMenu-ul">
                 {topics.map((topic, index) => {
                     return <li className={`topic-li ${activeTopic === topic ? "active" : ""}`} key={index} onClick={() => handleTopicClick(topic)}>{topic}</li>
                 })}

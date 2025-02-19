@@ -10,6 +10,7 @@
     border: 1px solid #e0e0e0;
     box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
     overflow: hidden;
+    background-color: white;
 }
 
 .NewsBlock:hover{
@@ -44,7 +45,7 @@
 .NewsInfo p{
     margin: 5px;
     padding: 5px;
-    background-color: #D4FDE3;
+    background-color: #D0DDD0;
     border-radius: 5px;
 }
 
@@ -58,6 +59,7 @@
     border-radius: 0 0 15px 15px;
     cursor: pointer;
     font-size: 1.2rem;
+    font-weight: 700;
 }
 
 .SummarizeButton:hover{

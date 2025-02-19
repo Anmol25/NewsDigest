@@ -9,20 +9,23 @@
     height: calc(100vh - 90px);
     border-right: 1px solid #e0e0e0;
     box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+    background-color: #FBFBFB;
 }
 
-ul{
+.SideMenu-ul{
     margin: 0;
     padding: 10px;
     list-style-type: none;
 }
 
 .topic-li{
-    margin: 30px auto;
+    margin: 15px auto;
     cursor: pointer;
     border-radius: 20px;
     padding: 14px;
     background-color: #B0FFCD;
+    font-size: 20px;
+    font-weight: 500;
 }
 
 .topic-li:hover{
