@@ -40,14 +40,32 @@ def authenticate_user(db, username: str, password: str):
 
 
 def create_access_token(data: dict, expires_delta: timedelta = None):
+    """Create Access Token"""
     to_encode = data.copy()
     if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
+        expires = datetime.now(timezone.utc) + expires_delta
     else:
-        expire = datetime.now(timezone.utc) + timedelta(minutes=15)
-    to_encode.update({"exp": expire})
+        expires = datetime.now(timezone.utc) + timedelta(minutes=15)
+    to_encode.update({"exp": expires})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
+
+
+def create_refresh_token(data: dict, expires_delta: timedelta = None):
+    """Create Refresh Token"""
+    to_encode = data.copy()
+    if expires_delta:
+        expires = datetime.now(timezone.utc) + expires_delta
+    else:
+        expires = datetime.now(timezone.utc) + timedelta(days=7)
+    to_encode.update({"exp": expires})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+
+def decode_refresh_token(refresh_token):
+    payload = jwt.decode(refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
+    return payload
 
 
 async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
