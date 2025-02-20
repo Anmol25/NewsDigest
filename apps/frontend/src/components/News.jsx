@@ -5,17 +5,20 @@ function News(props){
 
     const published_date = (time) => {
         const date = new Date(time);
-
-        const formattedTime = date.toLocaleString("en-IN", {
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: true,
-            timeZone: "Asia/Kolkata" // Ensure it's in IST
-        });
-
-
-        return `${formattedTime} IST`;
-    }
+    
+        const formattedDate = date.toLocaleString("en-IN", {
+            weekday: "short",  // Thu
+            day: "2-digit",    // 20
+            month: "short",    // Feb
+            year: "numeric",   // 2025
+            hour: "2-digit",   // 2
+            minute: "2-digit", // 30
+            hour12: true,      // 12-hour format
+            timeZone: "Asia/Kolkata" // Ensure IST
+        }).replace(",", ""); // Remove unwanted comma
+    
+        return `${formattedDate} IST`;
+    };
 
     const fallbackImage = handleFallbackImage(props.source);
 
