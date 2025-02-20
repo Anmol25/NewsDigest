@@ -1,9 +1,8 @@
 import "../styles/feed.css";
 import News from "./News";
 import getFeed from "../services/api";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams } from "react-router-dom";
-
 
 function formatTitle(str) {
     return str
@@ -12,29 +11,89 @@ function formatTitle(str) {
         .join(' '); // Join words with space
 }
 
-function Feed(){
+function Feed() {
     const { topic } = useParams();
     const title = formatTitle(topic);
 
+    // States
     const [feed, setFeed] = useState([]);
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(true);
+    const [loading, setLoading] = useState(false);
 
+    // Load feed data
+    const loadFeed = useCallback(async () => {
+        // Don't proceed if already loading or no more data
+        if (loading || !hasMore) return;
+
+        setLoading(true);
+        try {
+            const { data: newData, hasMore: moreData } = await getFeed(title, page);
+            
+            if (!newData.length) {
+                setHasMore(false);
+            } else {
+                setFeed(prev => [...prev, ...newData]);
+                setPage(prev => prev + 1);
+                setHasMore(moreData);
+            }
+        } catch (error) {
+            console.error('Error loading feed:', error);
+            setHasMore(false);
+        } finally {
+            setLoading(false);
+        }
+    }, [loading, hasMore, page, title]);
+
+    // Reset states when topic changes
     useEffect(() => {
-        getFeed(title).then(data => setFeed(data));
+        setFeed([]);
+        setPage(1);
+        setHasMore(true);
+        setLoading(false);
+        loadFeed();
     }, [topic]);
+
+    // Handle infinite scroll
+    useEffect(() => {
+        const handleScroll = () => {
+            const threshold = 100;
+            const isNearBottom = 
+                window.innerHeight + window.scrollY >= 
+                document.documentElement.scrollHeight - threshold;
+
+            if (isNearBottom) loadFeed();
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, [loadFeed]);
+
+    // Render loading states
+    const renderStatus = () => {
+        if (loading) return <p>Loading...</p>;
+        if (!hasMore && feed.length > 0) return <p>No more news to load</p>;
+        if (feed.length === 0 && !loading) return <p>No news found</p>;
+        return null;
+    };
 
     return (
         <div className="Feed">
             <h1 className="FeedTitle">{title}</h1>
             <div className="FeedList">
                 {feed.map((item, index) => (
-                    <News key={index} image={item.image} title={item.title} source={item.source} time={item.published_date} />
+                    <News 
+                        key={`${item.id || index}`}
+                        image={item.image}
+                        title={item.title}
+                        source={item.source}
+                        time={item.published_date}
+                    />
                 ))}
-                {feed.length === 0 && (
-                    <p>No news found</p>
-                )}
+                {renderStatus()}
             </div>
         </div>
-    )
+    );
 }
 
 export default Feed;

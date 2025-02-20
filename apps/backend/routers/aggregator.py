@@ -64,36 +64,48 @@ router = APIRouter(lifespan=lifespan)
 
 
 @router.get("/feed/{topic}")
-def retrieve_feed(topic: str, db: Session = Depends(get_db)) -> list:
+async def retrieve_feed(topic: str, page: int = 1, limit: int = 20, db: Session = Depends(get_db)) -> list:
     """
     Retrieve Feed of specific topic from Database.
     Args:
         topic (str): Topic of Feed.
         db (Session): Create Database Session.
     Returns:
-        articles_list (list): List of article of requested topic. 
+        articles_list (list): List of articles of requested topic.
     """
     try:
-        data = db.query(Articles.title, Articles.link, Articles.published_date,
-                        Articles.image, Articles.source, Articles.topic).filter(Articles.topic == topic).order_by(desc(Articles.published_date)).all()
-        if not data:
-            raise HTTPException(
-                status_code=404, detail=f"{topic}'s Feed not found")
-        # Convert result into dictionaries for FastAPI serialization
-        articles_list = [
-            {
-                'title': item.title,
-                'link': item.link,
-                'published_date': item.published_date,
-                'image': item.image,
-                'source': item.source,
-                'topic': item.topic
-            }
-            for item in data
-        ]
-        return articles_list
+        skip = (page - 1) * limit
+        data = (db.query(Articles.title,
+                         Articles.link,
+                         Articles.published_date,
+                         Articles.image,
+                         Articles.source,
+                         Articles.topic)
+                .filter(Articles.topic == topic)
+                .order_by(desc(Articles.published_date))
+                .offset(skip)
+                .limit(limit)
+                .all())
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+    if not data:
+        raise HTTPException(
+            status_code=404, detail=f"{topic}'s Feed not found")
+
+    # Convert result into dictionaries for FastAPI serialization
+    articles_list = [
+        {
+            'title': item.title,
+            'link': item.link,
+            'published_date': item.published_date,
+            'image': item.image,
+            'source': item.source,
+            'topic': item.topic
+        }
+        for item in data
+    ]
+    return articles_list
 
 
 @router.post("/search")
