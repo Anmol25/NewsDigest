@@ -1,3 +1,5 @@
+import axios from 'axios';
+
 const url = "http://localhost:8000";
 
 async function getFeed(topic, page = 1) {
@@ -8,17 +10,12 @@ async function getFeed(topic, page = 1) {
         };
     }
     try {
-        const response = await fetch(`${url}/feed/${topic}?page=${page}`);
-        if (!response.ok) {
-            return {
-                data: [],
-                hasMore: false
-            };
-        }
-        const data = await response.json();
+        const response = await axios.get(`${url}/feed/${topic}`, {
+            params: { page }
+        });
         return {
-            data: Array.isArray(data) ? data : [],
-            hasMore: Array.isArray(data) && data.length > 0
+            data: Array.isArray(response.data) ? response.data : [],
+            hasMore: Array.isArray(response.data) && response.data.length > 0
         };
     } catch (error) {
         console.error('Error fetching feed:', error);
