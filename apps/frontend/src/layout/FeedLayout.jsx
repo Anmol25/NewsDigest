@@ -1,5 +1,5 @@
-import Navbar from "../components/navbar"
-import SideMenu from "../components/sidemenu"
+import Navbar from "../components/Navbar/Navbar"
+import SideMenu from "../components/SideMenu/SideMenu";
 import { Outlet } from "react-router-dom";
 
 const FeedLayout = () => {

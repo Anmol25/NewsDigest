@@ -1,5 +1,5 @@
-import '../styles/News.css'
-import handleFallbackImage from '../services/handlefallback_img';
+import './News.css'
+import handleFallbackImage from '../../services/HandleFallbackImg';
 
 function News(props){
 

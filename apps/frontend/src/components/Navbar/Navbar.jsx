@@ -1,7 +1,7 @@
-import logo from '../assets/logo.png';
-import profile from '../assets/defaultphoto.jpg';
-import search from '../assets/search.png';
-import '../styles/navbar.css';
+import logo from '../../assets/logo.png';
+import profile from '../../assets/defaultphoto.jpg';
+import search from '../../assets/search.png';
+import './Navbar.css';
 
 function Navbar(){
     return (

@@ -1,9 +1,9 @@
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { Navigate } from "react-router-dom";
-import FeedLayout from "./Layout/FeedLayout"
-import Feed from "./components/feed"
-import Login from "./pages/login"
-import ProtectedRoute from "./components/protectedroute"
+import FeedLayout from "./layout/FeedLayout"
+import Feed from "./components/Feed/Feed"
+import Login from "./pages/LoginPage"
+import ProtectedRoute from "./contexts/ProtectedRoute"
 
 function App() {
   return (

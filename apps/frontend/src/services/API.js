@@ -1,4 +1,4 @@
-import axios from './axiosConfig';
+import axios from './AxiosConfig';
 
 async function getFeed(topic, page = 1) {
     if(topic === 'For You'){

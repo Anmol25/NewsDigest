@@ -1,6 +1,6 @@
-import "../styles/feed.css";
-import News from "./News";
-import getFeed from "../services/api";
+import "./Feed.css";
+import News from "../NewsComponent/News";
+import getFeed from "../../services/API";
 import { useEffect, useState, useCallback } from "react";
 import { useParams } from "react-router-dom";
 

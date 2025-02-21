@@ -1,8 +1,9 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/Authcontext';
-import LoginForm from '../components/LoginForm';
+import { useAuth } from '../contexts/AuthContext';
+import LoginForm from '../components/AuthComponent/LoginForm';
 import logo from '../assets/logo.png';
+
 const Login = () => {
   const { accessToken } = useAuth();
   const navigate = useNavigate();
