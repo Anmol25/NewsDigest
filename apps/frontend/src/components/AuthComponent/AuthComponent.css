@@ -1,0 +1,110 @@
+
+.auth-form-page-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+
+}
+.auth-form-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.auth-form-logo {
+    width: 500px;
+    height: 100px;
+}
+.auth-form-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: calc(100vh - 140px);
+    
+    
+}
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: white;
+    padding: 50px;
+    border-radius: 25px;
+    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+}
+
+.auth-form-title {
+    font-size: 30px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #000;
+}
+
+.auth-form-input-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.auth-form-label {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    align-self: flex-start;
+}
+
+.auth-form-input {
+    width: 400px;
+    height: 40px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    padding: 0 10px;
+    margin-bottom: 20px;
+    font-size: 16px;
+    transition: border-color 0.3s ease;
+}
+
+.auth-form-button {
+    width: 200px;
+    height: 40px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    background-color: #36d470;
+    color: #fff;
+    font-size: 20px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.auth-form-button:hover {
+    background-color: #09B74C;
+}
+
+.auth-form-button:disabled {
+    background-color: #ccc;
+}
+
+.auth-form-text {
+    font-size: 18px;
+    font-weight: 600;
+    margin-top: 20px;
+    color: #000;
+}
+
+.auth-form-link {
+    color: #3D8D7A;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.auth-form-link:hover {
+    color: #60baa5;
+}

@@ -4,6 +4,7 @@ import FeedLayout from "./layout/FeedLayout"
 import Feed from "./components/Feed/Feed"
 import Login from "./pages/LoginPage"
 import ProtectedRoute from "./contexts/ProtectedRoute"
+import RegisterUser from "./pages/RegisterUserPage"
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
           </Route>
         </Route>
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<RegisterUser />} />
       </Routes>
     </Router>
   )

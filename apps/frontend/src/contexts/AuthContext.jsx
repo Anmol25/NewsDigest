@@ -31,6 +31,15 @@ export const AuthProvider = ({ children }) => {
       }
     };
   
+    const register = async (credentials) => {
+      try {
+        await axios.post(`/register`, credentials);
+      } catch (error) {
+        console.error('Register failed:', error);
+        throw error;  
+      }
+    };
+    
     const logout = async () => {
       try {
         await axios.post(`/logout`);
@@ -44,7 +53,8 @@ export const AuthProvider = ({ children }) => {
       <AuthContext.Provider value={{ 
         accessToken, 
         login, 
-        logout 
+        logout,
+        register
       }}>
         {children}
       </AuthContext.Provider>

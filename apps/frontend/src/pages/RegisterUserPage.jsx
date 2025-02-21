@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import LoginForm from '../components/AuthComponent/LoginForm';
+import RegisterUserForm from '../components/AuthComponent/RegisterUserForm';
 
-const Login = () => {
+const RegisterUser = () => {
   const { accessToken } = useAuth();
   const navigate = useNavigate();
 
@@ -11,13 +11,13 @@ const Login = () => {
     if (accessToken) {
       navigate('/');
     } else {
-      navigate('/login');
+      navigate('/register');
     }
   }, [accessToken, navigate]);
 
   return (
-    <LoginForm />
+    <RegisterUserForm />
   );
 };
 
-export default Login;
+export default RegisterUser;
