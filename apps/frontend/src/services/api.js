@@ -1,6 +1,4 @@
-import axios from 'axios';
-
-const url = "http://localhost:8000";
+import axios from './axiosConfig';
 
 async function getFeed(topic, page = 1) {
     if(topic === 'For You'){
@@ -10,7 +8,7 @@ async function getFeed(topic, page = 1) {
         };
     }
     try {
-        const response = await axios.get(`${url}/feed/${topic}`, {
+        const response = await axios.get(`/feed/${topic}`, {
             params: { page }
         });
         return {
