@@ -30,14 +30,8 @@ function Search() {
                 }
             });
             
-            console.log('API Response:', response);
-            console.log('Response Data:', response.data);
-            
             const newData = response.data || [];
             const moreData = newData.length === 10; // If we got 10 items, assume there's more
-            
-            console.log('Extracted Data:', newData);
-            console.log('Has More:', moreData);
             
             if (!newData.length) {
                 setHasMore(false);
