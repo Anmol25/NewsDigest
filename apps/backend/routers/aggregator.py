@@ -1,7 +1,7 @@
 import yaml
 import asyncio
 import logging
-from fastapi import APIRouter, HTTPException, FastAPI, Depends
+from fastapi import APIRouter, HTTPException, FastAPI, Depends, Query
 from contextlib import asynccontextmanager
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
@@ -108,22 +108,31 @@ async def retrieve_feed(topic: str, page: int = 1, limit: int = 20, db: Session 
     return articles_list
 
 
-@router.post("/search")
-async def search_article(query: str, db: Session = Depends(get_db)):
+@router.get("/search")
+async def search_article(
+    query: str,
+    page: int = Query(1, alias="page", description="Page number (default: 1)"),
+    limit: int = Query(
+        10, alias="size", description="Number of results per page (default: 10)"),
+    db: Session = Depends(get_db)
+):
     """
-    Search similar articles in database
+    Search similar articles in database with pagination.
     Args:
-        query (str): Query for which articles need to be search.
+        query (str): Query for which articles need to be searched.
+        page (int): Page number for pagination.
+        limit (int): Number of records per page.
         db (Session): Database session variable.
     Returns:
         similar_items (list): List of similar articles
     """
     try:
+        skip = (page - 1) * limit
         similar_items = search_similar_items(
-            query, sbert.model, sbert.device, db)
+            query, sbert.model, sbert.device, db, skip, limit)
         if not similar_items:
             raise HTTPException(
-                status_code=404, detail=f"Relevant Results not found")
+                status_code=404, detail="Relevant Results not found")
         return similar_items
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

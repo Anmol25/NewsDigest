@@ -1,12 +1,15 @@
-import Navbar from "../components/Navbar/Navbar"
+import Navbar from "../components/Navbar/Navbar";
 import SideMenu from "../components/SideMenu/SideMenu";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 
 const FeedLayout = () => {
+  const location = useLocation();
+  const isSearchPage = location.pathname.startsWith("/search"); // Hide SideMenu on search
+
   return (
     <>
       <Navbar />
-      <SideMenu />
+      {!isSearchPage && <SideMenu />} {/* SideMenu is NOT rendered for search */}
       <Outlet />
     </>
   );

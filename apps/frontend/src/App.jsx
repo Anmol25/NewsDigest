@@ -6,6 +6,7 @@ import Login from "./pages/LoginPage"
 import ProtectedRoute from "./contexts/ProtectedRoute"
 import RegisterUser from "./pages/RegisterUserPage"
 import Logout from "./components/logout"
+import Search from "./components/Search/Search"
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
           <Route element={<FeedLayout />}>
             <Route path="/" element={<Navigate to="/top-stories" />} />
             <Route path="/:topic" element={<Feed />} />
+            <Route path="/search" element={<Search />} />
           </Route>
         </Route>
         <Route path="/login" element={<Login />} />
