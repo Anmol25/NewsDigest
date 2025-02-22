@@ -74,13 +74,13 @@
 .auth-form-button {
     width: 200px;
     height: 40px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
+    border-radius: 10px;
     background-color: #36d470;
     color: #fff;
     font-size: 20px;
     font-weight: 600;
     cursor: pointer;
+    border: none;
     transition: background-color 0.3s ease;
 }
 

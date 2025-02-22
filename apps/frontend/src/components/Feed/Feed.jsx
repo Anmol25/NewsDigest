@@ -86,6 +86,7 @@ function Feed() {
                         key={`${item.id || index}`}
                         image={item.image}
                         title={item.title}
+                        link={item.link}
                         source={item.source}
                         time={item.published_date}
                     />

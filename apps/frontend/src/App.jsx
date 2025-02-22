@@ -5,6 +5,7 @@ import Feed from "./components/Feed/Feed"
 import Login from "./pages/LoginPage"
 import ProtectedRoute from "./contexts/ProtectedRoute"
 import RegisterUser from "./pages/RegisterUserPage"
+import Logout from "./components/logout"
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
         </Route>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<RegisterUser />} />
+        <Route path="/logout" element={<Logout />} />
       </Routes>
     </Router>
   )

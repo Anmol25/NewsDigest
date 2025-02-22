@@ -83,10 +83,10 @@ class Summarizer:
             # Generate summary
             summary_ids = self.model.generate(
                 inputs["input_ids"],
-                min_length=100,       # Forces a longer summary
-                max_length=200,      # Upper limit
+                min_length=80,       # Forces a longer summary
+                max_length=100,      # Upper limit
                 num_beams=4,         # Beam search for better quality
-                length_penalty=1.2,  # Controls summary length (lower = longer)
+                length_penalty=1.4,  # Controls summary length (lower = longer)
                 early_stopping=True
             )
             # Decode and print summary

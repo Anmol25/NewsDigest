@@ -4,7 +4,6 @@ import axios from '../services/AxiosConfig';
 const AuthContext = createContext();
 
 
-
 export const AuthProvider = ({ children }) => {
     const [accessToken, setAccessToken] = useState(null);
   
@@ -43,6 +42,7 @@ export const AuthProvider = ({ children }) => {
     const logout = async () => {
       try {
         await axios.post(`/logout`);
+        navigate('/login');
       } catch (error) {
         console.error('Logout failed:', error);
       }

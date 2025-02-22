@@ -18,7 +18,7 @@ REFRESH_TOKEN_EXPIRE_DAYS = 7
 router = APIRouter()
 
 
-@router.post("/create_user")
+@router.post("/register")
 async def create_user(user: UserCreate, db: Session = Depends(get_db)):
     """Create a new User"""
     try:

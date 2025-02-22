@@ -1,6 +1,5 @@
 import toi from '../assets/news_source/Times of India.png'
 import ndtv from '../assets/news_source/NDTV.png'
-import abp from '../assets/news_source/ABP Live.png'
 import firstpost from '../assets/news_source/Firstpost.png'
 import hindustan from '../assets/news_source/Hindustan Times.png'
 import indiatoday from '../assets/news_source/India Today.png'
@@ -14,9 +13,6 @@ function handleFallbackImage(source){
             break;
         case "NDTV":
             return ndtv;
-            break;
-        case "ABP Live":
-            return abp;
             break;
         case "Firstpost":
             return firstpost;
