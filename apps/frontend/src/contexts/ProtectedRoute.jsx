@@ -1,18 +1,22 @@
-import { useEffect } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 
 const ProtectedRoute = () => {
-  const { accessToken } = useAuth();
+  const { accessToken, isLoading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   useEffect(() => {
-    if (!accessToken) {
-      navigate('/login');
+    if (!isLoading && !accessToken) {
+      navigate('/login', { state: { from: location.pathname } });
+    } else if (accessToken && isInitialLoad) {
+      setIsInitialLoad(false);
     }
-  }, [accessToken, navigate]);
+  }, [accessToken, navigate, location, isLoading, isInitialLoad]);
 
-  return accessToken ? <Outlet /> : null;
+  return (!isLoading && accessToken) ? <Outlet /> : null;
 };
 
 export default ProtectedRoute;

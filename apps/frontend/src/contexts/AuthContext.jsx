@@ -1,11 +1,14 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import axios from '../services/AxiosConfig';
+import { useNavigate } from 'react-router-dom';
 
 const AuthContext = createContext();
 
 
 export const AuthProvider = ({ children }) => {
     const [accessToken, setAccessToken] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const navigate = useNavigate();
   
     const refreshToken = async () => {
       try {
@@ -13,6 +16,8 @@ export const AuthProvider = ({ children }) => {
         setAccessToken(response.data.access_token);
       } catch (error) {
         setAccessToken(null);
+      } finally {
+        setIsLoading(false);
       }
     };
   
@@ -52,6 +57,7 @@ export const AuthProvider = ({ children }) => {
     return (
       <AuthContext.Provider value={{ 
         accessToken, 
+        isLoading,
         login, 
         logout,
         register

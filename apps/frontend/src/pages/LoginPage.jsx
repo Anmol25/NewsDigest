@@ -1,22 +1,26 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import LoginForm from '../components/AuthComponent/LoginForm';
 
 const Login = () => {
-  const { accessToken } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { login } = useAuth();
 
-  useEffect(() => {
-    if (accessToken) {
-      navigate('/');
-    } else {
-      navigate('/login');
+  const handleLogin = async (formData) => {
+    try {
+      await login(formData);
+      // Navigate to the saved location or default to top-stories
+      const from = location.state?.from || '/top-stories';
+      navigate(from);
+    } catch (error) {
+      // Handle error
     }
-  }, [accessToken, navigate]);
+  };
 
   return (
-    <LoginForm />
+    <LoginForm onLogin={handleLogin} />
   );
 };
 
