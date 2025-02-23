@@ -4,18 +4,13 @@ import { useAuth } from '../contexts/AuthContext';
 import LoginForm from '../components/AuthComponent/LoginForm';
 
 const Login = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
   const { login } = useAuth();
 
   const handleLogin = async (formData) => {
     try {
       await login(formData);
-      // Navigate to the saved location or default to top-stories
-      const from = location.state?.from || '/top-stories';
-      navigate(from);
     } catch (error) {
-      // Handle error
+      console.error('Login failed:', error);
     }
   };
 

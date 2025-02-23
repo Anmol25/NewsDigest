@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 
@@ -6,17 +6,19 @@ const ProtectedRoute = () => {
   const { accessToken, isLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   useEffect(() => {
     if (!isLoading && !accessToken) {
       navigate('/login', { state: { from: location.pathname } });
-    } else if (accessToken && isInitialLoad) {
-      setIsInitialLoad(false);
     }
-  }, [accessToken, navigate, location, isLoading, isInitialLoad]);
+  }, [accessToken, navigate, location, isLoading]);
 
-  return (!isLoading && accessToken) ? <Outlet /> : null;
+  // Only render the outlet when we're not loading and have a token
+  if (isLoading) {
+    return null; // or a loading spinner
+  }
+
+  return accessToken ? <Outlet /> : null;
 };
 
 export default ProtectedRoute;

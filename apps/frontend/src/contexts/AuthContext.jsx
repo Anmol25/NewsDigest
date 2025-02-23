@@ -29,8 +29,9 @@ export const AuthProvider = ({ children }) => {
       try {
         const response = await axios.post(`/token`, formdata);
         setAccessToken(response.data.access_token);
+        navigate('/top-stories');
+        return response.data;
       } catch (error) {
-        console.error('Login failed:', error);
         throw error;
       }
     };
@@ -38,8 +39,8 @@ export const AuthProvider = ({ children }) => {
     const register = async (credentials) => {
       try {
         await axios.post(`/register`, credentials);
+        navigate('/login');
       } catch (error) {
-        console.error('Register failed:', error);
         throw error;  
       }
     };
@@ -47,11 +48,11 @@ export const AuthProvider = ({ children }) => {
     const logout = async () => {
       try {
         await axios.post(`/logout`);
+        setAccessToken(null);
         navigate('/login');
       } catch (error) {
         console.error('Logout failed:', error);
       }
-      setAccessToken(null);
     };
   
     return (
@@ -65,6 +66,6 @@ export const AuthProvider = ({ children }) => {
         {children}
       </AuthContext.Provider>
     );
-  };
+};
   
-  export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => useContext(AuthContext);
