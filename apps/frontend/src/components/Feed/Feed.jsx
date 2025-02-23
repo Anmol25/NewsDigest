@@ -51,8 +51,14 @@ function Feed() {
         setPage(1);
         setHasMore(true);
         setLoading(false);
-        loadFeed();
     }, [topic]);
+
+    // Separate effect for initial load after reset
+    useEffect(() => {
+        if (!loading && page === 1) {
+            loadFeed();
+        }
+    }, [topic, page, loading, loadFeed]);
 
     // Handle infinite scroll
     useEffect(() => {
