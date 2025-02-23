@@ -5,7 +5,6 @@ from sqlalchemy.sql import exists
 
 
 class Recommendar:
-
     @staticmethod
     def check_history(user, db):
         hist_exist = db.query(exists().where(
@@ -21,14 +20,16 @@ class Recommendar:
         return mean_embedding
 
     @staticmethod
-    def personalized_feed(mean_embedding, db, feed_limit=25):
+    def personalized_feed(mean_embedding, db, page=1, page_size=10):
+        offset = (page - 1) * page_size
         similar_items = []
         results = db.query(
             Articles,
             Articles.embeddings.cosine_distance(
                 mean_embedding).label('distance')
         ).order_by('distance',
-                   Articles.published_date.desc()).limit(feed_limit).all()
+                   Articles.published_date.desc()).offset(offset).limit(page_size).all()
+
         for item, score in results:
             result_item = {
                 "title": item.title,
@@ -36,18 +37,19 @@ class Recommendar:
                 "published_date": item.published_date,
                 "image": item.image,
                 "source": item.source,
-                "link": item.link,
-                "cosine_score": 1-score
+                "cosine_score": 1 - score
             }
             similar_items.append(result_item)
+
         return similar_items
 
     @staticmethod
-    def get_recommendations(user, db):
-        # Check if User history exist
+    def get_recommendations(user, db, page=1, page_size=10):
+        # Check if User history exists
         hist_exist = Recommendar.check_history(user, db)
         if not hist_exist:
             return []
         mean_embedding = Recommendar.get_mean_embedding(user, db)
-        feed = Recommendar.personalized_feed(mean_embedding, db)
+        feed = Recommendar.personalized_feed(
+            mean_embedding, db, page, page_size)
         return feed

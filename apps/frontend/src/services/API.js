@@ -1,16 +1,11 @@
-import axios from './AxiosConfig';
+import axiosInstance from './AxiosConfig';
 
-async function getFeed(topic, page = 1) {
-    if(topic === 'For You'){
-        return {
-            data: [],
-            hasMore: false  // Explicitly indicate no more data for "For You"
-        };
-    }
+async function getFeed(topic, page = 1, axiosInstance) {
     try {
-        const response = await axios.get(`/feed/${topic}`, {
-            params: { page }
-        });
+        const response = topic === 'For You' 
+            ? await axiosInstance.get('/foryou', { params: { page } })
+            : await axiosInstance.get(`/feed/${topic}`, { params: { page } });
+
         return {
             data: Array.isArray(response.data) ? response.data : [],
             hasMore: Array.isArray(response.data) && response.data.length > 0

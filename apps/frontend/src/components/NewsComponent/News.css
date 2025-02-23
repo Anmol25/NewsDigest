@@ -89,6 +89,10 @@
     gap: 10px;
 }
 
+.SummarizeButton:hover{
+    background-color: #09B74C;
+}
+
 .SummarizeButton.loading {
     background-color: #09B74C;
     cursor: not-allowed;

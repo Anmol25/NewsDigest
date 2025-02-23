@@ -3,6 +3,7 @@ import News from "../NewsComponent/News";
 import getFeed from "../../services/API";
 import { useEffect, useState, useCallback } from "react";
 import { useParams } from "react-router-dom";
+import { useAxios } from "../../services/AxiosConfig";
 
 function formatTitle(str) {
     return str
@@ -14,7 +15,7 @@ function formatTitle(str) {
 function Feed() {
     const { topic } = useParams();
     const title = formatTitle(topic);
-
+    const axiosInstance = useAxios();
     // States
     const [feed, setFeed] = useState([]);
     const [page, setPage] = useState(1);
@@ -23,12 +24,11 @@ function Feed() {
 
     // Load feed data
     const loadFeed = useCallback(async () => {
-        // Don't proceed if already loading or no more data
         if (loading || !hasMore) return;
 
         setLoading(true);
         try {
-            const { data: newData, hasMore: moreData } = await getFeed(title, page);
+            const { data: newData, hasMore: moreData } = await getFeed(title, page, axiosInstance);
             
             if (!newData.length) {
                 setHasMore(false);
@@ -43,7 +43,7 @@ function Feed() {
         } finally {
             setLoading(false);
         }
-    }, [loading, hasMore, page, title]);
+    }, [loading, hasMore, page, title, axiosInstance]);
 
     // Reset states when topic changes
     useEffect(() => {
