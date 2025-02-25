@@ -3,11 +3,21 @@ import { useAuth } from '../../contexts/AuthContext';
 import "./AuthComponent.css";
 import logo from "../../assets/logo.png";
 import { Link } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const LoginForm = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const { login } = useAuth();
+  const { accessToken, login } = useAuth();
+  const navigate = useNavigate();
+
+  // If user is already logged in, redirect to home page  
+  useEffect(() => {
+    if (accessToken) {
+      navigate('/');
+    }
+  }, [accessToken, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

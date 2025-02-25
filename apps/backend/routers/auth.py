@@ -54,7 +54,6 @@ async def login_user(response: Response, form_data: OAuth2PasswordRequestForm = 
         refresh_token_expires = timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
         refresh_token = create_refresh_token(
             data={"sub": user.username}, expires_delta=refresh_token_expires)
-        # Setup Refresh Token as HTTP only cookie
         # Set refresh token in HttpOnly cookie
         response.set_cookie(
             key="refresh_token",
