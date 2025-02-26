@@ -1,81 +1,68 @@
 import "./Feed.css";
 import News from "../NewsComponent/News";
 import getFeed from "../../services/API";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { useAxios } from "../../services/AxiosConfig";
 
 function formatTitle(str) {
     return str
-        .split('-') // Split by hyphen
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1)) // Capitalize first letter
-        .join(' '); // Join words with space
+        .split('-')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
 }
 
 function Feed() {
     const { topic } = useParams();
     const title = formatTitle(topic);
     const axiosInstance = useAxios();
-    // States
+    
     const [feed, setFeed] = useState([]);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
     const [loading, setLoading] = useState(false);
+    const loadingRef = useRef(false);
 
-    // Load feed data
-    const loadFeed = useCallback(async () => {
-        if (loading || !hasMore) return;
+    const loadFeed = useCallback(async (currentPage) => {
+        if (loadingRef.current || !hasMore) return;
 
+        loadingRef.current = true;
         setLoading(true);
+
         try {
-            const { data: newData, hasMore: moreData } = await getFeed(title, page, axiosInstance);
-            
-            if (!newData.length) {
-                setHasMore(false);
-            } else {
-                setFeed(prev => [...prev, ...newData]);
-                setPage(prev => prev + 1);
-                setHasMore(moreData);
-            }
+            const { data: newData, hasMore: moreData } = await getFeed(title, currentPage, axiosInstance);
+            setFeed(prev => currentPage === 1 ? newData : [...prev, ...newData]);
+            setHasMore(moreData);
+            setPage(currentPage + 1);
         } catch (error) {
             console.error('Error loading feed:', error);
             setHasMore(false);
         } finally {
             setLoading(false);
+            loadingRef.current = false;
         }
-    }, [loading, hasMore, page, title, axiosInstance]);
+    }, [hasMore, title, axiosInstance]);
 
-    // Combined effect for topic changes and initial load
     useEffect(() => {
         setFeed([]);
         setPage(1);
         setHasMore(true);
         setLoading(false);
-        
-        // Use setTimeout to ensure state updates are processed
-        const timeoutId = setTimeout(() => {
-            loadFeed();
-        }, 0);
+        loadingRef.current = false;
+        loadFeed(1);
+    }, [topic]);
 
-        return () => clearTimeout(timeoutId);
-    }, [topic]); // Remove loadFeed from dependencies to prevent double fetching
-
-    // Handle infinite scroll
     useEffect(() => {
         const handleScroll = () => {
-            const threshold = 100;
-            const isNearBottom = 
-                window.innerHeight + window.scrollY >= 
-                document.documentElement.scrollHeight - threshold;
-
-            if (isNearBottom) loadFeed();
+            if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 100) {
+                loadFeed(page);
+            }
         };
 
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
-    }, [loadFeed]);
+    }, [loadFeed, page]);
 
-    // Render loading states
     const renderStatus = () => {
         if (loading) return <p>Loading...</p>;
         if (!hasMore && feed.length > 0) return <p>No more news to load</p>;
@@ -90,10 +77,7 @@ function Feed() {
                 {feed.map((item, index) => (
                     <News 
                         key={`${item.id || index}`}
-                        image={item.image}
-                        title={item.title}
-                        link={item.link}
-                        source={item.source}
+                        {...item}
                         time={item.published_date}
                     />
                 ))}
