@@ -31,12 +31,15 @@ def get_user(db, username: str):
 
 
 def authenticate_user(db, username: str, password: str):
+    response = {"user": True, "password": True}
     user = get_user(db, username)
     if not user:
-        return False
-    if not verify_password(password, user.hashed_password):
-        return False
-    return user
+        response["user"] = False
+        response["password"] = False
+        return response
+    elif not verify_password(password, user.hashed_password):
+        response["password"] = False
+    return response
 
 
 def create_access_token(data: dict, expires_delta: timedelta = None):

@@ -29,10 +29,12 @@ export const AuthProvider = ({ children }) => {
       try {
         const response = await axios.post(`/token`, formdata);
         setAccessToken(response.data.access_token);
-        navigate('/top-stories');
-        return response.data;
+        return { status: 200, data: response.data };
       } catch (error) {
-        throw error;
+        return {
+          status: error.response.status,
+          data: error.response.data
+        };
       }
     };
   

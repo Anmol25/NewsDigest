@@ -41,19 +41,20 @@ async def create_user(user: UserCreate, db: Session = Depends(get_db)):
 @router.post("/token", response_model=Token)
 async def login_user(response: Response, form_data: OAuth2PasswordRequestForm = Depends(),  db: Session = Depends(get_db)):
     """Create a new Access Token"""
+    auth_response = authenticate_user(
+        db, form_data.username, form_data.password)
+    if not auth_response["user"] or not auth_response["password"]:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail=auth_response, headers={"WWW-Authenticate": "Bearer"})
     try:
-        user = authenticate_user(db, form_data.username, form_data.password)
-        if not user:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                                detail="Incorrect username or password", headers={"WWW-Authenticate": "Bearer"})
         # ACCESS TOKEN
         access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
         access_token = create_access_token(
-            data={"sub": user.username}, expires_delta=access_token_expires)
+            data={"sub": form_data.username}, expires_delta=access_token_expires)
         # REFRESH TOKEN
         refresh_token_expires = timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
         refresh_token = create_refresh_token(
-            data={"sub": user.username}, expires_delta=refresh_token_expires)
+            data={"sub": form_data.username}, expires_delta=refresh_token_expires)
         # Set refresh token in HttpOnly cookie
         response.set_cookie(
             key="refresh_token",
@@ -63,10 +64,10 @@ async def login_user(response: Response, form_data: OAuth2PasswordRequestForm = 
             samesite="Strict",
             max_age=REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600
         )
-
         return {"access_token": access_token, "token_type": "bearer"}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(
+            status_code=500, detail="Some Error Occured while generating access token")
 
 
 @router.post("/refresh-token")

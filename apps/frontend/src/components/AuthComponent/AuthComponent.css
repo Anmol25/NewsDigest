@@ -108,3 +108,11 @@
 .auth-form-link:hover {
     color: #60baa5;
 }
+
+.auth-form-error {
+    color: red;
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+    margin-bottom: 20px;
+}
