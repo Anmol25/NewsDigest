@@ -78,9 +78,12 @@ async def refresh_token(request: Request):
 
     try:
         payload = decode_refresh_token(refresh_token)
-        new_access_token = create_access_token({"sub": payload["sub"]})
+        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        new_access_token = create_access_token(
+            {"sub": payload["sub"]}, expires_delta=access_token_expires)
         return {"access_token": new_access_token}
     except Exception as e:
+        logger.debug(f"Error in refreshing access token: {e}")
         raise HTTPException(
             status_code=401, detail=f"Invalid refresh token: {e}")
 

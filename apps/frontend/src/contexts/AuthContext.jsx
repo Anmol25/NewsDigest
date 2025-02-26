@@ -13,9 +13,12 @@ export const AuthProvider = ({ children }) => {
     const refreshToken = async () => {
       try {
         const response = await axios.post(`/refresh-token`);
-        setAccessToken(response.data.access_token);
+        const newToken = response.data.access_token;
+        setAccessToken(newToken);
+        return newToken;
       } catch (error) {
         setAccessToken(null);
+        throw error;
       } finally {
         setIsLoading(false);
       }
@@ -66,7 +69,8 @@ export const AuthProvider = ({ children }) => {
         isLoading,
         login, 
         logout,
-        register
+        register,
+        refreshToken
       }}>
         {children}
       </AuthContext.Provider>
