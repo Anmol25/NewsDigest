@@ -45,20 +45,20 @@ function Feed() {
         }
     }, [loading, hasMore, page, title, axiosInstance]);
 
-    // Reset states when topic changes
+    // Combined effect for topic changes and initial load
     useEffect(() => {
         setFeed([]);
         setPage(1);
         setHasMore(true);
         setLoading(false);
-    }, [topic]);
-
-    // Separate effect for initial load after reset
-    useEffect(() => {
-        if (!loading && page === 1) {
+        
+        // Use setTimeout to ensure state updates are processed
+        const timeoutId = setTimeout(() => {
             loadFeed();
-        }
-    }, [topic, page, loading, loadFeed]);
+        }, 0);
+
+        return () => clearTimeout(timeoutId);
+    }, [topic]); // Remove loadFeed from dependencies to prevent double fetching
 
     // Handle infinite scroll
     useEffect(() => {
