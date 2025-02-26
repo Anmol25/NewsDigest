@@ -108,17 +108,16 @@ def get_latest_time():
 
 def check_user_in_db(user: UserCreate, db: Session):
     try:
-        errors = []
+        response = {"userExists": False, "emailExists": False}
         # Check Email
         exist_user = db.query(Users).filter(Users.email == user.email).first()
         if exist_user:
-            errors.append("Email already exists on server")
+            response["emailExists"] = True
         exist_user = db.query(Users).filter(
             Users.username == user.username).first()
         if exist_user:
-            errors.append("Username already exists on server")
-        errors = ", ".join(errors)
-        return errors
+            response["userExists"] = True
+        return response
     except Exception as e:
         logger.error(f"Error in Checking User in Database: {e}")
 

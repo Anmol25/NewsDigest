@@ -22,6 +22,10 @@ const LoginForm = () => {
   }, [accessToken, navigate]);
 
   const handleSubmit = async (e) => {
+    // Reset the error messages
+    setWrongUser(false);
+    setWrongPassword(false);
+    
     e.preventDefault();
     try {
         const formData = new URLSearchParams();

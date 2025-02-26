@@ -40,10 +40,13 @@ export const AuthProvider = ({ children }) => {
   
     const register = async (credentials) => {
       try {
-        await axios.post(`/register`, credentials);
-        navigate('/login');
+        const response = await axios.post(`/register`, credentials);
+        return { status: 200, data: response.data };
       } catch (error) {
-        throw error;  
+        return {
+          status: error.response.status,
+          data: error.response.data
+        };
       }
     };
     

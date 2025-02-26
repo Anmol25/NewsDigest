@@ -21,11 +21,11 @@ router = APIRouter()
 @router.post("/register")
 async def create_user(user: UserCreate, db: Session = Depends(get_db)):
     """Create a new User"""
+    # Check if user exist in DB
+    user_response = check_user_in_db(user, db)
+    if user_response["userExists"] or user_response["emailExists"]:
+        raise HTTPException(status_code=409, detail=user_response)
     try:
-        # Check if user exist in DB
-        exist_user = check_user_in_db(user, db)
-        if exist_user:
-            raise HTTPException(status_code=409, detail=exist_user)
         # Hash Password
         user.password = get_password_hash(user.password)
         # Create User in DB
