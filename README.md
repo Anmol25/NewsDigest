@@ -12,7 +12,7 @@
 
 <p align="center"><strong>Home Page</strong></p>
 <img src="https://github.com/user-attachments/assets/9de60713-5831-48f0-a54c-b5dda688a761" width="49%">
-<img src="https://github.com/user-attachments/assets/d1c7b991-2373-4d4c-b7d4-c47639db6e7f" width="49%">
+<img src="https://github.com/user-attachments/assets/69fe6059-b042-4de0-9b7c-8bdc34cd930f" width="49%">
 <p align="center"><strong>Recommendation Page</strong></p>
 <p align="center">
 <img src="https://github.com/user-attachments/assets/0e4df0ae-8f06-437a-8894-29e13950315b" width= "100%"></p>
