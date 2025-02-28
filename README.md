@@ -10,15 +10,17 @@
 
 ## Screenshots
 
-<img src="https://github.com/user-attachments/assets/9de60713-5831-48f0-a54c-b5dda688a761" width="50%">
-<img src="https://github.com/user-attachments/assets/c3f9b7d8-aff8-4f74-a821-79aa4ea50aca" width="49%">
 <p align="center"><strong>Home Page</strong></p>
-<p align="center">
-<img src="https://github.com/user-attachments/assets/0e4df0ae-8f06-437a-8894-29e13950315b" width= "75%"></p>
+<img src="https://github.com/user-attachments/assets/9de60713-5831-48f0-a54c-b5dda688a761" width="49%">
+<img src="https://github.com/user-attachments/assets/d1c7b991-2373-4d4c-b7d4-c47639db6e7f" width="49%">
 <p align="center"><strong>Recommendation Page</strong></p>
 <p align="center">
-<img src="https://github.com/user-attachments/assets/8562e2e8-4af6-47d5-99bc-ad2f0b540e1a" width= "75%"></p><p align="center"><strong>Search Results</strong></p>
-
-
+<img src="https://github.com/user-attachments/assets/0e4df0ae-8f06-437a-8894-29e13950315b" width= "100%"></p>
+<p align="center"><strong>Search Results</strong></p>
+<p align="center">
+<img src="https://github.com/user-attachments/assets/8562e2e8-4af6-47d5-99bc-ad2f0b540e1a" width= "100%"></p>
+<p align="center"><strong>Generating Summaries</strong></p>
+<img src="https://github.com/user-attachments/assets/b5dd260c-5f82-4195-b21c-30b1626370c1" width="49%">
+<img src="https://github.com/user-attachments/assets/a1dca07b-c06b-41bd-9623-a2144d778389" width="49%">
 
 
