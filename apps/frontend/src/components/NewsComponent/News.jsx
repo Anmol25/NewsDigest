@@ -72,7 +72,7 @@ function News(props){
                     <p>{published_date(props.time)}</p>
                 </div>
                 {summary && <div className='NewsSummaryContainer'>
-                    <p className='NewsSummaryTitle'>Summary</p>
+                    
                     <p className={`NewsSummary ${isTyping ? 'typing' : ''}`}>
                         {displayText}
                     </p>
