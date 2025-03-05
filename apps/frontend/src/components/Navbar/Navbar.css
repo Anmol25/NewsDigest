@@ -1,77 +1,79 @@
-.navbar {
-    padding: 20px;
-    display: grid;
-    grid-template-columns: 1fr 4fr 1fr;
+.navbar-container {
     position: fixed;
     top: 0;
     left: 0;
-    justify-content: space-between;
-    align-items: center;
     width: 100%;
-    border-bottom: 1px solid #e0e0e0;
-    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
-    background-color: #FBFBFB; /* Add background color */
-    z-index: 1000; /* Ensure navbar stays on top */
+    background-color: #ffffff;
+    z-index: 1000;
 }
-.logo{
-    width: 250px;
-    height: 50px;
+
+.navbar {
+    padding: 5px 20px;
+    display: grid;
+    grid-template-columns: 200px 1fr 100px;
+    align-items: center;
 }
-.Searchform{
+
+.logo {
+    width: 200px;
+}
+
+.Searchform {
     display: flex;
     justify-content: center;
-    align-items: center;
 }
 
-
 .Searchinput {
-    width: 700px;
-    height: 45px; /* Set a specific height */
-    padding: 0 15px; /* Adjust horizontal padding */
+    width: 500px;
+    height: 39px;
+    padding: 0 15px;
+    border: 2px solid black;
+    border-right: none;
     border-radius: 20px 0 0 20px;
-    border: none;
-    background-color: #f0f0f0;
-    font-size: 16px; /* Add font size for consistency */
+    font-size: 1.1rem;
+    box-sizing: border-box;
 }
 
 .searchbutton {
-    height: 45px; /* Match height with input */
-    padding: 0 20px; /* Adjust padding to match input */
-    border: none;
+    height: 39px;
+    padding: 0 20px;
+    border: 2px solid black;
+    border-left: none;
     border-radius: 0 20px 20px 0;
-    background-color: #36d470;
+    background-color: #000000;
     cursor: pointer;
-    display: flex; /* Add flex for icon alignment */
-    align-items: center; /* Center the icon vertically */
-    justify-content: center; /* Center the icon horizontally */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
 }
 
 .searchicon {
-    width: 20px; /* Adjust icon size */
+    width: 20px;
     height: 20px;
-    margin: 0;
 }
 
-.searchbutton:hover{
-    background-color: #09B74C;
-    transition: background-color 0.3s ease;
+.searchbutton:hover {
+    background-color: #333333;
+    border-color: #333333;
+    transition: all 0.3s ease;
 }
 
 .profile-container {
     position: relative;
     justify-self: flex-end;
-    margin-right: 50px;
 }
 
 .profile {
-    width: 50px;
-    height: 50px;
+    width: 35px;
+    height: 35px;
     border-radius: 50%;
+    border: 2px solid black;
 }
 
-.profile:hover{
-    transition: transform 0.3s ease;
+.profile:hover {
     transform: scale(1.1);
+    transition: transform 0.3s ease;
 }
 
 .profile-menu {

@@ -6,6 +6,7 @@ import LoginForm from "./components/AuthComponent/LoginForm"
 import ProtectedRoute from "./contexts/ProtectedRoute"
 import RegisterUserForm from "./components/AuthComponent/RegisterUserForm"
 import Search from "./components/Search/Search"
+import Navbar from "./components/Navbar/Navbar";
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
           <Route path="/search" element={<Search />} />
         </Route>
       </Route>
+      <Route path="/navbar" element={<Navbar />} />
       <Route path="/login" element={<LoginForm />} />
       <Route path="/register" element={<RegisterUserForm />} />
     </Routes>

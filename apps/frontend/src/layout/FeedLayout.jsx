@@ -9,7 +9,7 @@ const FeedLayout = () => {
   return (
     <>
       <Navbar />
-      {!isSearchPage && <SideMenu />} {/* SideMenu is NOT rendered for search */}
+      {/* {!isSearchPage && <SideMenu />} */} {/* SideMenu is NOT rendered for search */}
       <Outlet />
     </>
   );

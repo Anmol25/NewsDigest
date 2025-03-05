@@ -5,12 +5,15 @@ import './Navbar.css';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import Navbarbottom from './Navbarbottom';
 
 function Navbar(){
     const { logout } = useAuth();
     const navigate = useNavigate();
     const [showProfileMenu, setShowProfileMenu] = useState(false);
     const menuRef = useRef(null);
+    const topics = ["For You", "Top Stories", "Latest", "India", "World", "Economy",
+        "Science", "Tech", "Sports", "Entertainment"];
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -36,34 +39,36 @@ function Navbar(){
     };
 
     return (
-        
-        <div className="navbar">
-            <img 
-                className='logo' 
-                src={logo} 
-                alt="News Digest" 
-                onClick={() => navigate('/')}
-                style={{ cursor: 'pointer' }}
-            />
-            <form className='Searchform' onSubmit={handleSearch}>
-                <input className='Searchinput' type="text" placeholder="Search" name="search"/>
-                <button className='searchbutton' type="submit"><img className='searchicon' src={search} alt="Search" /></button>
-            </form>
-            <div className="profile-container" ref={menuRef}>
+        <div className='navbar-container'>
+            <div className="navbar">
                 <img 
-                    className='profile' 
-                    src={profile} 
-                    alt="Profile" 
-                    onClick={handleProfileClick}
+                    className='logo' 
+                    src={logo} 
+                    alt="News Digest" 
+                    onClick={() => navigate('/')}
                     style={{ cursor: 'pointer' }}
                 />
-                {showProfileMenu && (
-                    <div className="profile-menu">
-                        {/* <button onClick={() => navigate('/profile')}>Profile</button> */}
-                        <button onClick={logout}>Logout</button>
-                    </div>
-                )}
+                <form className='Searchform' onSubmit={handleSearch}>
+                    <input className='Searchinput' type="text" placeholder="Search" name="search"/>
+                    <button className='searchbutton' type="submit"><img className='searchicon' src={search} alt="Search" /></button>
+                </form>
+                <div className="profile-container" ref={menuRef}>
+                    <img 
+                        className='profile' 
+                        src={profile} 
+                        alt="Profile" 
+                        onClick={handleProfileClick}
+                        style={{ cursor: 'pointer' }}
+                    />
+                    {showProfileMenu && (
+                        <div className="profile-menu">
+                            {/* <button onClick={() => navigate('/profile')}>Profile</button> */}
+                            <button onClick={logout}>Logout</button>
+                        </div>
+                    )}
+                </div>
             </div>
+            <Navbarbottom />
         </div>
     )
 }
