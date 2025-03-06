@@ -32,6 +32,7 @@ class Recommendar:
 
         for item, score in results:
             result_item = {
+                "id": item.id,
                 "title": item.title,
                 "link": item.link,
                 "published_date": item.published_date,

@@ -5,7 +5,6 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { useAxios } from "../../services/AxiosConfig";
 // Import images
-import home from "../../assets/navbarbuttons/home.png";
 import foryou from "../../assets/navbarbuttons/for-you.png";
 import topstories from "../../assets/navbarbuttons/top-stories.png";
 import latest from "../../assets/navbarbuttons/latest.png";
@@ -30,6 +29,20 @@ function Feed() {
     const title = formatTitle(topic);
     const axiosInstance = useAxios();
     
+    // Add image mapping object
+    const topicImages = {
+        'for-you': foryou,
+        'top-stories': topstories,
+        'latest': latest,
+        'india': india,
+        'world': world,
+        'economy': economy,
+        'science': science,
+        'tech': tech,
+        'sports': sports,
+        'entertainment': entertainment
+    };
+
     const [feed, setFeed] = useState([]);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
@@ -85,7 +98,14 @@ function Feed() {
 
     return (
         <div className="Feed">
-            <h1 className="FeedTitle">{title}</h1>
+            <div className="FeedHeader">
+                <img 
+                    src={topicImages[topic] || home} 
+                    alt={title}
+                    className="FeedIcon"
+                />
+                <h1 className="FeedTitle">{title}</h1>
+            </div>
             <div className="FeedList">
                 {feed.map((item) => (
                     <News 

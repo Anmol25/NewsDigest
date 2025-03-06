@@ -34,7 +34,6 @@ def summarize(id: int, db: Session = Depends(get_db), current_user: Users = Depe
                 return {"data": article.summary}
             else:
                 generated_summary = dbart.infer(article.link)
-                logger.debug(generated_summary)
                 article.summary = generated_summary
                 db.commit()
                 return {"data": generated_summary}

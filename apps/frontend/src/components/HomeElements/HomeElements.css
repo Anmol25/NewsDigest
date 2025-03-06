@@ -1,0 +1,93 @@
+.HomeTitleBox{
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    padding: 15px 20px;
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.HomeTitleImg{
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    display: flex;
+    transition: transform 0.2s ease;
+}
+
+.HomeTitle{
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+    color: #2c3e50;
+    line-height: 1;
+}
+
+.HomeSeeMore{
+    padding-left: 20px;
+    font-size: 20px;
+    font-weight: 600;
+    color: #2c3e50;
+    line-height: 1;
+    text-decoration: none;
+}
+
+.ScrollContainer {
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.NewsScrollContainer {
+    display: flex;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+    gap: 20px;
+    padding: 15px 0;
+}
+
+.NewsItemContainer {
+    flex: 0 0 auto;
+    width: 355px; /* Adjust based on your needs */
+}
+
+.ScrollButton {
+    position: absolute;
+    z-index: 2;
+    background-color: rgba(255, 255, 255, 0.9);
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 24px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    opacity: 0; /* Hide buttons by default */
+}
+
+/* Show buttons when hovering over the ScrollContainer */
+.ScrollContainer:hover .ScrollButton {
+    opacity: 1;
+}
+
+.ScrollButtonLeft {
+    left: 0;
+}
+
+.ScrollButtonRight {
+    right: 0; 
+}
+
+.LoadingIndicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
