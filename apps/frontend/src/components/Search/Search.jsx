@@ -82,7 +82,7 @@ function Search() {
 
     return (
         <div className="search-container">
-            <h1>Search Results for "{query}"</h1>
+            <p className='searchTitle'>Search Results for "{query}"</p>
             <div className="search-results">
                 {searchResults.map((item, index) => (
                     <News 
