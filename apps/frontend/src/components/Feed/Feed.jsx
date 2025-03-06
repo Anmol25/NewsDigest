@@ -4,6 +4,19 @@ import getFeed from "../../services/API";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { useAxios } from "../../services/AxiosConfig";
+// Import images
+import home from "../../assets/navbarbuttons/home.png";
+import foryou from "../../assets/navbarbuttons/for-you.png";
+import topstories from "../../assets/navbarbuttons/top-stories.png";
+import latest from "../../assets/navbarbuttons/latest.png";
+import india from "../../assets/navbarbuttons/india.png";
+import world from "../../assets/navbarbuttons/world.png";
+import economy from "../../assets/navbarbuttons/economy.png";
+import science from "../../assets/navbarbuttons/science.png";
+import tech from "../../assets/navbarbuttons/tech.png";
+import sports from "../../assets/navbarbuttons/sports.png";
+import entertainment from "../../assets/navbarbuttons/entertainment.png";
+
 
 function formatTitle(str) {
     return str
@@ -74,11 +87,10 @@ function Feed() {
         <div className="Feed">
             <h1 className="FeedTitle">{title}</h1>
             <div className="FeedList">
-                {feed.map((item, index) => (
+                {feed.map((item) => (
                     <News 
-                        key={`${item.id || index}`}
+                        key={item.id}
                         {...item}
-                        time={item.published_date}
                     />
                 ))}
                 {renderStatus()}

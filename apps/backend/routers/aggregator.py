@@ -75,7 +75,8 @@ async def retrieve_feed(topic: str, page: int = 1, limit: int = 20, db: Session 
     """
     try:
         skip = (page - 1) * limit
-        data = (db.query(Articles.title,
+        data = (db.query(Articles.id,
+                         Articles.title,
                          Articles.link,
                          Articles.published_date,
                          Articles.image,
@@ -96,6 +97,7 @@ async def retrieve_feed(topic: str, page: int = 1, limit: int = 20, db: Session 
     # Convert result into dictionaries for FastAPI serialization
     articles_list = [
         {
+            'id': item.id,
             'title': item.title,
             'link': item.link,
             'published_date': item.published_date,

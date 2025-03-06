@@ -10,6 +10,7 @@ function News(props){
     const [isTyping, setIsTyping] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
+
     const published_date = (time) => {
         const date = new Date(time);
     
@@ -50,9 +51,10 @@ function News(props){
     function handleSummarize(){
         setIsLoading(true);
         setDisplayText('');
-        axiosInstance.post('/summarize', {
-            url: props.link
-        }).then((response) => {
+        axiosInstance.get('/summarize', {
+            params:{
+                id : props.id
+        }}).then((response) => {
             setSummary(response.data.data);
         }).catch((error) => {
             console.error('Error fetching summary:', error);
@@ -69,7 +71,7 @@ function News(props){
                 <div className="NewsInfo">
                     {/* Source and time */}
                     <p>{props.source || "Unknown"}</p> 
-                    <p>{published_date(props.time)}</p>
+                    <p>{published_date(props.published_date)}</p>
                 </div>
                 {summary && <div className='NewsSummaryContainer'>
                     
