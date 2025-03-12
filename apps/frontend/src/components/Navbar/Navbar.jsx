@@ -1,11 +1,14 @@
 import logo from '../../assets/logo.png';
-import profile from '../../assets/defaultphoto.svg';
+import profile from '../../assets/profile.svg';
+import profileactive from '../../assets/profile_active.svg';
 import search from '../../assets/search.svg';
 import heart from '../../assets/heart.svg';
 import bookmarked from '../../assets/bookmarked.svg';
+import page from '../../assets/page.svg';
+import pageactive from '../../assets/page_active.svg';
 import './Navbar.css';
-import { useNavigate } from 'react-router-dom';
-import { useState, useEffect, useRef } from 'react';
+import { useNavigate, NavLink, useMatch } from 'react-router-dom';
+import { useState, useEffect, useRef, use } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import Navbarbottom from './Navbarbottom';
 
@@ -14,12 +17,19 @@ function Navbar(){
     const navigate = useNavigate();
     const [showProfileMenu, setShowProfileMenu] = useState(false);
     const menuRef = useRef(null);
+    const [isProfileHovered, setIsProfileHovered] = useState(false);
+    const [isProfileClicked, setProfileClicked] = useState(false);
     const [isPageHovered, setIsPageHovered] = useState(false);
+    const isSubscriptionsActive = useMatch('/subscriptions');
+    const isProfileActive = useMatch('/profile');
+    const isBookmarksActive = useMatch('/bookmarks');
+    const isLikesActive = useMatch('/likes');
 
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (menuRef.current && !menuRef.current.contains(event.target)) {
                 setShowProfileMenu(false);
+                setProfileClicked(false);
             }
         };
 
@@ -36,6 +46,7 @@ function Navbar(){
     }
 
     const handleProfileClick = () => {
+        setProfileClicked(!isProfileClicked);
         setShowProfileMenu(!showProfileMenu);
     };
 
@@ -54,16 +65,31 @@ function Navbar(){
                     <button className='searchbutton' type="submit"><img className='searchicon' src={search} alt="Search" /></button>
                 </form>
                 <div className="profile-container" ref={menuRef}>
-                        <img className='liked' src={heart} alt="" />
-                        <img className='bookmarked' src={bookmarked} alt="" />
+                        <NavLink to='/subscriptions'>
+                            <img
+                                src={isSubscriptionsActive || isPageHovered ? pageactive : page}
+                                alt="Swappable"
+                                className='page'
+                                onMouseEnter={() => setIsPageHovered(true)}
+                                onMouseLeave={() => setIsPageHovered(false)}
+                            />
+                        </NavLink>
+                        <NavLink to='/likes' className='liked-nav'>
+                            <img className={isLikesActive ? 'liked-active': 'liked'} src={heart} alt="" />
+                        </NavLink>
+                        <NavLink to='/bookmarks' className='bookmarked-nav'>
+                            <img className={isBookmarksActive ? 'bookmarked-active' : 'bookmarked'} src={bookmarked} alt="" />
+                        </NavLink>
                         <img
                             className='profile'
-                            src={profile}
+                            src={isProfileActive || isProfileClicked || isProfileHovered ? profileactive : profile}
                             onClick={handleProfileClick}
+                            onMouseEnter={() => setIsProfileHovered(true)}
+                            onMouseLeave={() => setIsProfileHovered(false)}
                         />
                         {showProfileMenu && (
                             <div className="profile-menu">
-                                {/* <button onClick={() => navigate('/profile')}>Profile</button> */}
+                                <button onClick={() => navigate('/profile')}>Profile</button>
                                 <button onClick={logout}>Logout</button>
                             </div>
                         )}

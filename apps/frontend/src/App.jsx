@@ -7,6 +7,10 @@ import ProtectedRoute from "./contexts/ProtectedRoute"
 import RegisterUserForm from "./components/AuthComponent/RegisterUserForm"
 import Search from "./components/Search/Search"
 import HomePage from "./pages/HomePage/Home";
+import SubscriptionPage from "./pages/SubscriptionPage/SubscriptionPage";
+import ProfilePage from "./pages/ProfilePage/ProfilePage";
+import BookmarksPage from "./pages/BookmarksPage/BookmarksPage";
+import LikesPage from "./pages/LikesPage/LikesPage";
 
 function App() {
   return (
@@ -17,6 +21,10 @@ function App() {
           <Route path="/home" element={<HomePage />} />
           <Route path="/search" element={<Search />} />
           <Route path="/:topic" element={<Feed />} />
+          <Route path="/subscriptions" element={<SubscriptionPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/bookmarks" element={<BookmarksPage />} />
+          <Route path="/likes" element={<LikesPage />} />
         </Route>
       </Route>
       <Route path="/login" element={<LoginForm />} />
