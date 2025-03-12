@@ -14,8 +14,7 @@ function Navbar(){
     const navigate = useNavigate();
     const [showProfileMenu, setShowProfileMenu] = useState(false);
     const menuRef = useRef(null);
-    const topics = ["For You", "Top Stories", "Latest", "India", "World", "Economy",
-        "Science", "Tech", "Sports", "Entertainment"];
+    const [isPageHovered, setIsPageHovered] = useState(false);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
