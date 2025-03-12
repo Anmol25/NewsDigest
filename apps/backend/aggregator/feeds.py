@@ -28,13 +28,12 @@ class Feeds:
         """
         self._articles = articles
 
-    async def fetch_articles(self, feeds: dict, last_stored_time: datetime) -> dict:
+    async def fetch_articles(self, feeds: dict) -> dict:
         """
         Fetch and Parse RSS Feeds
 
         Args:
             feeds: Rss Feeds in form of a dictionary
-            model: Embedding creation model to be used remove duplicate headlines
             device: Device to run model on (CPU/GPU)
         Returns:
             data: Articles Topicwise in a dict format
@@ -50,22 +49,21 @@ class Feeds:
             articles = []
             for topic, xml_data in zip(rss_feeds, responses):
                 articles.extend(FeedParser.parse_feed(
-                    topic, xml_data, self._model, self._device, last_stored_time))
+                    topic, xml_data, self._model, self._device))
             return articles
         except Exception as e:
             logger.error(f"Error in Fetching Feeds: {e}")
 
-    async def refresh_articles(self, feeds: dict,  last_stored_time: datetime) -> dict:
+    async def refresh_articles(self, feeds: dict) -> dict:
         """
         Refreshes and Updates Articles
 
         Args:
             feeds: Rss Feeds in form of a dictionary
-            model: Embedding creation model to be used remove duplicate headlines
             device: Device to run model on (CPU/GPU) 
         """
         try:
-            articles = await self.fetch_articles(feeds, last_stored_time)
+            articles = await self.fetch_articles(feeds)
             self._articles = articles
             logger.debug("Saved New Articles")
         except Exception as e:

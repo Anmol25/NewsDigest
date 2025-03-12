@@ -35,10 +35,8 @@ async def refresh_feeds(sleep_time: int = (15*60)):
             # Load Feed links
             with open("feeds.yaml", 'r') as file:
                 rss_feeds = yaml.safe_load(file)
-            # Get Time of most updated article from Database
-            last_stored_time = get_latest_time()
             # Get new Articles from Feeds
-            await articles.refresh_articles(rss_feeds, last_stored_time)
+            await articles.refresh_articles(rss_feeds)
             articles_list = articles.get_articles()
             # Insert to Database
             if articles_list:

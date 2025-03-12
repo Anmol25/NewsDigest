@@ -141,7 +141,7 @@ class FeedParser:
             return None
 
     @staticmethod
-    def parse_feed(topic: str, pub_xml: dict, model, device: str, last_stored_time: datetime) -> list:
+    def parse_feed(topic: str, pub_xml: dict, model, device: str) -> list:
         """
         Parse and Extract metadata from feed.
         Then Perform Deduplication and sort based on publishing date.
@@ -175,12 +175,6 @@ class FeedParser:
                     if published_time.tzinfo is None:  # Handle naive datetime
                         published_time = pytz.utc.localize(published_time)
                     published_time = published_time.astimezone(ist)
-
-                    # If last_stored_time exist (DB is not empty)
-                    if last_stored_time:
-                        # Check published date is after last stored time in database.
-                        if published_time <= last_stored_time:
-                            continue
 
                     metadata = {
                         'title': entry.get('title'),
