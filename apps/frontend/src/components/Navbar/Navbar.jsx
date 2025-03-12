@@ -1,6 +1,8 @@
 import logo from '../../assets/logo.png';
-import profile from '../../assets/defaultphoto.jpg';
-import search from '../../assets/search.png';
+import profile from '../../assets/defaultphoto.svg';
+import search from '../../assets/search.svg';
+import heart from '../../assets/heart.svg';
+import bookmarked from '../../assets/bookmarked.svg';
 import './Navbar.css';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
@@ -53,19 +55,19 @@ function Navbar(){
                     <button className='searchbutton' type="submit"><img className='searchicon' src={search} alt="Search" /></button>
                 </form>
                 <div className="profile-container" ref={menuRef}>
-                    <img 
-                        className='profile' 
-                        src={profile} 
-                        alt="Profile" 
-                        onClick={handleProfileClick}
-                        style={{ cursor: 'pointer' }}
-                    />
-                    {showProfileMenu && (
-                        <div className="profile-menu">
-                            {/* <button onClick={() => navigate('/profile')}>Profile</button> */}
-                            <button onClick={logout}>Logout</button>
-                        </div>
-                    )}
+                        <img className='liked' src={heart} alt="" />
+                        <img className='bookmarked' src={bookmarked} alt="" />
+                        <img
+                            className='profile'
+                            src={profile}
+                            onClick={handleProfileClick}
+                        />
+                        {showProfileMenu && (
+                            <div className="profile-menu">
+                                {/* <button onClick={() => navigate('/profile')}>Profile</button> */}
+                                <button onClick={logout}>Logout</button>
+                            </div>
+                        )}
                 </div>
             </div>
             <Navbarbottom />

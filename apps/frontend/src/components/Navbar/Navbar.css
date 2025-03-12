@@ -10,7 +10,7 @@
 .navbar {
     padding: 5px 20px;
     display: grid;
-    grid-template-columns: 200px 1fr 100px;
+    grid-template-columns: 200px 1fr 200px;
     align-items: center;
 }
 
@@ -30,15 +30,17 @@
     border: 2px solid black;
     border-right: none;
     border-radius: 20px 0 0 20px;
-    font-size: 1.1rem;
+    font-size: 1rem;
     box-sizing: border-box;
+}
+.Searchinput:focus{
+    outline: none;
 }
 
 .searchbutton {
     height: 39px;
-    padding: 0 20px;
+    padding: 0 15px;
     border: 2px solid black;
-    border-left: none;
     border-radius: 0 20px 20px 0;
     background-color: #000000;
     cursor: pointer;
@@ -49,13 +51,18 @@
 }
 
 .searchicon {
-    width: 20px;
-    height: 20px;
+    width: 30px;
+    height: 30px;
+    filter: invert(1);
 }
 
 .searchbutton:hover {
-    background-color: #333333;
-    border-color: #333333;
+    background-color: #1A1A1A;
+    transition: all 0.3s ease;
+    border-color: #1A1A1A;
+}
+.searchbutton:hover .searchicon {
+    /* filter: invert(0); */
     transition: all 0.3s ease;
 }
 
@@ -68,9 +75,11 @@
     width: 35px;
     height: 35px;
     border-radius: 50%;
+    background-color: #ffffff;
 }
 
 .profile:hover {
+    cursor: pointer;
     transform: scale(1.1);
     transition: transform 0.3s ease;
 }
@@ -98,6 +107,30 @@
     font-size: 14px;
 }
 
-.profile-menu button:hover {
+/* .profile-menu button:hover {
     background-color: #f5f5f5;
+} */
+
+.liked{
+    width: 35px;
+    height: 35px;
+    padding-right: 20px;
+}
+
+.liked:hover{
+    cursor: pointer;
+    filter: brightness(0) invert(0);
+    transition: transform 0.5s ease;
+}
+
+.bookmarked{
+    width: 35px;
+    height: 32px;
+    padding-right: 20px;
+}
+
+.bookmarked:hover{
+    cursor: pointer;
+    filter: brightness(0) invert(0);
+    transition: transform 0.5s ease;
 }
