@@ -9,7 +9,7 @@ from aggregator.feeds import Feeds
 from aggregator.model import SBERT
 from aggregator.search import search_similar_items
 from database.session import get_db
-from database.operations import insert_to_db, get_latest_time
+from database.operations import insert_to_db
 from database.models import Articles, Users
 from users.services import get_current_active_user
 from users.recommendation import Recommendar
