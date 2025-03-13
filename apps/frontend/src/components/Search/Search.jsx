@@ -91,7 +91,7 @@ function Search() {
                         title={item.title}
                         link={item.link}
                         source={item.source}
-                        time={item.published_date}
+                        published_date={item.published_date}
                     />
                 ))}
                 {renderStatus()}
