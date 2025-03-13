@@ -12,7 +12,7 @@ class Recommendar:
         return hist_exist
 
     @staticmethod
-    def get_mean_embedding_and_ids(user, db, hist_len=7):
+    def get_mean_embedding_and_ids(user, db, hist_len=5):
         results = db.query(Articles. id, Articles.embeddings).join(
             UserHistory, UserHistory.article_id == Articles.id).filter(
                 UserHistory.user_id == user.id).order_by(desc(UserHistory.watched_at)).limit(
