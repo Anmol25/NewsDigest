@@ -1,6 +1,6 @@
 import './Search.css';
 import { useLocation } from 'react-router-dom';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import News from '../NewsComponent/News';
 import { useAxios } from '../../services/AxiosConfig';
 
@@ -8,75 +8,69 @@ function Search() {
     const location = useLocation();
     const searchParams = new URLSearchParams(location.search);
     const query = searchParams.get('query') || '';
-
-    // States
+    
     const [searchResults, setSearchResults] = useState([]);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
-    const [loading, setLoading] = useState(false);
-
+    const loadingRef = useRef(false);
+    
     const axiosInstance = useAxios();
 
-    // Load search results
-    const loadSearchResults = useCallback(async () => {
-        if (loading || !hasMore || !query) return;
+    const loadSearchResults = useCallback(async (currentPage) => {
+        if (loadingRef.current || !hasMore || !query) return;
+        loadingRef.current = true;
 
-        setLoading(true);
         try {
             const response = await axiosInstance.get('/search', {
                 params: {
-                    "query": query,
-                    "page": page
+                    query: query,
+                    page: currentPage
                 }
             });
             
             const newData = response.data || [];
-            const moreData = newData.length === 10; // If we got 10 items, assume there's more
+            const moreData = newData.length === 20; // If we got 20 items, assume there's more
             
-            if (!newData.length) {
-                setHasMore(false);
-            } else {
-                setSearchResults(prev => [...prev, ...newData]);
-                setPage(prev => prev + 1);
-                setHasMore(moreData);
-            }
+            setSearchResults(prev => currentPage === 1 ? newData : [...prev, ...newData]);
+            setHasMore(moreData);
+            setPage(currentPage + 1);
         } catch (error) {
             console.error('Error loading search results:', error);
             setHasMore(false);
         } finally {
-            setLoading(false);
+            loadingRef.current = false;
         }
-    }, [loading, hasMore, page, query, axiosInstance]);
+    }, [hasMore, query, axiosInstance]);
 
-    // Reset states when query changes
+    // Reset and load when query changes
     useEffect(() => {
         setSearchResults([]);
         setPage(1);
         setHasMore(true);
-        setLoading(false);
-        loadSearchResults();
+        loadingRef.current = false;
+        
+        if (query) {
+            loadSearchResults(1);
+        }
     }, [query]);
 
-    // Handle infinite scroll
+    // Set up infinite scroll
     useEffect(() => {
         const handleScroll = () => {
-            const threshold = 100;
-            const isNearBottom = 
-                window.innerHeight + window.scrollY >= 
-                document.documentElement.scrollHeight - threshold;
-
-            if (isNearBottom) loadSearchResults();
+            if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 100) {
+                loadSearchResults(page);
+            }
         };
 
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
-    }, [loadSearchResults]);
+    }, [loadSearchResults, page]);
 
-    // Render loading states
+    // Render loading and status messages
     const renderStatus = () => {
-        if (loading) return <p>Loading...</p>;
+        if (loadingRef.current) return <p>Loading...</p>;
         if (!hasMore && searchResults.length > 0) return <p>No more results</p>;
-        if (searchResults.length === 0 && !loading) return <p>No results found</p>;
+        if (searchResults.length === 0 && !loadingRef.current) return <p>No results found</p>;
         return null;
     };
 

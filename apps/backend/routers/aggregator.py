@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import desc
 from aggregator.feeds import Feeds
 from aggregator.model import SBERT
-from aggregator.search import search_similar_items
+from aggregator.search import search_db
 from database.session import get_db
 from database.operations import insert_to_db
 from database.models import Articles, Users
@@ -113,7 +113,7 @@ async def search_article(
     query: str,
     page: int = Query(1, alias="page", description="Page number (default: 1)"),
     limit: int = Query(
-        10, alias="size", description="Number of results per page (default: 10)"),
+        20, alias="size", description="Number of results per page (default: 10)"),
     db: Session = Depends(get_db)
 ):
     """
@@ -126,16 +126,13 @@ async def search_article(
     Returns:
         similar_items (list): List of similar articles
     """
-    try:
-        skip = (page - 1) * limit
-        similar_items = search_similar_items(
-            query, sbert.model, sbert.device, db, skip, limit)
-        if not similar_items:
-            raise HTTPException(
-                status_code=404, detail="Relevant Results not found")
-        return similar_items
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    skip = (page - 1) * limit
+    similar_items = search_db(
+        query, db, skip, limit)
+    if not similar_items:
+        raise HTTPException(
+            status_code=404, detail="Relevant Results not found")
+    return similar_items
 
 
 @router.get("/foryou")

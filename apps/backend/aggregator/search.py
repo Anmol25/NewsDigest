@@ -1,17 +1,17 @@
+from sqlalchemy import or_
 import logging
 from database.models import Articles
 from sqlalchemy.orm import Session
+from sqlalchemy import select, func
 
 logger = logging.getLogger(__name__)
 
 
-def search_similar_items(query: str, model, device: str, db: Session, skip: int, limit: int):
+def search_db(query: str, db: Session, skip: int, limit: int):
     """
-    Perform Cosine Similarity Search and find most relevant articles with pagination.
+    Perform Full Text Search with flexible matching.
     Args:
         query (str): Query to be searched in database.
-        model : Model to create embeddings of query.
-        device (str): Device (cuda/CPU) to store the embeddings on.
         db (Session): Database Session to perform queries.
         skip (int): Number of records to skip for pagination.
         limit (int): Number of records to return.
@@ -20,23 +20,44 @@ def search_similar_items(query: str, model, device: str, db: Session, skip: int,
     """
     try:
         similar_items = []
-        embedding = model.encode(query, device=device)
 
-        results = db.query(
-            Articles,
-            Articles.embeddings.cosine_distance(embedding).label('distance')
-        ).order_by('distance', Articles.published_date.desc())
+        # Convert query to OR-based search (splitting into individual words)
+        words = query.split()  # ['Donald', 'Trump']
 
-        paginated_results = results.offset(skip).limit(limit).all()
+        ts_vector = func.to_tsvector(Articles.title)
+        ts_query = func.plainto_tsquery(query)  # Full phrase search
 
-        for item, score in paginated_results:
+        # Fix: Use to_tsquery with properly formatted OR syntax
+        # Join words with ' | ' and wrap each word in single quotes
+        ts_query_or = func.to_tsquery(
+            " | ".join(f"'{word}'" for word in words))
+
+        # Higher rank for full match
+        rank = func.ts_rank_cd(ts_vector, ts_query)
+
+        stmt = (
+            select(Articles, rank.label("distance"))
+            .where(or_(
+                # Strict match (higher priority)
+                ts_vector.op("@@")(ts_query),
+                # OR-based match (lower priority)
+                ts_vector.op("@@")(ts_query_or)
+            ))
+            # Rank full match higher
+            .order_by(rank.desc(), Articles.published_date.desc())
+            .limit(limit)
+            .offset(skip)
+        )
+
+        results = db.execute(stmt).all()
+
+        for item, _ in results:
             result_item = {
                 "title": item.title,
                 "link": item.link,
                 "published_date": item.published_date,
                 "image": item.image,
-                "source": item.source,
-                "cosine_score": 1 - score
+                "source": item.source
             }
             similar_items.append(result_item)
 
