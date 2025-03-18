@@ -17,7 +17,8 @@ function Search() {
     const axiosInstance = useAxios();
 
     const loadSearchResults = useCallback(async (currentPage) => {
-        if (loadingRef.current || !hasMore || !query) return;
+        // Skip hasMore check for the first page
+        if (loadingRef.current || (currentPage !== 1 && !hasMore) || !query) return;
         loadingRef.current = true;
 
         try {
@@ -29,8 +30,8 @@ function Search() {
             });
             
             const newData = response.data || [];
-            const moreData = newData.length === 20; // If we got 20 items, assume there's more
-            
+            const moreData = newData.length === 20;
+
             setSearchResults(prev => currentPage === 1 ? newData : [...prev, ...newData]);
             setHasMore(moreData);
             setPage(currentPage + 1);
