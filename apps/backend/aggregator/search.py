@@ -22,7 +22,7 @@ def search_db(user_id: int, query: str, db: Session, skip: int, limit: int):
     """
     try:
         # Convert query to OR-based search (splitting into individual words)
-        words = query.split()  # ['Donald', 'Trump']
+        words = query.split()
 
         ts_vector = func.to_tsvector(Articles.title)
         ts_query = func.plainto_tsquery(query)  # Full phrase search
