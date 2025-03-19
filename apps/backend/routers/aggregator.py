@@ -3,14 +3,15 @@ import asyncio
 import logging
 from fastapi import APIRouter, HTTPException, FastAPI, Depends, Query
 from contextlib import asynccontextmanager
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, aliased
 from sqlalchemy import desc
+from sqlalchemy.sql import case, func
 from aggregator.feeds import Feeds
 from aggregator.model import SBERT
 from aggregator.search import search_db
 from database.session import get_db
 from database.operations import insert_to_db
-from database.models import Articles, Users
+from database.models import Articles, Users, UserLikes, UserBookmarks
 from users.services import get_current_active_user
 from users.recommendation import Recommendar
 
@@ -62,7 +63,8 @@ router = APIRouter(lifespan=lifespan)
 
 
 @router.get("/feed/{topic}")
-async def retrieve_feed(topic: str, page: int = 1, limit: int = 20, db: Session = Depends(get_db)) -> list:
+async def retrieve_feed(topic: str, page: int = 1, limit: int = 20, db: Session = Depends(get_db),
+                        current_user: Users = Depends(get_current_active_user)) -> list:
     """
     Retrieve Feed of specific topic from Database.
     Args:
@@ -72,6 +74,10 @@ async def retrieve_feed(topic: str, page: int = 1, limit: int = 20, db: Session 
         articles_list (list): List of articles of requested topic.
     """
     try:
+        # Aliases for joins
+        like_alias = aliased(UserLikes)
+        bookmark_alias = aliased(UserBookmarks)
+
         skip = (page - 1) * limit
         data = (db.query(Articles.id,
                          Articles.title,
@@ -79,7 +85,14 @@ async def retrieve_feed(topic: str, page: int = 1, limit: int = 20, db: Session 
                          Articles.published_date,
                          Articles.image,
                          Articles.source,
-                         Articles.topic)
+                         Articles.topic,
+                         case((like_alias.article_id.isnot(None), True),
+                              else_=False).label("liked"),
+                         case((bookmark_alias.article_id.isnot(None),
+                              True), else_=False).label("bookmarked"),
+                         )
+                .outerjoin(like_alias, (Articles.id == like_alias.article_id) & (like_alias.user_id == current_user.id))
+                .outerjoin(bookmark_alias, (Articles.id == bookmark_alias.article_id) & (bookmark_alias.user_id == current_user.id))
                 .filter(Articles.topic == topic)
                 .order_by(desc(Articles.published_date))
                 .offset(skip)
@@ -101,7 +114,9 @@ async def retrieve_feed(topic: str, page: int = 1, limit: int = 20, db: Session 
             'published_date': item.published_date,
             'image': item.image,
             'source': item.source,
-            'topic': item.topic
+            'topic': item.topic,
+            'liked': item.liked,
+            'bookmarked': item.bookmarked
         }
         for item in data
     ]
