@@ -217,3 +217,52 @@ async def get_liked_articles(
         }
         for item in results
     ]
+
+
+@router.get("/bookmarked-articles")
+async def get_liked_articles(
+        page: int = Query(1, ge=1),
+        page_size: int = Query(20, ge=1, le=50),
+        current_user: Users = Depends(get_current_active_user),
+        db: Session = Depends(get_db)):
+    """Test"""
+    offset = (page - 1) * page_size
+    like_alias = aliased(UserLikes)
+    bookmark_alias = aliased(UserBookmarks)
+
+    results = (
+        db.query(
+            Articles.id,
+            Articles.title,
+            Articles.link,
+            Articles.published_date,
+            Articles.image,
+            Articles.source,
+            Articles.topic,
+            case((like_alias.article_id.isnot(None), True),
+                 else_=False).label("liked"),
+            case((bookmark_alias.article_id.isnot(None), True),
+                 else_=False).label("bookmarked")
+        )
+        .outerjoin(like_alias, (Articles.id == like_alias.article_id) & (like_alias.user_id == current_user.id))
+        .outerjoin(bookmark_alias, (Articles.id == bookmark_alias.article_id) & (bookmark_alias.user_id == current_user.id))
+        .filter(bookmark_alias.article_id.isnot(None))
+        .order_by(desc(bookmark_alias.bookmarked_at))
+        .offset(offset)
+        .limit(page_size)
+        .all()
+    )
+
+    return [
+        {
+            "id": item.id,
+            "title": item.title,
+            "link": item.link,
+            "published_date": item.published_date,
+            "image": item.image,
+            "source": item.source,
+            "liked": item.liked,
+            "bookmarked": item.bookmarked
+        }
+        for item in results
+    ]
