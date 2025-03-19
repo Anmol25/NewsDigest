@@ -105,16 +105,3 @@ async def read_users_me(current_user: Users = Depends(get_current_active_user)):
         return current_user
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get("/userhistory")
-async def get_current_user_history(current_user: Users = Depends(get_current_active_user), db: Session = Depends(get_db)):
-    """Returns the History of current history."""
-    try:
-        if current_user:
-            history = get_user_history(current_user.id, db)
-            return history
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="User not logged in.")
-    except Exception as e:
-        logger.error(f"Error in retrieving current user history: {e}")

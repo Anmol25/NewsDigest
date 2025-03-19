@@ -15,7 +15,7 @@ function News(props) {
   const [isLoading, setIsLoading] = useState(false);
 
   // State of Like and Bookmark Button
-  const [isLiked, setIsLiked] = useState(false);
+  const [isLiked, setIsLiked] = useState(props.liked);
   const [isBookmarked, setIsBookmarked] = useState(false);
   
   const fallbackImage = handleFallbackImage(source);
@@ -79,16 +79,25 @@ function News(props) {
 
   const [dateFormatted, timeFormatted] = formatDate(published_date);
 
-  // Like Button
-  useEffect(() => {
-    console.log(isLiked);
-  }, [isLiked]);
+  const handleLike = async () => {
+    const response = await axiosInstance.post('/like', {
+      article_id: props.id
+    });
 
+    if (response.status === 200) {
+      setIsLiked(!isLiked);
+    }
+  };
   
-  // Bookmark Button
-  useEffect(() => {
-    console.log(isBookmarked);
-  }, [isBookmarked]);
+  const handleBookmark = async () => {
+    const response = await axiosInstance.post('/bookmark', {
+      article_id: props.id
+    });
+
+    if (response.status === 200) {
+      setIsBookmarked(!isBookmarked);
+    }
+  };
 
   return (
     <div className="NewsBlock">
@@ -107,12 +116,11 @@ function News(props) {
         <div className="NewsInfo">
           <div className="source-follow">
             <p className="source">{source || "Unknown"}</p>
-            {/* <img className="follow-button" src={follow} alt="Follow" /> */}
           </div>
           
           <div>
-            <img className={`news-buttons ${isLiked ? "black-filter" : ""}`} src={heart} alt="Like" onClick={() => setIsLiked(!isLiked)}/>
-            <img className={`news-buttons ${isBookmarked ? "black-filter" : ""}`} src={bookmarked} alt="Bookmark" onClick={() => setIsBookmarked(!isBookmarked)}/>
+            <img className={`news-buttons ${isLiked ? "black-filter" : ""}`} src={heart} alt="Like" onClick={handleLike}/>
+            <img className={`news-buttons ${isBookmarked ? "black-filter" : ""}`} src={bookmarked} alt="Bookmark" onClick={handleBookmark}/>
           </div>
         </div>
         
