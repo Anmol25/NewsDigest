@@ -84,41 +84,42 @@
     padding: 4px 12px;
     background-color: white;
     border-radius: 15px;
-    border: 1.5px solid #000000;
+    border: 1.5px solid #e0e0e0;
     font-size: 0.7rem;
     font-weight: 600;
     letter-spacing: 0.3px;
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    transition: all 0.2s ease;
 }
 
 .source:hover {
     background-color: #f0f0f0;
+    border: 1.5px solid #000000;
 }
 
 .source-follow {
     display: flex;
     align-items: center;
 }
-
-.follow-button, 
+ 
 .news-buttons {
     width: 24px;
     height: 24px;
-    margin-left: 10px;
+    margin-left: 15px;
     cursor: pointer;
     opacity: 0.85;
     transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
-.follow-button:hover, 
+
 .news-buttons:hover {
     opacity: 1;
     transform: scale(1.1);
+    
 }
 
-.news-buttons {
-    margin-left: 15px;
+.black-filter{
+    filter: brightness(0) invert(0);
 }
 
 .SummarizeButton {

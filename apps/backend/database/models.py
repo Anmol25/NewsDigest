@@ -37,3 +37,25 @@ class UserHistory(Base):
     article_id = Column(Integer, ForeignKey(
         "articles.id", ondelete="CASCADE"), nullable=False)
     watched_at = Column(DateTime(timezone=True), nullable=False)
+
+
+class UserLikes(Base):
+    __tablename__ = "userlikes"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey(
+        "users.id", ondelete="CASCADE"), nullable=False)
+    article_id = Column(Integer, ForeignKey(
+        "articles.id", ondelete="CASCADE"), nullable=False)
+    liked_at = Column(DateTime(timezone=True), nullable=False)
+
+
+class UserBookmarks(Base):
+    __tablename__ = "userbookmarks"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey(
+        "users.id", ondelete="CASCADE"), nullable=False)
+    article_id = Column(Integer, ForeignKey(
+        "articles.id", ondelete="CASCADE"), nullable=False)
+    bookmarked_at = Column(DateTime(timezone=True), nullable=False)

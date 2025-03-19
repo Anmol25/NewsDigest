@@ -13,6 +13,10 @@ function News(props) {
   const [displayText, setDisplayText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  // State of Like and Bookmark Button
+  const [isLiked, setIsLiked] = useState(false);
+  const [isBookmarked, setIsBookmarked] = useState(false);
   
   const fallbackImage = handleFallbackImage(source);
 
@@ -75,6 +79,17 @@ function News(props) {
 
   const [dateFormatted, timeFormatted] = formatDate(published_date);
 
+  // Like Button
+  useEffect(() => {
+    console.log(isLiked);
+  }, [isLiked]);
+
+  
+  // Bookmark Button
+  useEffect(() => {
+    console.log(isBookmarked);
+  }, [isBookmarked]);
+
   return (
     <div className="NewsBlock">
       {!summary && <img className="NewsImage" src={image || fallbackImage} alt={title} />}
@@ -92,12 +107,12 @@ function News(props) {
         <div className="NewsInfo">
           <div className="source-follow">
             <p className="source">{source || "Unknown"}</p>
-            <img className="follow-button" src={follow} alt="Follow" />
+            {/* <img className="follow-button" src={follow} alt="Follow" /> */}
           </div>
           
           <div>
-            <img className="news-buttons" src={heart} alt="Like" />
-            <img className="news-buttons" src={bookmarked} alt="Bookmark" />
+            <img className={`news-buttons ${isLiked ? "black-filter" : ""}`} src={heart} alt="Like" onClick={() => setIsLiked(!isLiked)}/>
+            <img className={`news-buttons ${isBookmarked ? "black-filter" : ""}`} src={bookmarked} alt="Bookmark" onClick={() => setIsBookmarked(!isBookmarked)}/>
           </div>
         </div>
         

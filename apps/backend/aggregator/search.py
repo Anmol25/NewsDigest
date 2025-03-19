@@ -44,7 +44,7 @@ def search_db(query: str, db: Session, skip: int, limit: int):
                 ts_vector.op("@@")(ts_query_or)
             ))
             # Rank full match higher
-            .order_by(rank.desc(), Articles.published_date.desc())
+            .order_by(Articles.published_date.desc(), rank.desc())
             .limit(limit)
             .offset(skip)
         )
