@@ -5,7 +5,7 @@ from fastapi import APIRouter, HTTPException, FastAPI, Depends, Query
 from contextlib import asynccontextmanager
 from sqlalchemy.orm import Session, aliased
 from sqlalchemy import desc
-from sqlalchemy.sql import case, func
+from sqlalchemy.sql import case
 from aggregator.feeds import Feeds
 from aggregator.model import SBERT
 from aggregator.search import search_db
@@ -129,7 +129,8 @@ async def search_article(
     page: int = Query(1, alias="page", description="Page number (default: 1)"),
     limit: int = Query(
         20, alias="size", description="Number of results per page (default: 10)"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: Users = Depends(get_current_active_user)
 ):
     """
     Search similar articles in database with pagination.
@@ -143,7 +144,7 @@ async def search_article(
     """
     skip = (page - 1) * limit
     similar_items = search_db(
-        query, db, skip, limit)
+        current_user.id, query, db, skip, limit)
     if not similar_items:
         raise HTTPException(
             status_code=404, detail="Relevant Results not found")

@@ -82,11 +82,14 @@ function Search() {
                 {searchResults.map((item, index) => (
                     <News 
                         key={`${item.id || index}`}
+                        id={item.id}
                         image={item.image}
                         title={item.title}
                         link={item.link}
                         source={item.source}
                         published_date={item.published_date}
+                        liked={item.liked}
+                        bookmarked={item.bookmarked}
                     />
                 ))}
                 {renderStatus()}

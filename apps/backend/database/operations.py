@@ -11,10 +11,6 @@ from zoneinfo import ZoneInfo
 logger = logging.getLogger(__name__)
 
 
-def get_feed():
-    pass
-
-
 def update_entry(existing_article, new_article_data, db):
     """
     Updates an existing article entry in the database.
