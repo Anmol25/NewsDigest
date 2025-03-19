@@ -16,7 +16,7 @@ function News(props) {
 
   // State of Like and Bookmark Button
   const [isLiked, setIsLiked] = useState(props.liked);
-  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [isBookmarked, setIsBookmarked] = useState(props.bookmarked);
   
   const fallbackImage = handleFallbackImage(source);
 

@@ -1,7 +1,8 @@
 import numpy as np
-from database.models import Articles, UserHistory
+from database.models import Articles, UserHistory, UserLikes, UserBookmarks
 from sqlalchemy import desc
-from sqlalchemy.sql import exists
+from sqlalchemy.sql import exists, case
+from sqlalchemy.orm import aliased
 
 
 class Recommendar:
@@ -25,29 +26,55 @@ class Recommendar:
         return mean_embedding, articles_id
 
     @staticmethod
-    def personalized_feed(mean_embedding, article_ids, db, page=1, page_size=10):
+    def personalized_feed(user_id, mean_embedding, article_ids, db, page=1, page_size=10):
+        """
+        Fetches a personalized feed of articles based on cosine similarity to the user's mean embedding,
+        excluding already viewed articles.
+        """
         offset = (page - 1) * page_size
-        similar_items = []
-        results = db.query(
-            Articles,
-            Articles.embeddings.cosine_distance(
-                mean_embedding).label('distance')
-        ).filter(~Articles.id.in_(article_ids)).order_by('distance',
-                                                         Articles.published_date.desc()).offset(offset).limit(page_size).all()
+        like_alias = aliased(UserLikes)
+        bookmark_alias = aliased(UserBookmarks)
 
-        for item, score in results:
-            result_item = {
+        # Query articles with similarity ranking and user interactions
+        results = (
+            db.query(
+                Articles.id,
+                Articles.title,
+                Articles.link,
+                Articles.published_date,
+                Articles.image,
+                Articles.source,
+                Articles.topic,
+                case((like_alias.article_id.isnot(None), True),
+                     else_=False).label("liked"),
+                case((bookmark_alias.article_id.isnot(None), True),
+                     else_=False).label("bookmarked"),
+                Articles.embeddings.cosine_distance(
+                    mean_embedding).label("distance")
+            )
+            .outerjoin(like_alias, (Articles.id == like_alias.article_id) & (like_alias.user_id == user_id))
+            .outerjoin(bookmark_alias, (Articles.id == bookmark_alias.article_id) & (bookmark_alias.user_id == user_id))
+            .filter(~Articles.id.in_(article_ids))
+            .order_by("distance", Articles.published_date.desc())
+            .offset(offset)
+            .limit(page_size)
+            .all()
+        )
+
+        # Transform query results into a structured list
+        return [
+            {
                 "id": item.id,
                 "title": item.title,
                 "link": item.link,
                 "published_date": item.published_date,
                 "image": item.image,
                 "source": item.source,
-                "cosine_score": 1 - score
+                "liked": item.liked,
+                "bookmarked": item.bookmarked
             }
-            similar_items.append(result_item)
-
-        return similar_items
+            for item in results
+        ]
 
     @staticmethod
     def get_recommendations(user, db, page=1, page_size=10):
@@ -58,5 +85,5 @@ class Recommendar:
         mean_embedding, article_ids = Recommendar.get_mean_embedding_and_ids(
             user, db)
         feed = Recommendar.personalized_feed(
-            mean_embedding, article_ids, db, page, page_size)
+            user.id, mean_embedding, article_ids, db, page, page_size)
         return feed
