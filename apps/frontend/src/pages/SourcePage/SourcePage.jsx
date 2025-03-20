@@ -14,7 +14,7 @@ import news18 from "../../assets/news_source/News18.png";
 function SourcePage(){
     const { source } = useParams();
     const sourcelist = [
-        { name: "Times Of India", icon: toi },
+        { name: "Times of India", icon: toi },
         { name: "NDTV", icon: ndtv },
         { name: "Firstpost", icon: firstpost },
         { name: "India Today", icon: indiatoday },
