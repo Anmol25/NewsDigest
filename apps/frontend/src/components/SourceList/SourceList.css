@@ -1,0 +1,14 @@
+.SourceListContainer {
+    position: fixed;
+    display: flexbox;
+    align-content: center;
+    width: 250px;
+    height: calc(100vh - 105px);;
+}
+
+.SourceList{
+    margin: 20px;
+    padding: 10px;
+    border-radius: 25px;
+    border: 2px solid #e0e0e0;
+}

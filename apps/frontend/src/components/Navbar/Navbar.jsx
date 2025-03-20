@@ -20,7 +20,7 @@ function Navbar(){
     const [isProfileHovered, setIsProfileHovered] = useState(false);
     const [isProfileClicked, setProfileClicked] = useState(false);
     const [isPageHovered, setIsPageHovered] = useState(false);
-    const isSubscriptionsActive = useMatch('/subscriptions');
+    const isSubscriptionsActive = useMatch('/source/*') || useMatch('/subscriptions/*');
     const isProfileActive = useMatch('/profile');
     const isBookmarksActive = useMatch('/bookmarks');
     const isLikesActive = useMatch('/likes');
