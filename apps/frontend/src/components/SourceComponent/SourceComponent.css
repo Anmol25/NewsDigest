@@ -1,0 +1,50 @@
+.SourceComponentContainer {
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease;
+}
+
+.SourceComponentContainer:hover {
+    transform: translateY(-2px);
+}
+
+.SourceInfo {
+    display: flex;
+    align-items: center;
+    gap: 75px; /* Space between image and text */
+}
+
+.SourceImage {
+    width: 100px; /* Adjust size as needed */
+    height: 100px;
+    border-radius: 50%; /* Circular image */
+    object-fit: cover; /* Maintain aspect ratio */
+    border: 2px solid #e0e0e0; /* Subtle border */
+    transition: border-color 0.3s ease;
+}
+
+.SourceImage:hover {
+    border-color: #000000; /* Change border color on hover */
+}
+
+
+
+.SourceInfo p:last-child {
+    font-size: 0.9rem; /* Slightly smaller for the subscribe text */
+    color: #007BFF; /* Link color for subscribe */
+    cursor: pointer; /* Pointer cursor for interactivity */
+    transition: color 0.3s ease;
+}
+
+.SourceInfo p:last-child:hover {
+    color: #0056b3; /* Darker shade on hover */
+}
+
+.SourceTitle{
+    font-size: 30px;
+    font-weight: 700;
+}

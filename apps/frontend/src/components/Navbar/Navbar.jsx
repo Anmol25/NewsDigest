@@ -8,7 +8,7 @@ import page from '../../assets/page.svg';
 import pageactive from '../../assets/page_active.svg';
 import './Navbar.css';
 import { useNavigate, NavLink, useMatch } from 'react-router-dom';
-import { useState, useEffect, useRef, use } from 'react';
+import { useState, useEffect, useRef} from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import Navbarbottom from './Navbarbottom';
 
@@ -20,7 +20,10 @@ function Navbar(){
     const [isProfileHovered, setIsProfileHovered] = useState(false);
     const [isProfileClicked, setProfileClicked] = useState(false);
     const [isPageHovered, setIsPageHovered] = useState(false);
-    const isSubscriptionsActive = useMatch('/source/*') || useMatch('/subscriptions/*');
+
+    const matchSource = useMatch('/source/*');
+    const matchSubscriptions = useMatch('/subscriptions/*');
+    const isSubscriptionsActive = matchSource || matchSubscriptions;
     const isProfileActive = useMatch('/profile');
     const isBookmarksActive = useMatch('/bookmarks');
     const isLikesActive = useMatch('/likes');

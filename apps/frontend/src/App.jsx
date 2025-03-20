@@ -8,7 +8,7 @@ import ProtectedRoute from "./contexts/ProtectedRoute"
 import RegisterUserForm from "./components/AuthComponent/RegisterUserForm"
 import Search from "./components/Search/Search"
 import HomePage from "./pages/HomePage/Home";
-import NewsSourcePage from "./pages/NewsSourcePage/NewsSourcePage";
+import SubscriptionsPage from "./pages/SubscritpionsPage/SubscriptionsPage"
 import ProfilePage from "./pages/ProfilePage/ProfilePage";
 import BookmarksPage from "./pages/BookmarksPage/BookmarksPage";
 import LikesPage from "./pages/LikesPage/LikesPage";
@@ -26,10 +26,10 @@ function App() {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/bookmarks" element={<BookmarksPage />} />
           <Route path="/likes" element={<LikesPage />} />
-        </Route>
-        <Route element={<SourceLayout />}>
-          <Route path="/subscriptions" element={<NewsSourcePage />} />
-          <Route path="/source" element={<SourcePage />} />
+          <Route element={<SourceLayout />}>
+            <Route path="/subscriptions" element={<SubscriptionsPage />} />
+            <Route path="/source/:source" element={<SourcePage />} />
+          </Route>
         </Route>
       </Route>
       <Route path="/login" element={<LoginForm />} />
