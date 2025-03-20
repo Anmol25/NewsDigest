@@ -1,14 +1,116 @@
 .SourceListContainer {
     position: fixed;
-    display: flexbox;
-    align-content: center;
     width: 250px;
-    height: calc(100vh - 105px);;
+    height: calc(100vh - 105px);
+    background-color: #ffffff;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 
-.SourceList{
-    margin: 20px;
-    padding: 10px;
-    border-radius: 25px;
-    border: 2px solid #e0e0e0;
+.SourceListContainer::-webkit-scrollbar {
+    width: 6px;
+    display: none;
 }
+
+.SourceListContainer:hover::-webkit-scrollbar {
+    display: block;
+}
+
+.SourceListContainer:hover {
+    scrollbar-width: thin;
+}
+
+.SourceListContainer::-webkit-scrollbar-track {
+    background: #f0f0f0;
+}
+
+.SourceListContainer::-webkit-scrollbar-thumb {
+    background-color: #000000;
+    border-radius: 3px;
+}
+
+.SourceListHeader{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.SourceListTitle{
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: #000000;
+    line-height: 1;
+}
+
+
+.SourceList {
+    padding: 18px 14px;
+}
+
+.SourceList > p {
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 0 0 18px 10px;
+    color: #000000;
+    letter-spacing: 0.3px;
+}
+
+.SourceList a {
+    display: flex;
+    align-items: center;
+    padding: 10px 14px;
+    margin-bottom: 8px;
+    text-decoration: none;
+    color: #333333;
+    border-radius: 10px;
+    transition: all 0.2s ease;
+    border: 1.5px solid transparent;
+}
+
+.SourceList a:hover {
+    background-color: #f5f5f5;
+    border-color: #000000;
+}
+
+.SourceList a.active {
+    background-color: #000000;
+    color: #ffffff;
+}
+
+.SourceIcon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    margin-right: 12px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.SourceName {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.SourceList a:hover .SourceName {
+    color: #000000;
+    font-weight: 700;
+}
+
+.SourceList a.active .SourceName {
+    color: #ffffff;
+    font-weight: 600;
+}
+
