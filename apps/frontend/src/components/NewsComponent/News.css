@@ -90,6 +90,8 @@
     letter-spacing: 0.3px;
     cursor: pointer;
     transition: all 0.2s ease;
+    text-decoration: none;
+    color: #000000;
 }
 
 .source:hover {

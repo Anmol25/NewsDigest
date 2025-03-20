@@ -4,7 +4,7 @@ import handleFallbackImage from '../../services/HandleFallbackImg';
 import { useAxios } from '../../services/AxiosConfig';
 import heart from '../../assets/heart.svg';
 import bookmarked from '../../assets/bookmarked.svg';
-import follow from '../../assets/plus.svg';
+import { NavLink } from 'react-router-dom';
 
 function News(props) {
   const { image, source, title, link, published_date, id } = props;
@@ -115,7 +115,9 @@ function News(props) {
         
         <div className="NewsInfo">
           <div className="source-follow">
-            <p className="source">{source || "Unknown"}</p>
+            <NavLink className="source" to={`/source/${source.toLowerCase().replace(/\s+/g, '-')}`}>
+              {source}
+            </NavLink>
           </div>
           
           <div>
