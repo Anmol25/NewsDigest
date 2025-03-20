@@ -5,29 +5,29 @@ import hindustan from '../assets/news_source/Hindustan Times.png'
 import indiatoday from '../assets/news_source/India Today.png'
 import indiatv from '../assets/news_source/India TV.png'
 import zee from '../assets/news_source/Zee News.png'
+import dna from '../assets/news_source/DNA India.png'
+import news18 from '../assets/news_source/News18.png'
 
 function handleFallbackImage(source){
     switch (source){
         case "Times of India":
             return toi;
-            break;
         case "NDTV":
             return ndtv;
-            break;
         case "Firstpost":
             return firstpost;
-            break;
         case "Hindustan Times":
             return hindustan;
-            break;
         case "India Today":
             return indiatoday;
-            break;
         case "India TV":
             return indiatv;
         case "Zee News":
             return zee;
-            break;
+        case "DNA India":
+            return dna;
+        case "News18":
+            return news18;
         default:
             return toi;
     }
