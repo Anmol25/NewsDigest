@@ -181,14 +181,31 @@ async def get_liked_articles(
 ):
     """Get articles liked by the current user"""
     offset = (page - 1) * page_size
-    query = get_article_query(db, current_user.id)
+    like_alias = aliased(UserLikes)
+    bookmark_alias = aliased(UserBookmarks)
 
-    results = (query
-               .filter(UserLikes.article_id.isnot(None))
-               .order_by(desc(UserLikes.liked_at))
-               .offset(offset)
-               .limit(page_size)
-               .all())
+    results = (
+        db.query(
+            Articles.id,
+            Articles.title,
+            Articles.link,
+            Articles.published_date,
+            Articles.image,
+            Articles.source,
+            Articles.topic,
+            case((like_alias.article_id.isnot(None), True),
+                 else_=False).label("liked"),
+            case((bookmark_alias.article_id.isnot(None), True),
+                 else_=False).label("bookmarked")
+        )
+        .outerjoin(like_alias, (Articles.id == like_alias.article_id) & (like_alias.user_id == current_user.id))
+        .outerjoin(bookmark_alias, (Articles.id == bookmark_alias.article_id) & (bookmark_alias.user_id == current_user.id))
+        .filter(like_alias.article_id.isnot(None))
+        .order_by(desc(like_alias.liked_at))
+        .offset(offset)
+        .limit(page_size)
+        .all()
+    )
 
     return format_article_results(results)
 
@@ -202,14 +219,31 @@ async def get_bookmarked_articles(
 ):
     """Get articles bookmarked by the current user"""
     offset = (page - 1) * page_size
-    query = get_article_query(db, current_user.id)
+    like_alias = aliased(UserLikes)
+    bookmark_alias = aliased(UserBookmarks)
 
-    results = (query
-               .filter(UserBookmarks.article_id.isnot(None))
-               .order_by(desc(UserBookmarks.bookmarked_at))
-               .offset(offset)
-               .limit(page_size)
-               .all())
+    results = (
+        db.query(
+            Articles.id,
+            Articles.title,
+            Articles.link,
+            Articles.published_date,
+            Articles.image,
+            Articles.source,
+            Articles.topic,
+            case((like_alias.article_id.isnot(None), True),
+                 else_=False).label("liked"),
+            case((bookmark_alias.article_id.isnot(None), True),
+                 else_=False).label("bookmarked")
+        )
+        .outerjoin(like_alias, (Articles.id == like_alias.article_id) & (like_alias.user_id == current_user.id))
+        .outerjoin(bookmark_alias, (Articles.id == bookmark_alias.article_id) & (bookmark_alias.user_id == current_user.id))
+        .filter(bookmark_alias.article_id.isnot(None))
+        .order_by(desc(bookmark_alias.bookmarked_at))
+        .offset(offset)
+        .limit(page_size)
+        .all()
+    )
 
     return format_article_results(results)
 
