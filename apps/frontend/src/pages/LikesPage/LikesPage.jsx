@@ -58,17 +58,18 @@ function LikesPage(){
 
     return (
         <div className="LikesPage">
-            <div className="LikesHeader">
+            <div className="MainHeadings">
                 <img 
                     src={heart} 
                     alt='Likes'
-                    className="LikesIcon"
+                    className="MainHeadingIcon"
+                    id="LikeIcon"
                 />
-                <h1 className="LikesTitle">Liked Articles</h1>
+                <h1 className="MainHeadingTitle">Liked Articles</h1>
             </div>
             <div className="FeedList">
                 {liked.map((item) => <News key={item.id} {...item} />)}
-                {hasMore ? <p>Loading...</p> : liked.length ? <p>No more news to load</p> : <p>No news found</p>}
+                {hasMore ? <p>Loading...</p> : liked.length ? "" : <p>No Likes Articles found</p>}
             </div>
         </div>
     )

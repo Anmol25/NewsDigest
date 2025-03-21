@@ -101,7 +101,7 @@ function News(props) {
 
   return (
     <div className="NewsBlock">
-      {!summary && <img className="NewsImage" src={image || fallbackImage} alt={title} />}
+      {!summary && <img className="NewsImage" src={image || fallbackImage} alt={title} onError={(e) => e.target.src = fallbackImage}/>}
       
       <div className="NewsContent">
         <a className="NewsTitle" href={link} target="_blank" rel="noopener noreferrer">

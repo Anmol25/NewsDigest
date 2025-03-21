@@ -58,17 +58,18 @@ function BookmarksPage(){
 
     return (
         <div className="BookmarksPage">
-            <div className="BookmarksHeader">
+            <div className="MainHeadings">
                 <img 
                     src={bookmark} 
                     alt='Booksmark'
-                    className="BookmarksIcon"
+                    className="MainHeadingIcon"
+                    id="BookmarkPageIcon"
                 />
-                <h1 className="BookmarksTitle">Bookmarked Articles</h1>
+                <h1 className="MainHeadingTitle">Bookmarked Articles</h1>
             </div>
             <div className="FeedList">
                 {bookmarked.map((item) => <News key={item.id} {...item} />)}
-                {hasMore ? <p>Loading...</p> : bookmarked.length ? <p></p> : <p>No news found</p>}
+                {hasMore ? <p>Loading...</p> : bookmarked.length ? "" : <p>No Bookmarked Article found</p>}
             </div>
         </div>
     )

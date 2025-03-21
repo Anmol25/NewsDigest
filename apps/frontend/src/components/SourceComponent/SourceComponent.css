@@ -6,41 +6,120 @@
 
 .SourceInfo {
     display: flex;
-    padding: 20px 40px;
+    padding: 24px 40px;
     align-items: center;
-    gap: 75px; /* Space between image and text */
+    justify-content: space-between;
     background-color: #ffffff;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s ease;
-    margin-bottom: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    margin-bottom: 24px;
+}
+
+.SourceInfo:hover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+    transform: translateY(-2px);
 }
 
 .SourceImage {
-    width: 100px; /* Adjust size as needed */
-    height: 100px;
-    border-radius: 50%; /* Circular image */
-    object-fit: cover; /* Maintain aspect ratio */
-    border: 2px solid #e0e0e0; /* Subtle border */
-    transition: border-color 0.3s ease;
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #e0e0e0;
+    transition: all 0.3s ease;
+    margin-right: 35px;
 }
 
 .SourceImage:hover {
-    border-color: #000000; /* Change border color on hover */
+    border-color: #666;
+    transform: scale(1.05);
 }
 
-.SourceInfo p:last-child {
-    font-size: 0.9rem; /* Slightly smaller for the subscribe text */
-    color: #007BFF; /* Link color for subscribe */
-    cursor: pointer; /* Pointer cursor for interactivity */
-    transition: color 0.3s ease;
-}
-
-.SourceInfo p:last-child:hover {
-    color: #0056b3; /* Darker shade on hover */
-}
-
-.SourceTitle{
-    font-size: 30px;
+.SourceTitle {
+    font-size: 28px;
     font-weight: 700;
+    color: #2c3e50;
+    margin: 0;
+    flex-grow: 1;
+}
+
+.SubscribeButton {
+    padding: 12px 24px;
+    background-color: white;
+    border-radius: 100px;
+    border: 2px solid #e0e0e0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 200px;
+    justify-content: center;
+    color: #000;
+}
+
+.SubscribeButton div {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    justify-content: center;
+    width: 100%;
+    letter-spacing: 0.3px;
+}
+
+.SubscribeButton img {
+    width: 18px;
+    height: 18px;
+    transition: all 0.3s ease;
+    filter: brightness(0);
+}
+
+.SubscribeButton:hover {
+    background-color: #f5f5f5;
+    transform: translateY(-2px);
+    border-color: #000;
+}
+
+.SubscribeButton:hover img {
+    transform: rotate(90deg);
+}
+
+.SubscribeButton:hover:has(div:contains("Subscribe")) {
+    background-color: #f8f8f8;
+    border-color: #333;
+}
+
+.SubscribeButton:hover:has(div:contains("Unsubscribe")) {
+    background-color: #f8f8f8;
+    border-color: #333;
+}
+
+.SourceNewsHeading {
+    font-size: 22px;
+    font-weight: 600;
+    color: #34495e;
+    margin-bottom: 20px;
+    padding-left: 10px;
+    border-left: 4px solid #3498db;
+}
+
+/* For better mobile responsiveness */
+@media (max-width: 768px) {
+    .SourceInfo {
+        flex-direction: column;
+        padding: 20px;
+        gap: 15px;
+        text-align: center;
+    }
+    
+    .SourceImage {
+        margin-right: 0;
+    }
+    
+    .SourceTitle {
+        margin: 10px 0;
+    }
 }

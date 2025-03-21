@@ -3,35 +3,6 @@
     padding: 10px 20px;
 }
 
-.FeedHeader {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    margin-bottom: 20px;
-    padding: 15px 20px;
-    background-color: #f8f9fa;
-    border-radius: 10px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.FeedIcon {
-    width: 24px;
-    height: 24px;
-    object-fit: contain;
-    /* margin-bottom: 4px; */
-    display: flex;
-    transition: transform 0.2s ease;
-}
-
-.FeedTitle {
-    margin: 0;
-    font-size: 24px;
-    font-weight: 600;
-    color: #2c3e50;
-    line-height: 1;
-}
-
 .FeedList {
     width: 100%;
     display: grid;

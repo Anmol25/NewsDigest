@@ -3,22 +3,3 @@
     margin-left: 250px;
     padding: 15px 14px;
 }
-
-.SubscriptionsHeader{
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 10px;
-    padding: 15px;
-    background-color: #f8f9fa;
-    border-radius: 10px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.SubscriptionsTitle{
-    margin: 0;
-    font-size: 20px;
-    font-weight: 600;
-    color: #000000;
-    line-height: 1;
-}

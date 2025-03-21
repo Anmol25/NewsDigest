@@ -3,6 +3,8 @@ import { useAxios } from "../../services/AxiosConfig";
 import { useEffect, useState, useCallback } from "react";
 import News from "../../components/NewsComponent/News";
 import { useLocation } from "react-router-dom";
+import plus from "../../assets/plus.svg"
+import cross from "../../assets/cross.svg"
 
 function formatTitle(slug) {
     return slug
@@ -10,6 +12,7 @@ function formatTitle(slug) {
       .map(word => word.charAt(0).toUpperCase() + word.slice(1)) // Capitalize each word
       .join(' '); // Join words with space
 }
+
 
 function SourceComponent(props) {
     const location = useLocation();
@@ -20,6 +23,24 @@ function SourceComponent(props) {
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
+    const [isSubscribed, setSubscribed] = useState(false);
+
+    const checkSubscribed = async (title) =>{
+        const response = await axiosInstance.post("/isSubscribed", {
+            source : title
+        });
+        
+        if (response.status === 200) {
+            if (response.data == true){
+                console.log("subscribed");
+                return true;
+            }else{
+                console.log("Not subscribed");
+                return false;
+            }
+        }
+        return false;
+    }
 
     const loadSourceArticles = useCallback(async (currentPage) => {
         if (isLoading || !hasMore) return;
@@ -75,13 +96,40 @@ function SourceComponent(props) {
         return () => window.removeEventListener('scroll', handleScroll);
     }, [loadSourceArticles, page, isLoading, hasMore]);
 
+    useEffect(() => {
+        const checkSubscriptionStatus = async () => {
+            const subscribed = await checkSubscribed(formattedTitle);
+            setSubscribed(subscribed);
+        };
+        checkSubscriptionStatus();
+    }, [formattedTitle]);
+
+    const Subscribe = async () => {
+        const response = await axiosInstance.post("/subscribe", {
+            source : formattedTitle
+        });
+        
+        if (response.status === 200) {
+            if (response.data.data == "subscribed"){
+                setSubscribed(true);
+            }else if(response.data.data == "unsubscribed"){
+                setSubscribed(false);
+            }
+        }
+    }
+
     return (
         <div className="SourceComponentContainer">
             <div className="SourceInfo">
-                <img className="SourceImage" src={props.image} alt={formattedTitle} />
-                <p className="SourceTitle">{formattedTitle}</p>
-                <p>Subscribe</p>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <img className="SourceImage" src={props.image} alt={formattedTitle} />
+                    <p className="SourceTitle">{formattedTitle}</p>
+                </div>
+                <button className="SubscribeButton" onClick={Subscribe}>
+                    {isSubscribed ? <div>Unsubscribe<img src={cross} alt="Unsubscribe" /></div> : <div>Subscribe<img src={plus} alt="Subscribe" /></div>}
+                </button>
             </div>
+            <p className="SourceNewsHeading">{`Latest News from ${formattedTitle}:`}</p>
             <div className="FeedList">
                 {sourceArticles.length > 0 ? (
                     sourceArticles.map((item) => <News key={item.id} {...item} />)

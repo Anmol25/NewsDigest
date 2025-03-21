@@ -11,9 +11,10 @@ from aggregator.model import SBERT
 from aggregator.search import search_db
 from database.session import get_db
 from database.operations import insert_to_db
-from database.models import Articles, Users, UserLikes, UserBookmarks
+from database.models import Articles, Users, UserLikes, UserBookmarks, Sources, UserSubscriptions
 from users.services import get_current_active_user
 from users.recommendation import Recommendar
+from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -268,3 +269,24 @@ async def get_source_articles(
                .all())
 
     return format_article_results(results)
+
+
+class SubscriptionsRequest(BaseModel):
+    source: str
+
+
+@router.post("/isSubscribed")
+def is_subscribed(request: SubscriptionsRequest, current_user: Users = Depends(get_current_active_user), db: Session = Depends(get_db)):
+    source = request.source
+    source_id = db.query(Sources.id).filter(
+        Sources.source == source).first()
+    # If Source exists extract id else None
+    source_id = source_id[0] if source_id else None
+    if source_id:
+        subscription = db.query(UserSubscriptions).filter(UserSubscriptions.user_id == current_user.id,
+                                                          UserSubscriptions.source_id == source_id).first()
+        if subscription:
+            return True
+        else:
+            return False
+    return False

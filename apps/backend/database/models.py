@@ -59,3 +59,20 @@ class UserBookmarks(Base):
     article_id = Column(Integer, ForeignKey(
         "articles.id", ondelete="CASCADE"), nullable=False)
     bookmarked_at = Column(DateTime(timezone=True), nullable=False)
+
+
+class Sources(Base):
+    __tablename__ = "sources"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    source = Column(String(40), nullable=False, unique=True)
+
+
+class UserSubscriptions(Base):
+    __tablename__ = "usersubscriptions"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey(
+        "users.id", ondelete="CASCADE"), nullable=False)
+    source_id = Column(Integer, ForeignKey(
+        "sources.id", ondelete="CASCADE"), nullable=False)

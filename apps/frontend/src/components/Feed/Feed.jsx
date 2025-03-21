@@ -80,13 +80,13 @@ function Feed() {
 
     return (
         <div className="Feed">
-            <div className="FeedHeader">
+            <div className="MainHeadings">
                 <img 
                     src={topicImages[topic] || foryou} 
                     alt={title}
-                    className="FeedIcon"
+                    className="MainHeadingIcon"
                 />
-                <h1 className="FeedTitle">{title}</h1>
+                <h1 className="MainHeadingTitle">{title}</h1>
             </div>
             <div className="FeedList">
                 {feed.map((item) => <News key={item.id} {...item} />)}

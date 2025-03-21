@@ -3,31 +3,6 @@
     padding: 10px 20px;
 }
 
-.BookmarksHeader {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    margin-bottom: 20px;
-    padding: 15px 20px;
-    background-color: #f8f9fa;
-    border-radius: 10px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.BookmarksIcon {
-    width: 24px;
-    height: 24px;
-    object-fit: contain;
-    display: flex;
-    transition: transform 0.2s ease;
+#BookmarkPageIcon{
     filter: brightness(0) invert(0);
-}
-
-.BookmarksTitle {
-    margin: 0;
-    font-size: 24px;
-    font-weight: 600;
-    color: #000000;
-    line-height: 1;
 }

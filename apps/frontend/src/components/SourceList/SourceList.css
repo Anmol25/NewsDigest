@@ -34,8 +34,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 10px;
-    padding: 15px;
+    gap: 8px;
+    margin-bottom: 15px;
+    padding: 16px 20px;
     background-color: #f8f9fa;
     border-radius: 10px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
@@ -43,9 +44,9 @@
 
 .SourceListTitle{
     margin: 0;
-    font-size: 20px;
+    font-size: 22px;
     font-weight: 600;
-    color: #000000;
+    color: #2c3e50;
     line-height: 1;
 }
 
