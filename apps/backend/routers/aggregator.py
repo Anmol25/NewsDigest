@@ -290,3 +290,13 @@ def is_subscribed(request: SubscriptionsRequest, current_user: Users = Depends(g
         else:
             return False
     return False
+
+
+@router.get("/getSubscriptions")
+def get_user_subscriptions(current_user: Users = Depends(get_current_active_user), db: Session = Depends(get_db)):
+    if current_user:
+        subscriptions = db.query(Sources.source).\
+            join(UserSubscriptions, Sources.id == UserSubscriptions.source_id).\
+            filter(UserSubscriptions.user_id == current_user.id).all()
+        return [sub[0] for sub in subscriptions]
+    return []
