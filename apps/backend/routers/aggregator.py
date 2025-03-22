@@ -300,3 +300,37 @@ def get_user_subscriptions(current_user: Users = Depends(get_current_active_user
             filter(UserSubscriptions.user_id == current_user.id).all()
         return [sub[0] for sub in subscriptions]
     return []
+
+
+@router.get("/subscribed-articles")
+async def get_subscribed_articles(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=50),
+    current_user: Users = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Get articles from all sources the user has subscribed to"""
+    offset = (page - 1) * page_size
+
+    # Get all sources the user is subscribed to
+    subscribed_sources = db.query(Sources.source).\
+        join(UserSubscriptions, Sources.id == UserSubscriptions.source_id).\
+        filter(UserSubscriptions.user_id == current_user.id).all()
+
+    # Extract source names from query result
+    source_names = [source[0] for source in subscribed_sources]
+
+    if not source_names:
+        return []  # Return empty list if user has no subscriptions
+
+    # Get articles from subscribed sources
+    query = get_article_query(db, current_user.id)
+
+    results = (query
+               .filter(Articles.source.in_(source_names))
+               .order_by(desc(Articles.published_date))
+               .offset(offset)
+               .limit(page_size)
+               .all())
+
+    return format_article_results(results)

@@ -1,6 +1,6 @@
 import "./SubscriptionsPage.css"
 import pageactive from "../../assets/page_active.svg"
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { useEffect } from "react";
 import { useAxios } from "../../services/AxiosConfig";
 import toi from "../../assets/news_source/Icons/Times of India.png";
@@ -13,6 +13,7 @@ import zeenews from "../../assets/news_source/Icons/Zee News.png";
 import dnaindia from "../../assets/news_source/DNA India.png";
 import news18 from "../../assets/news_source/News18.png";
 import { NavLink } from "react-router-dom";
+import News from "../../components/NewsComponent/News";
 
 function SubscriptionsPage(){
     const sourcelist = [
@@ -31,6 +32,11 @@ function SubscriptionsPage(){
     const [UserSubscriptions, setUserSubscriptions] = useState([]);
     const axiosInstance = useAxios();
 
+    const [feed, setFeed] = useState([]);
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(true);
+    const loadingRef = useRef(false);
+
     const fetchSubscriptions = async () => {
         const response = await axiosInstance("/getSubscriptions");
 
@@ -43,27 +49,78 @@ function SubscriptionsPage(){
         fetchSubscriptions();
     }, [])
 
+    const loadFeed = useCallback(async (currentPage) => {
+        if (loadingRef.current || !hasMore) return;
+        loadingRef.current = true;
+
+        try {
+            const response = await axiosInstance.get('/subscribed-articles', {
+                params: {
+                    page: currentPage
+                }
+            });
+
+            const newData = response.data || [];
+            
+            const moreData = newData.length === 20;
+            setFeed(prev => currentPage === 1 ? newData : [...prev, ...newData]);
+            setHasMore(moreData);
+            setPage(currentPage + 1);
+        } catch (error) {
+            console.error('Error loading feed:', error);
+            setHasMore(false);
+        } finally {
+            loadingRef.current = false;
+        }
+    }, [hasMore, axiosInstance]);
+
+    useEffect(() => {
+        setFeed([]);
+        setPage(1);
+        setHasMore(true);
+        loadingRef.current = false;
+        loadFeed(1);
+    }, [UserSubscriptions]);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 100) {
+                loadFeed(page);
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, [loadFeed, page]);
+    
+
     return (
         <div className="SubscriptionsContainer">
             <div className="MainHeadings">
                 <img className="MainHeadingIcon" src={pageactive} alt="" />
                 <p className="MainHeadingTitle">Subscriptions</p>
             </div>
-            <div className="UserSubscriptions">
-                {UserSubscriptions.map((item) => {
-                    // Find the matching source from sourcelist
-                    const source = sourcelist.find(source => source.name === item);
-                    return (
-                        <NavLink to={`/source/${item.toLowerCase().replace(/\s+/g, "-")}`} className="SubscriptionItem" key={item}>
-                            {source && <img src={source.icon} alt={item} className="SubscriptionIcon" />}
-                            <span>{item}</span>
-                        </NavLink>
-                    );
-                })}
-            </div>
-            <div className="SubsciptionFeed">
-                <p className="SubscriptionFeedTitle">Latest from Your Subscriptions:</p>
-            </div>
+                {(UserSubscriptions.length > 0) ? 
+                <div>
+                <div className="UserSubscriptions">
+                    {UserSubscriptions.map((item) => {
+                        const source = sourcelist.find(source => source.name === item);
+                        return (
+                            <NavLink to={`/source/${item.toLowerCase().replace(/\s+/g, "-")}`} className="SubscriptionItem" key={item}>
+                                {source && <img src={source.icon} alt={item} className="SubscriptionIcon" />}
+                                <span>{item}</span>
+                            </NavLink>
+                        );
+                    })}
+                </div>
+                <div className="SubsciptionFeed">
+                    <p className="SubscriptionFeedTitle">Latest from Your Subscriptions:</p>
+                    <div className="FeedList">
+                        {feed.map((item) => <News key={item.id} {...item} />)}
+                        {hasMore ? <p>Loading...</p> : feed.length ? <p></p> : <p>No news found</p>}
+                    </div>
+                </div>
+            </div> : <div className="NotFoundClass">No User Subscriptions Found</div> }
         </div>
     )
 }
