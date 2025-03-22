@@ -20,6 +20,8 @@ function Navbar(){
     const [isProfileHovered, setIsProfileHovered] = useState(false);
     const [isProfileClicked, setProfileClicked] = useState(false);
     const [isPageHovered, setIsPageHovered] = useState(false);
+    const searchInputRef = useRef(null);
+    const matchSearch = useMatch('/search/*');
 
     const matchSource = useMatch('/source/*');
     const matchSubscriptions = useMatch('/subscriptions/*');
@@ -41,6 +43,12 @@ function Navbar(){
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, []);
+
+    useEffect(() => {
+        if (!matchSearch && searchInputRef.current) {
+            searchInputRef.current.value = '';
+        }
+    }, [matchSearch]);
 
     const handleSearch = (e) => {
         e.preventDefault();
@@ -64,8 +72,16 @@ function Navbar(){
                     style={{ cursor: 'pointer' }}
                 />
                 <form className='Searchform' onSubmit={handleSearch}>
-                    <input className='Searchinput' type="text" placeholder="Search" name="search"/>
-                    <button className='searchbutton' type="submit"><img className='searchicon' src={search} alt="Search" /></button>
+                    <input 
+                        className='Searchinput' 
+                        type="text" 
+                        placeholder="Search" 
+                        name="search"
+                        ref={searchInputRef}
+                    />
+                    <button className='searchbutton' type="submit">
+                        <img className='searchicon' src={search} alt="Search" />
+                    </button>
                 </form>
                 <div className="profile-container" ref={menuRef}>
                         <NavLink to='/subscriptions'>
