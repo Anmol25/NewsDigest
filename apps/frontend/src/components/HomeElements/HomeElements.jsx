@@ -54,9 +54,11 @@ function HomeElements(props) {
 
     return (
         <div className="HomeElement">
-            <div className="HomeTitleBox">
-                <img className="HomeTitleImg" src={props.icon} alt={props.title} />
-                <p className="HomeTitle">{props.name}</p>
+            <div className="HomeHeader">
+                <div className="Homediv">
+                    <img className="HomeTitleImg" src={props.icon} alt={props.title} />
+                    <p className="HomeTitle">{props.name}</p>
+                </div>
                 <NavLink className="HomeSeeMore" to={`/${props.name.toLowerCase().replace(/\s+/g, "-")}`}>
                     See more &gt;
                 </NavLink>

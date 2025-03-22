@@ -6,6 +6,9 @@ import heart from '../../assets/heart.svg';
 import bookmarked from '../../assets/bookmarked.svg';
 import page from '../../assets/page.svg';
 import pageactive from '../../assets/page_active.svg';
+import user from '../../assets/user.svg';
+import history from '../../assets/history.svg'
+import exit from '../../assets/exit.svg'
 import './Navbar.css';
 import { useNavigate, NavLink, useMatch } from 'react-router-dom';
 import { useState, useEffect, useRef} from 'react';
@@ -108,8 +111,18 @@ function Navbar(){
                         />
                         {showProfileMenu && (
                             <div className="profile-menu">
-                                <button onClick={() => navigate('/profile/details')}>Profile</button>
-                                <button onClick={logout}>Logout</button>
+                                <button onClick={() => navigate('/profile/details')}>
+                                    <img className='profileimg' src={user} alt="User" />
+                                    Profile
+                                </button>
+                                <button onClick={() => navigate('/profile/hisory')}>
+                                    <img className='profileimg' src={history} alt="History" />
+                                    History
+                                </button>
+                                <button onClick={logout}>
+                                    <img className='profileimg' src={exit} alt="Exit" />
+                                    Logout
+                                </button>
                             </div>
                         )}
                 </div>
