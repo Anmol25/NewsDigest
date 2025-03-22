@@ -93,3 +93,37 @@ async def add_subscriptions(request: SubscriptionsRequest, current_user: Users =
             db.commit()
             return {"data": "subscribed"}
     return {"data": "Some error occured"}
+
+
+@router.get("/getuser")
+async def get_user(current_user: Users = Depends(get_current_active_user)):
+    if current_user:
+        return {"username": current_user.username, "fullname": current_user.fullname, "email": current_user.email}
+    return None
+
+
+class UpdateProfile(BaseModel):
+    username: str
+    fullname: str
+    email: str
+
+
+@router.post("/updateprofile")
+async def update_profile(request: UpdateProfile, current_user: Users = Depends(get_current_active_user), db: Session = Depends(get_db)):
+    """Update User Profile"""
+    user = db.query(Users).filter(Users.id == current_user.id).first()
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    try:
+        user.username = request.username
+        user.fullname = request.fullname
+        user.email = request.email
+        db.commit()
+        db.refresh(user)  # Refresh user instance with updated values
+        return {"message": "Profile updated successfully"}
+    except Exception as e:
+        db.rollback()  # Rollback changes in case of failure
+        raise HTTPException(
+            status_code=500, detail=f"Error updating profile: {str(e)}")

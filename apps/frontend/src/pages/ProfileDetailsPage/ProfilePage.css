@@ -1,5 +1,238 @@
-.ProfilePageContainer{
-    margin-top: 105px;
-    margin-left: 250px;
-    height: calc(100vh - 105px);
+.ProfilePageContainer {
+    padding: 40px;
+    padding-top: 5px;
+    margin: 105px 0 0 250px;
+    background-color: #f8f8f8;
+    min-height: calc(100vh - 105px);
+}
+
+.PageTitle {
+    margin: 0 0 30px 20px;
+    font-size: 32px;
+    font-weight: 700;
+    color: #1a1a1a;
+}
+
+.ProfilePageMainContainer {
+    padding: 25px 40px;
+    border-radius: 20px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+    background-color: white;
+}
+
+.ProfileSection {
+    margin-bottom: 25px;
+    border-bottom: 1px solid #eaeaea;
+    padding-bottom: 20px;
+}
+
+.ProfileSection:last-child {
+    margin-bottom: 0;
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.ProfileHeadingsContainer {
+    display: flex;
+    padding: 10px 0;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.HeadingWrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.ProfileHeading {
+    font-size: 24px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0;
+    padding-left: 16px;
+    border-left: 4px solid #1a1a1a;
+}
+
+.HeadingDescription {
+    color: #666;
+    font-size: 14px;
+    margin-left: 20px;
+}
+
+.ButtonIcon {
+    width: 18px;
+    height: 18px;
+}
+
+.ButtonGroup {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.IconButton, .DangerButton {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+}
+
+.IconButton {
+    border: 1px solid #e0e0e0;
+    background-color: white;
+    color: #1a1a1a;
+}
+
+.IconButton:hover {
+    background-color: #f5f5f5;
+    border-color: #1a1a1a;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.DangerButton {
+    border: 1px solid #ffebeb;
+    background-color: white;
+    color: #dc3545;
+}
+
+.DangerButton:hover {
+    background-color: #fff5f5;
+    border-color: #dc3545;
+}
+
+.UpdateButton {
+    background-color: #007bff;
+    color: white;
+    border: none;
+}
+
+.UpdateButton:hover {
+    background-color: #0056b3;
+}
+
+.InfoGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
+    padding: 20px;
+}
+
+.InfoItem {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.InfoItem label {
+    font-size: 14px;
+    color: #666;
+    font-weight: 500;
+}
+
+.ProfileInput, .ProfileText {
+    font-size: 16px;
+    color: #1a1a1a;
+    margin: 0;
+}
+
+.ProfileInput {
+    padding: 8px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    width: 100%;
+    transition: all 0.3s ease;
+}
+
+.ProfileInput:disabled {
+    background-color: transparent;
+    border: none;
+    padding: 0;
+    cursor: default;
+}
+
+.ProfileInput:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+}
+
+.SecurityTip {
+    font-size: 14px;
+    color: #666;
+    margin: 0;
+    padding: 20px;
+    background-color: #f8f8f8;
+    border-radius: 12px;
+}
+
+.WarningText {
+    color: #dc3545;
+    margin: 0;
+    padding: 20px;
+    font-size: 14px;
+    background-color: #fff5f5;
+    border-radius: 12px;
+    border: 1px solid #ffebeb;
+}
+
+.ModalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.ModalContent {
+    background-color: white;
+    padding: 30px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.ModalContent h2 {
+    margin: 0 0 20px 0;
+    color: #1a1a1a;
+    font-size: 24px;
+}
+
+.ModalContent p {
+    margin: 0 0 25px 0;
+    color: #666;
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+.ModalButtons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.ModalButtons .IconButton {
+    background-color: #f5f5f5;
+}
+
+.ModalButtons .DangerButton {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+}
+
+.ModalButtons .DangerButton:hover {
+    background-color: #c82333;
 }

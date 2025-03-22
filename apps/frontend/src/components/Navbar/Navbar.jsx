@@ -24,7 +24,7 @@ function Navbar(){
     const matchSource = useMatch('/source/*');
     const matchSubscriptions = useMatch('/subscriptions/*');
     const isSubscriptionsActive = matchSource || matchSubscriptions;
-    const isProfileActive = useMatch('/profile');
+    const isProfileActive = useMatch('/profile/*');
     const isBookmarksActive = useMatch('/bookmarks');
     const isLikesActive = useMatch('/likes');
 
