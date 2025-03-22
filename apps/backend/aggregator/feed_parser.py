@@ -54,7 +54,7 @@ class FeedParser:
     @staticmethod
     def extract_image_link(entry: str) -> str:
         """
-        Extract the image URL found in enclosure or media:content tags.
+        Extract the image URL found in enclosure, media:content tags, or description img tags.
 
         Args:
             entry: xml data of rss feed
@@ -68,8 +68,17 @@ class FeedParser:
 
             # Check media:content tags next (common in Media RSS)
             for media in entry.get('media_content', []):
-                if media.get('medium') == 'image' and 'url' in media:
+                if 'url' in media:
                     return media['url']
+
+            # Check description for img tags
+            description = entry.get('description', '')
+            if description:
+                # Look for src attribute in img tags
+                img_pattern = re.compile(r'<img[^>]+src=["\'](.*?)["\']')
+                match = img_pattern.search(description)
+                if match:
+                    return match.group(1)
 
             # Return None if no images found
             return None

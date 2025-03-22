@@ -4,30 +4,38 @@
     height: calc(100vh - 105px);
     background-color: #ffffff;
     overflow-y: auto;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+    transition: scrollbar-color 0.3s ease;
 }
 
 .SourceListContainer::-webkit-scrollbar {
     width: 6px;
-    display: none;
-}
-
-.SourceListContainer:hover::-webkit-scrollbar {
-    display: block;
-}
-
-.SourceListContainer:hover {
-    scrollbar-width: thin;
-}
-
-.SourceListContainer::-webkit-scrollbar-track {
-    background: #f0f0f0;
+    background-color: transparent;
 }
 
 .SourceListContainer::-webkit-scrollbar-thumb {
-    background-color: #000000;
+    background-color: rgba(0, 0, 0, 0.5);
     border-radius: 3px;
+    transition: background-color 0.3s ease;
+}
+
+.SourceListContainer::-webkit-scrollbar-track {
+    background-color: transparent;
+}
+
+.SourceListContainer:hover {
+    scrollbar-color: rgba(0, 0, 0, 0.5) transparent;
+}
+
+.SourceListContainer:not(:hover)::-webkit-scrollbar-thumb {
+    background-color: transparent;
+    transition: background-color 0.3s ease;
+}
+
+.SourceListContainer:hover::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.5);
+    transition: background-color 0.3s ease;
 }
 
 .SourceListHeader{
@@ -49,7 +57,6 @@
     color: #2c3e50;
     line-height: 1;
 }
-
 
 .SourceList {
     padding: 15px 14px;
