@@ -92,7 +92,7 @@ function Navbar(){
                         />
                         {showProfileMenu && (
                             <div className="profile-menu">
-                                <button onClick={() => navigate('/profile')}>Profile</button>
+                                <button onClick={() => navigate('/profile/details')}>Profile</button>
                                 <button onClick={logout}>Logout</button>
                             </div>
                         )}

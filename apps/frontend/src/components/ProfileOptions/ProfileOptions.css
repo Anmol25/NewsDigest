@@ -1,0 +1,6 @@
+.ProfileOptionsContainer{
+    position: fixed;
+    width: 250px;
+    height: calc(100vh - 105px);
+    background-color: #ffffff;
+}
