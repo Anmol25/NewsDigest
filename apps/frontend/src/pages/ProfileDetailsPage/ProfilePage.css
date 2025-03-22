@@ -1,6 +1,5 @@
 .ProfilePageContainer{
     margin-top: 105px;
     margin-left: 250px;
-    padding: 10px;
     height: calc(100vh - 105px);
 }
