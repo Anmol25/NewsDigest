@@ -15,6 +15,12 @@ function ProfilePage(){
     const [isEditing, setIsEditing] = useState(false);
     const [originalData, setOriginalData] = useState({});
     const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
+    const [passwordData, setPasswordData] = useState({
+        oldPassword: '',
+        newPassword: ''
+    });
+    const [passwordError, setPasswordError] = useState('');
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -67,6 +73,38 @@ function ProfilePage(){
             }
         } catch (error) {
             console.error("Failed to delete account:", error);
+        }
+    };
+
+    const handlePasswordChange = (e) => {
+        const { name, value } = e.target;
+        setPasswordData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+        if (name === 'oldPassword') {
+            setPasswordError('');
+        }
+    };
+
+    const handleUpdatePassword = async () => {
+        try {
+            const response = await axiosInstance.post("/updatepassword", {
+                oldPassword: passwordData.oldPassword,
+                newPassword: passwordData.newPassword
+            });
+
+            if (response.status === 200) {
+                setIsUpdatingPassword(false);
+                setPasswordData({ oldPassword: '', newPassword: '' });
+                setPasswordError('');
+            }
+        } catch (error) {
+            if (error.response?.status === 400) {
+                setPasswordError('Incorrect current password');
+            } else {
+                console.error("Failed to update password:", error);
+            }
         }
     };
 
@@ -128,12 +166,64 @@ function ProfilePage(){
                             <p className="ProfileHeading">Security</p>
                             <span className="HeadingDescription">Manage your password and security settings</span>
                         </div>
-                        <button className="IconButton">
-                            <img src={key} alt="Key" className="ButtonIcon" />
-                            Update Password
-                        </button>
+                        <div className="ButtonGroup">
+                            <button 
+                                className="IconButton" 
+                                onClick={() => {
+                                    if (isUpdatingPassword) {
+                                        setPasswordData({ oldPassword: '', newPassword: '' });
+                                    }
+                                    setIsUpdatingPassword(!isUpdatingPassword);
+                                }}
+                            >
+                                <img src={key} alt="Key" className="ButtonIcon" />
+                                {isUpdatingPassword ? 'Cancel' : 'Update Password'}
+                            </button>
+                            {isUpdatingPassword && (
+                                <button 
+                                    className="IconButton UpdateButton" 
+                                    onClick={handleUpdatePassword}
+                                >
+                                    Confirm Update
+                                </button>
+                            )}
+                        </div>
                     </div>
-                    <p className="SecurityTip">We recommend changing your password every 3 months for better security.</p>
+                    {isUpdatingPassword ? (
+                        <div className="PasswordUpdateForm">
+                            <div className="InfoGrid">
+                                <div className="InfoItem">
+                                    <label>Current Password</label>
+                                    <input
+                                        type="password"
+                                        name="oldPassword"
+                                        value={passwordData.oldPassword}
+                                        onChange={handlePasswordChange}
+                                        className={`ProfileInput ${passwordError ? 'ErrorInput' : ''}`}
+                                        placeholder="Enter current password"
+                                    />
+                                    {passwordError && (
+                                        <span className="ErrorMessage">{passwordError}</span>
+                                    )}
+                                </div>
+                                <div className="InfoItem">
+                                    <label>New Password</label>
+                                    <input
+                                        type="password"
+                                        name="newPassword"
+                                        value={passwordData.newPassword}
+                                        onChange={handlePasswordChange}
+                                        className="ProfileInput"
+                                        placeholder="Enter new password"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        <p className="SecurityTip">
+                            We recommend changing your password every 3 months for better security.
+                        </p>
+                    )}
                 </div>
 
                 <div className="ProfileSection">

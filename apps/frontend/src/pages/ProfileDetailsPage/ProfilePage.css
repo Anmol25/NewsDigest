@@ -1,13 +1,12 @@
 .ProfilePageContainer {
-    padding: 40px;
-    padding-top: 15px;
+    padding: 15px 40px;
     margin: 105px 0 0 250px;
     background-color: #f8f8f8;
-    min-height: calc(100vh - 105px);
+    min-height: calc(100vh - 135px);
 }
 
 .PageTitle {
-    margin: 0 0 30px 20px;
+    margin: 0 0 30px 15px;
     font-size: 32px;
     font-weight: 700;
     color: #1a1a1a;
@@ -235,4 +234,38 @@
 
 .ModalButtons .DangerButton:hover {
     background-color: #c82333;
+}
+
+.PasswordUpdateForm {
+    margin-top: 20px;
+    padding: 20px;
+    background-color: #f8f8f8;
+    border-radius: 12px;
+}
+
+.PasswordUpdateForm .InfoGrid {
+    padding: 0;
+}
+
+.PasswordUpdateForm .ProfileInput {
+    background-color: white;
+}
+
+.PasswordUpdateForm .InfoItem {
+    margin-bottom: 0;
+}
+
+.ErrorMessage {
+    color: #dc3545;
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+.ErrorInput {
+    border-color: #dc3545;
+}
+
+.ErrorInput:focus {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.1);
 }

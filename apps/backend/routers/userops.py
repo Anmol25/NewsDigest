@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from database.session import get_db
 from database.operations import get_user_history
 from database.models import Users, UserLikes, UserBookmarks, Sources, UserSubscriptions
-from users.services import get_current_active_user
+from users.services import get_current_active_user, verify_password, get_password_hash
 from pydantic import BaseModel
 from datetime import datetime
 from zoneinfo import ZoneInfo
@@ -134,3 +134,25 @@ async def delete_user(response: Response, current_user: Users = Depends(get_curr
     db.commit()
     response.delete_cookie("refresh_token")
     return {"message": "User Deleted"}
+
+
+class UpdatePassword(BaseModel):
+    oldPassword: str
+    newPassword: str
+
+
+@router.post("/updatepassword")
+async def update_password(request: UpdatePassword, current_user: Users = Depends(get_current_active_user), db: Session = Depends(get_db)):
+    user = db.query(Users).filter(Users.id == current_user.id).first()
+    if verify_password(request.oldPassword, user.hashed_password):
+        try:
+            newPasswordhash = get_password_hash(request.newPassword)
+            user.hashed_password = newPasswordhash
+            db.commit()
+        except:
+            db.rollback()
+            raise HTTPException(
+                status_code=500, detail="Some Error occurred in updating password")
+        return {"data": "Password Updated Successfully"}
+    raise HTTPException(
+        status_code=400, detail="Current Password is incorrect")
