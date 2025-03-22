@@ -61,7 +61,7 @@ function ProfilePage(){
 
     const handleDeleteAccount = async () => {
         try {
-            const response = await axiosInstance.post("/deleteaccount");
+            const response = await axiosInstance.get("/deleteaccount");
             if (response.status === 200) {
                 window.location.href = "/login";
             }

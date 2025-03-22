@@ -1,5 +1,5 @@
 import logging
-from fastapi import APIRouter, HTTPException, Depends, status
+from fastapi import APIRouter, HTTPException, Depends, status, Response
 from sqlalchemy.orm import Session
 from database.session import get_db
 from database.operations import get_user_history
@@ -103,7 +103,6 @@ async def get_user(current_user: Users = Depends(get_current_active_user)):
 
 
 class UpdateProfile(BaseModel):
-    username: str
     fullname: str
     email: str
 
@@ -117,7 +116,6 @@ async def update_profile(request: UpdateProfile, current_user: Users = Depends(g
         raise HTTPException(status_code=404, detail="User not found")
 
     try:
-        user.username = request.username
         user.fullname = request.fullname
         user.email = request.email
         db.commit()
@@ -127,3 +125,12 @@ async def update_profile(request: UpdateProfile, current_user: Users = Depends(g
         db.rollback()  # Rollback changes in case of failure
         raise HTTPException(
             status_code=500, detail=f"Error updating profile: {str(e)}")
+
+
+@router.get("/deleteaccount")
+async def delete_user(response: Response, current_user: Users = Depends(get_current_active_user), db: Session = Depends(get_db)):
+    user = db.query(Users).filter(Users.id == current_user.id).first()
+    db.delete(user)
+    db.commit()
+    response.delete_cookie("refresh_token")
+    return {"message": "User Deleted"}
