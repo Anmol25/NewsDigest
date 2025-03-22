@@ -3,7 +3,7 @@ from fastapi import APIRouter, HTTPException, Depends, status, Response
 from sqlalchemy.orm import Session
 from database.session import get_db
 from database.operations import get_user_history
-from database.models import Users, UserLikes, UserBookmarks, Sources, UserSubscriptions
+from database.models import Users, UserLikes, UserBookmarks, Sources, UserSubscriptions, UserHistory
 from users.services import get_current_active_user, verify_password, get_password_hash
 from pydantic import BaseModel
 from datetime import datetime
@@ -156,3 +156,17 @@ async def update_password(request: UpdatePassword, current_user: Users = Depends
         return {"data": "Password Updated Successfully"}
     raise HTTPException(
         status_code=400, detail="Current Password is incorrect")
+
+
+@router.get("/clearhistory")
+async def clear_history(current_user: Users = Depends(get_current_active_user), db: Session = Depends(get_db)):
+    """Clear User History"""
+    try:
+        db.query(UserHistory).filter(
+            UserHistory.user_id == current_user.id).delete()
+        db.commit()
+        return {"message": "User history cleared successfully"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=500, detail=f"Error clearing user history: {str(e)}")

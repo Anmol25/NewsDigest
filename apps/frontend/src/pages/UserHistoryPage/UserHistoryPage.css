@@ -1,4 +1,51 @@
 .UserHistoryPageContainer{
-    margin-top: 105px;
-    margin-left: 250px;
+    padding: 15px 40px;
+    margin: 105px 0 0 250px;
+    background-color: #f8f8f8;
+    min-height: calc(100vh - 135px);
+}
+
+.HistoryHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+#HistoryTitle{
+    margin: 0;
+    margin-left: 15px;
+}
+
+.HistoryClearButton {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 700;
+    color: #000000;
+    transition: all 0.3s ease;
+}
+
+.HistoryClearButton:hover {
+    background-color: #ff4d4d;
+    border-color: #ff4d4d;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.HistoryClearButton img {
+    width: 16px;
+    height: 16px;
+    transition: filter 0.3s ease;
+}
+
+.HistoryClearButton:hover img{
+    filter: invert(1);
+    transition: filter 0.3s ease;
 }

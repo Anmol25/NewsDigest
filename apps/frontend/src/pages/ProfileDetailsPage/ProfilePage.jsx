@@ -5,6 +5,7 @@ import trash from "../../assets/Icons/trash.svg"
 import { useAxios } from "../../services/AxiosConfig";
 import { useEffect, useState } from "react";
 
+
 function ProfilePage(){
     const axiosInstance = useAxios();
     const [userData, setUserData] = useState({
