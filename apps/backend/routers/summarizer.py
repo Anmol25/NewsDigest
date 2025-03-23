@@ -21,14 +21,15 @@ class ArticleUrl(BaseModel):
 
 
 @router.get("/summarize")
-def summarize(id: int, db: Session = Depends(get_db), current_user: Users = Depends(get_current_active_user)):
+def summarize(id: int, update_history: bool = True, db: Session = Depends(get_db), current_user: Users = Depends(get_current_active_user)):
     try:
         articleid = id
         # Check article in db
         article = db.query(Articles).filter(
             Articles.id == articleid).first()
         if article:
-            update_user_history(db, current_user.id, article.id)
+            if update_history:
+                update_user_history(db, current_user.id, article.id)
             # Retrieve Summary if available
             if article.summary:
                 return {"data": article.summary}

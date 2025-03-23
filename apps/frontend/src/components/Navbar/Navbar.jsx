@@ -115,7 +115,7 @@ function Navbar(){
                                     <img className='profileimg' src={user} alt="User" />
                                     Profile
                                 </button>
-                                <button onClick={() => navigate('/profile/hisory')}>
+                                <button onClick={() => navigate('/profile/history')}>
                                     <img className='profileimg' src={history} alt="History" />
                                     History
                                 </button>

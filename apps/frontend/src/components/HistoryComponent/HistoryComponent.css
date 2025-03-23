@@ -1,0 +1,232 @@
+.HistoryBlock {
+    display: flex;
+    flex-direction: row;
+    height: 200px;
+    border-radius: 16px;
+    border: 1px solid #e0e0e0;
+    overflow: hidden;
+    background-color: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    margin: 15px 0;
+}
+
+.HistoryBlock:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+.HistImage {
+    width: 280px;
+    height: 100%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.HistContent {
+    flex: 1;
+    padding: 10px 15px;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    position: relative;
+}
+
+.HistDelete {
+    width: 180px;
+    padding: 15px;
+    border-left: 1px solid #e0e0e0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #fafafa;
+    position: relative;
+}
+
+.HistDelete::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: -1px;
+    height: 70%;
+    width: 1px;
+    background: linear-gradient(to bottom, #e0e0e0 0%, #e0e0e0 100%);
+    transform: translateY(-50%);
+}
+
+.HistDelete p {
+    margin: 3px 0;
+    text-align: center;
+}
+
+.HistDelete p:first-child {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #333;
+    letter-spacing: 0.3px;
+    margin-bottom: 12px;
+}
+
+.HistDelete p:not(:first-child) {
+    font-size: 0.75rem;
+    color: #666;
+    font-weight: 500;
+}
+
+.delete-button {
+    margin-top: 15px;
+    background: none;
+    border: 2px solid #ff4d4d;
+    padding: 8px;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+}
+
+.delete-button:hover {
+    background-color: #ff4d4d;
+    transform: scale(1.05);
+}
+
+.delete-button img {
+    width: 18px;
+    height: 18px;
+    opacity: 0.8;
+    transition: all 0.2s ease;
+    filter: invert(60%) sepia(83%) saturate(5654%) hue-rotate(328deg) brightness(100%) contrast(100%);
+}
+
+.delete-button:hover img {
+    opacity: 1;
+    filter: brightness(0) invert(1);
+}
+
+.watched-time-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background-color: white;
+    padding: 8px 12px;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    margin: 5px 0;
+}
+
+.watched-time-value {
+    position: relative;
+    margin: 2px 0;
+    padding: 2px 0 2px 8px;
+    color: #333333;
+    font-size: 0.7rem;
+    font-weight: 400;
+    letter-spacing: 0.3px;
+    border-left: 2px solid #cccccc;
+}
+
+.HistTitle {
+    padding: 5px 0;
+    margin-bottom: 2px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1.35;
+    text-decoration: none;
+    color: black;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    line-clamp: 2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.HistTitle:hover {
+    color: #333333;
+}
+
+.HistInfo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 2px 0;
+    padding: 0;
+    font-size: 0.6rem;
+}
+
+.HistMetaData {
+    position: relative;
+    margin: 2px 0;
+    padding: 2px 0 2px 8px;
+    color: #777777;
+    font-size: 0.6rem;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    border-left: 2px solid #cccccc;
+}
+
+.HistSummaryContainer {
+    flex: 1;
+    margin: 5px 0;
+    padding: 8px;
+    background-color: #fafafa;
+    border-radius: 12px;
+    overflow-y: auto;
+    max-height: 100px;
+    scrollbar-width: thin;
+    scrollbar-color: #000000 #e0e0e0;
+}
+
+.HistSummaryContainer::-webkit-scrollbar {
+    width: 6px;
+}
+
+.HistSummaryContainer::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 4px;
+}
+
+.HistSummaryContainer::-webkit-scrollbar-thumb {
+    background-color: #36d470;
+    border-radius: 4px;
+}
+
+.HistSummary {
+    margin: 0;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    color: #333333;
+}
+
+.HistSummarizeButton {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    margin: 0;
+    padding: 8px 20px;
+    background-color: #000000;
+    color: white;
+    border: none;
+    border-radius: 30px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: calc(100% - 30px);
+}
+
+.HistSummarizeButton:hover {
+    background-color: #2C3930;
+}
+
+.HistSummarizeButton.loading {
+    background-color: #2C3930;
+    cursor: not-allowed;
+}

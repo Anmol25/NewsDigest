@@ -11,7 +11,7 @@ from aggregator.model import SBERT
 from aggregator.search import search_db
 from database.session import get_db
 from database.operations import insert_to_db
-from database.models import Articles, Users, UserLikes, UserBookmarks, Sources, UserSubscriptions
+from database.models import Articles, Users, UserLikes, UserBookmarks, Sources, UserSubscriptions, UserHistory
 from users.services import get_current_active_user
 from users.recommendation import Recommendar
 from pydantic import BaseModel
@@ -334,3 +334,48 @@ async def get_subscribed_articles(
                .all())
 
     return format_article_results(results)
+
+
+@router.get("/user-history")
+async def get_history(
+        page: int = Query(1, ge=1),
+        page_size: int = Query(20, ge=1, le=50),
+        current_user: Users = Depends(get_current_active_user),
+        db: Session = Depends(get_db)):
+    """Get User History"""
+    offset = (page - 1) * page_size
+
+    results = (
+        db.query(
+            Articles.id,
+            Articles.title,
+            Articles.link,
+            Articles.published_date,
+            Articles.image,
+            Articles.source,
+            Articles.topic,
+            Articles.summary,
+            UserHistory.watched_at
+        )
+        .join(UserHistory, UserHistory.article_id == Articles.id)
+        .filter(UserHistory.user_id == current_user.id)
+        .order_by(desc(UserHistory.watched_at))
+        .offset(offset)
+        .limit(page_size)
+        .all()
+    )
+
+    return [
+        {
+            'id': item.id,
+            'title': item.title,
+            'link': item.link,
+            'published_date': item.published_date,
+            'image': item.image,
+            'source': item.source,
+            'topic': item.topic,
+            'summary': item.summary,
+            'watched_at': item.watched_at
+        }
+        for item in results
+    ]

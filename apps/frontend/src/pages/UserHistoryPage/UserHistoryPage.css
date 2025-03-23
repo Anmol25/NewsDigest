@@ -49,3 +49,9 @@
     filter: invert(1);
     transition: filter 0.3s ease;
 }
+
+.HistoryList {
+    width: 100%;
+    display: grid;
+    grid-template-rows: repeat(auto-fill, minmax(2px, 1fr));
+}
