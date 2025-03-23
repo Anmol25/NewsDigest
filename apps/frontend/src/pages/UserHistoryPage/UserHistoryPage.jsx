@@ -22,6 +22,16 @@ function UserHistoryPage(){
         }
     };
 
+    const handleDelete = async (articleid) => {
+        const response = await axiosInstance.get("/delete-history-item", {
+            params: { id: articleid }
+        });
+
+        if (response.status === 200){
+            setHistory((history) => history.filter(item => item.id !== articleid));
+        }
+    }
+
     const loadHistory = useCallback(async (currentPage) => {
         if (loadingRef.current || !hasMore) return;
         loadingRef.current = true;
@@ -77,7 +87,7 @@ function UserHistoryPage(){
                 </button>
             </div>
             <div className="HistoryList">
-                {history.map((item) => <HistoryComponent key={item.id} {...item} />)}
+                {history.map((item) => <HistoryComponent key={item.id} {...item} handleDelete={handleDelete} />)}
                 {hasMore ? <p>Loading...</p> : history.length ? "" : <p>History Not found</p>}
             </div>
         </div>

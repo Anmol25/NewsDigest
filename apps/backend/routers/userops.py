@@ -170,3 +170,18 @@ async def clear_history(current_user: Users = Depends(get_current_active_user), 
         db.rollback()
         raise HTTPException(
             status_code=500, detail=f"Error clearing user history: {str(e)}")
+
+
+@router.get("/delete-history-item")
+async def delete_history_item(id: int, current_user: Users = Depends(get_current_active_user), db: Session = Depends(get_db)):
+    """Delete single history item"""
+    try:
+        item = db.query(UserHistory).filter(UserHistory.user_id ==
+                                            current_user.id, UserHistory.article_id == id).first()
+        db.delete(item)
+        db.commit()
+        return {"data": "Deleted Successfully"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=500, detail=f"Error in deleting history item: {str(e)}")

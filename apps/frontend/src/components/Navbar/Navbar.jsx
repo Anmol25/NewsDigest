@@ -55,7 +55,13 @@ function Navbar(){
 
     const handleSearch = (e) => {
         e.preventDefault();
-        const searchQuery = e.target.search.value;
+        const searchQuery = e.target.search.value.trim();
+        if (!searchQuery) {
+            if (searchInputRef.current) {
+                searchInputRef.current.value = '';
+            }
+            return; // Stop the function execution if search is empty or just whitespace
+        }
         navigate(`/search?query=${searchQuery}`);
     }
 

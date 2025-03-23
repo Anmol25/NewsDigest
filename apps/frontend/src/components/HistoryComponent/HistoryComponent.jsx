@@ -8,7 +8,7 @@ import trash from '../../assets/Icons/trash.svg'
 import { NavLink } from 'react-router-dom';
 
 function HistoryComponent(props) {
-  const { image, source, title, link, published_date, id, watched_at } = props;
+  const { image, source, title, link, published_date, id, watched_at, handleDelete } = props;
   const axiosInstance = useAxios();
   const [summary, setSummary] = useState(props.summary || false);
   const [displayText, setDisplayText] = useState(props.summary || '');
@@ -168,7 +168,7 @@ function HistoryComponent(props) {
           <div className="watched-time-value">{watchdateFormatted}</div>
           <div className="watched-time-value">{watchedtimeformatted}</div>
         </div>
-        <button className="delete-button" aria-label="Delete history item">
+        <button className="delete-button" aria-label="Delete history item" onClick={() => handleDelete(id)}>
           <img src={trash} alt="Delete" />
         </button>
       </div>
