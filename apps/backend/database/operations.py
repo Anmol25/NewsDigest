@@ -5,8 +5,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
 from users.schemas import UserCreate
-from datetime import datetime
-from zoneinfo import ZoneInfo
+from datetime import datetime, timezone
 
 logger = logging.getLogger(__name__)
 
@@ -137,23 +136,23 @@ def create_user_in_db(user: UserCreate, db: Session):
 
 def update_user_history(db: Session, userid: int, art_id):
     try:
-        # Check is already in history -> Update Time
+        # Check if already in history -> Update Time
         hist_item = db.query(UserHistory).filter(
             (UserHistory.user_id == userid) & (UserHistory.article_id == art_id)).first()
         if hist_item:
             try:
-                hist_item.watched_at = datetime.now(ZoneInfo("UTC"))
+                hist_item.watched_at = datetime.now(timezone.utc)  # Use timezone.utc
                 db.commit()
             except Exception as e:
                 db.rollback()
-                logger.error(f"Cannot Update Time of User Hitory: {e}")
+                logger.error(f"Cannot Update Time of User History: {e}")
         else:
             # Else Add to DB
             try:
                 user_hist = UserHistory(
                     user_id=userid,
                     article_id=art_id,
-                    watched_at=datetime.now(ZoneInfo("UTC"))
+                    watched_at=datetime.now(timezone.utc)  # Use timezone.utc
                 )
                 db.add(user_hist)
                 db.commit()

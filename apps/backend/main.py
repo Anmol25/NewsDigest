@@ -6,9 +6,16 @@ from routers.auth import router as auth_router
 from routers.aggregator import router as feed_router
 from routers.summarizer import router as summarize_router
 from routers.userops import router as user_router
+from database.base import Base, engine  # Import Base and engine
+from contextlib import asynccontextmanager
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    #Create tables if they dont exist
+    Base.metadata.create_all(bind=engine)
+    yield
 
-app = FastAPI()
+app = FastAPI(lifespan=lifespan)
 app.include_router(auth_router)
 app.include_router(feed_router)
 app.include_router(summarize_router)

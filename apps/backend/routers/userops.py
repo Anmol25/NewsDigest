@@ -6,8 +6,7 @@ from database.operations import get_user_history
 from database.models import Users, UserLikes, UserBookmarks, Sources, UserSubscriptions, UserHistory
 from users.services import get_current_active_user, verify_password, get_password_hash
 from pydantic import BaseModel
-from datetime import datetime
-from zoneinfo import ZoneInfo
+from datetime import datetime, timezone
 
 
 logger = logging.getLogger(__name__)
@@ -43,7 +42,7 @@ async def like_article(request: ArticleRequest, current_user: Users = Depends(ge
             db.delete(like)
         else:  # Like article
             like = UserLikes(user_id=current_user.id, article_id=article_id,
-                             liked_at=datetime.now(ZoneInfo("UTC")))
+                             liked_at=datetime.now(timezone.utc))  # Use timezone.utc
             db.add(like)
         db.commit()
         return True
@@ -61,7 +60,7 @@ async def bookmark_article(request: ArticleRequest, current_user: Users = Depend
             db.delete(bookmark)
         else:
             bookmark = UserBookmarks(user_id=current_user.id, article_id=article_id,
-                                     bookmarked_at=datetime.now(ZoneInfo("UTC")))
+                                     bookmarked_at=datetime.now(timezone.utc))  # Use timezone.utc
             db.add(bookmark)
         db.commit()
         return True
