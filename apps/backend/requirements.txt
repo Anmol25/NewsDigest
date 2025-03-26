@@ -3,8 +3,11 @@ fastapi==0.115.8
 feedparser==6.0.11
 newspaper3k==0.2.8
 numpy==2.2.2
+passlib==1.7.4
+pgvector==0.3.6
 pydantic==2.10.6
 python_dateutil==2.9.0.post0
+python_jose==3.3.0
 pytz==2024.2
 PyYAML==6.0.2
 PyYAML==6.0.2
