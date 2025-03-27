@@ -67,7 +67,7 @@ function BookmarksPage(){
                 />
                 <h1 className="MainHeadingTitle">Bookmarked Articles</h1>
             </div>
-            <div className="FeedList">
+            <div className="GridContainer">
                 {bookmarked.map((item) => <News key={item.id} {...item} />)}
                 {hasMore ? <p>Loading...</p> : bookmarked.length ? "" : <p>No Bookmarked Article found</p>}
             </div>

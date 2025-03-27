@@ -67,7 +67,7 @@ function LikesPage(){
                 />
                 <h1 className="MainHeadingTitle">Liked Articles</h1>
             </div>
-            <div className="FeedList">
+            <div className="GridContainer">
                 {liked.map((item) => <News key={item.id} {...item} />)}
                 {hasMore ? <p>Loading...</p> : liked.length ? "" : <p>No Likes Articles found</p>}
             </div>

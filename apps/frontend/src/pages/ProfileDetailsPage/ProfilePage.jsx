@@ -111,7 +111,7 @@ function ProfilePage(){
 
     return (
         <div className="ProfilePageContainer">
-            <h1 className="PageTitle">Account Settings</h1>
+            <h1 className="PageTitle">Profile Settings</h1>
             <div className="ProfilePageMainContainer">
                 <div className="ProfileSection">
                     <div className="ProfileHeadingsContainer">

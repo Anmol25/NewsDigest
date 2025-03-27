@@ -1,6 +1,5 @@
 .ProfilePageContainer {
-    padding: 15px 40px;
-    margin: 105px 0 0 250px;
+    padding: 20px;
     background-color: #f8f8f8;
     min-height: calc(100vh - 135px);
 }

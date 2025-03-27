@@ -88,7 +88,7 @@ function Feed() {
                 />
                 <h1 className="MainHeadingTitle">{title}</h1>
             </div>
-            <div className="FeedList">
+            <div className="GridContainer">
                 {feed.map((item) => <News key={item.id} {...item} />)}
                 {hasMore ? <p>Loading...</p> : feed.length ? <p>No more news to load</p> : <p>No news found</p>}
             </div>

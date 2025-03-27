@@ -1,8 +1,8 @@
 import Navbar from "../components/Navbar/Navbar";
 import SourceList from "../components/SourceList/SourceList";
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import { useState, useEffect } from "react";
-import "./FeedLayout.css";
+import "./PageLayout.css";
 
 const FeedLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);

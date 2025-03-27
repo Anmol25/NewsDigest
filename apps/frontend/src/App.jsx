@@ -1,6 +1,6 @@
 import { Route, Routes } from "react-router-dom";
 import { Navigate } from "react-router-dom";
-import FeedLayout from "./layout/FeedLayout"
+import PageLayout from "./layout/PageLayout"
 import Feed from "./components/Feed/Feed"
 import LoginForm from "./components/AuthComponent/LoginForm"
 import ProtectedRoute from "./contexts/ProtectedRoute"
@@ -13,13 +13,12 @@ import BookmarksPage from "./pages/BookmarksPage/BookmarksPage";
 import LikesPage from "./pages/LikesPage/LikesPage";
 import SourcePage from "./pages/SourcePage/SourcePage";
 import UserHistoryPage from "./pages/UserHistoryPage/UserHistoryPage";
-import ProfileLayout from "./layout/ProfileLayout";
 
 function App() {
   return (
     <Routes>
       <Route element={<ProtectedRoute />}>
-        <Route element={<FeedLayout />}>
+        <Route element={<PageLayout />}>
           <Route path="/" element={<Navigate to="/home" />} />
           <Route path="/home" element={<HomePage />} />
           <Route path="/search" element={<Search />} />
@@ -28,10 +27,8 @@ function App() {
           <Route path="/likes" element={<LikesPage />} />\
           <Route path="/subscriptions" element={<SubscriptionsPage />} />
           <Route path="/source/:source" element={<SourcePage />} />
-          <Route element={<ProfileLayout />}>
-            <Route path="/profile/details" element={<ProfilePage />} />
-            <Route path="/profile/history" element={<UserHistoryPage />} />
-          </Route>
+          <Route path="/profile/details" element={<ProfilePage />} />
+          <Route path="/profile/history" element={<UserHistoryPage />} />
         </Route>
       </Route>
       <Route path="/login" element={<LoginForm />} />
