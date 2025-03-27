@@ -1,0 +1,62 @@
+.feed-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.content-container {
+  display: flex;
+  flex: 1;
+  position: relative;
+  margin-top: 105px; /* Adjust based on your navbar height */
+}
+
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 105px; /* Match navbar height */
+  height: calc(100vh - 105px);
+  width: 250px;
+  z-index: 900;
+  background-color: #ffffff;
+  transition: all 0.3s ease-in-out;
+  /* box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); */
+  border-right: 1px solid #e0e0e0;
+  overflow: hidden;
+}
+
+.sidebar-closed {
+  width: 70px; /* Slightly wider to accommodate icons comfortably */
+}
+
+.sidebar-open {
+  width: 250px;
+}
+
+.main-content {
+  flex: 1;
+  transition: margin-left 0.3s ease-in-out;
+  width: calc(100% - 70px); /* Subtract the collapsed sidebar width */
+  margin-left: 70px; /* Match the collapsed sidebar width */
+}
+
+.content-shifted {
+  width: calc(100% - 250px); /* Subtract the expanded sidebar width */
+  margin-left: 250px; /* Match sidebar width when open */
+}
+
+@media (max-width: 768px) {
+  .sidebar-closed {
+    transform: translateX(-100%); /* On mobile, hide completely when closed */
+  }
+  
+  .main-content {
+    width: 100%;
+    margin-left: 0;
+  }
+  
+  .content-shifted {
+    width: 100%;
+    margin-left: 0;
+  }
+}

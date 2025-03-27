@@ -26,8 +26,8 @@ function HomePage(){
     return (
         <div className="HomePage">
             {topicsWithIcons.map((topic, index) => (
-                <HomeElements key={index} icon = {topic.icon} name = {topic.name} />
-                ))}
+                <HomeElements key={index} icon={topic.icon} name={topic.name} />
+            ))}
         </div>
     )
 }

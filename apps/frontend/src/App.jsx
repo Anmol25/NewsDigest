@@ -1,7 +1,6 @@
 import { Route, Routes } from "react-router-dom";
 import { Navigate } from "react-router-dom";
 import FeedLayout from "./layout/FeedLayout"
-import SourceLayout from "./layout/Sourcelayout";
 import Feed from "./components/Feed/Feed"
 import LoginForm from "./components/AuthComponent/LoginForm"
 import ProtectedRoute from "./contexts/ProtectedRoute"
@@ -26,11 +25,9 @@ function App() {
           <Route path="/search" element={<Search />} />
           <Route path="/:topic" element={<Feed />} />
           <Route path="/bookmarks" element={<BookmarksPage />} />
-          <Route path="/likes" element={<LikesPage />} />
-          <Route element={<SourceLayout />}>
-            <Route path="/subscriptions" element={<SubscriptionsPage />} />
-            <Route path="/source/:source" element={<SourcePage />} />
-          </Route>
+          <Route path="/likes" element={<LikesPage />} />\
+          <Route path="/subscriptions" element={<SubscriptionsPage />} />
+          <Route path="/source/:source" element={<SourcePage />} />
           <Route element={<ProfileLayout />}>
             <Route path="/profile/details" element={<ProfilePage />} />
             <Route path="/profile/history" element={<UserHistoryPage />} />

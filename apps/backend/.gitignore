@@ -1,6 +1,8 @@
 .venv
+venv
 **/__pycache__
 errors.log
 
+.vscode
 # Model Folder storing DistilBART and SentenceTransformer
 model/

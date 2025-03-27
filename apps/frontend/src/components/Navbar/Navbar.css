@@ -14,8 +14,22 @@
     align-items: center;
 }
 
+.navbar-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.hamburger {
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+}
+
 .logo {
-    width: 200px;
+    width: 180px;
+    height: auto;
+    cursor: pointer;
 }
 
 .Searchform {

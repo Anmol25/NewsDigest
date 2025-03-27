@@ -9,8 +9,23 @@ import indiatv from "../../assets/news_source/India TV.png";
 import zeenews from "../../assets/news_source/Icons/Zee News.png";
 import dnaindia from "../../assets/news_source/DNA India.png";
 import news18 from "../../assets/news_source/News18.png";
+import React, { useState, useEffect } from 'react';
 
-function SourceList(){
+const SourceList = () => {
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    
+    useEffect(() => {
+        const handleSidebarToggle = (event) => {
+            setIsSidebarOpen(event.detail.isOpen);
+        };
+
+        document.addEventListener('sidebarToggle', handleSidebarToggle);
+        
+        return () => {
+            document.removeEventListener('sidebarToggle', handleSidebarToggle);
+        };
+    }, []);
+
     const sourcelist = [
         {name: "Times Of India", icon: toi},
         {name: "NDTV", icon: ndtv},
@@ -24,20 +39,22 @@ function SourceList(){
     ];
     
     return(
-        <div className="SourceListContainer">
+        <div className={`SourceListContainer ${isSidebarOpen ? 'expanded' : 'collapsed'}`}>
             <div className="SourceList">
-                <div className="SourceListHeader">
+                {/* <div className={`SourceListHeader ${!isSidebarOpen ? 'hidden' : ''}`}>
                     <p className="SourceListTitle">All News Sources</p>
-                </div>
+                </div> */}
                 
                 {sourcelist.map((item, index) =>
                 <NavLink 
                     key={index}
                     to={`/source/${item.name.toLowerCase().replace(/\s+/g, '-')}`}
-                    className={({ isActive }) => isActive ? 'active' : ''}
+                    className={({ isActive }) => 
+                        `source-link ${isActive ? 'active' : ''} ${!isSidebarOpen ? 'icon-only' : ''}`
+                    }
                 >
                     <img className="SourceIcon" src={item.icon} alt={item.name} />
-                    <p className="SourceName">{item.name}</p>
+                    <p className={`SourceName ${!isSidebarOpen ? 'hidden' : ''}`}>{item.name}</p>
                 </NavLink>)}
             </div>
         </div>

@@ -10,8 +10,22 @@ function HomeElements(props) {
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
     const [loading, setLoading] = useState(false);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const scrollContainerRef = useRef(null);
     const axiosInstance = useAxios();
+
+    // Listen for sidebar toggle events
+    useEffect(() => {
+        const handleSidebarToggle = (event) => {
+            setIsSidebarOpen(event.detail.isOpen);
+        };
+
+        document.addEventListener('sidebarToggle', handleSidebarToggle);
+        
+        return () => {
+            document.removeEventListener('sidebarToggle', handleSidebarToggle);
+        };
+    }, []);
 
     const loadFeed = async (currentPage) => {
         if (loading || !hasMore) return;
@@ -52,11 +66,21 @@ function HomeElements(props) {
         }
     };
 
+    // Add a resize event handler to adjust scroll behavior based on available width
+    useEffect(() => {
+        const handleResize = () => {
+            // You can add responsive logic here if needed
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     return (
-        <div className="HomeElement">
+        <div className={`HomeElement ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
             <div className="HomeHeader">
                 <div className="Homediv">
-                    <img className="HomeTitleImg" src={props.icon} alt={props.title} />
+                    <img className="HomeTitleImg" src={props.icon} alt={props.name} />
                     <p className="HomeTitle">{props.name}</p>
                 </div>
                 <NavLink className="HomeSeeMore" to={`/${props.name.toLowerCase().replace(/\s+/g, "-")}`}>

@@ -9,6 +9,7 @@ import pageactive from '../../assets/page_active.svg';
 import user from '../../assets/user.svg';
 import history from '../../assets/history.svg'
 import exit from '../../assets/exit.svg'
+import hamburger from '../../assets/Icons/hamburger.svg';
 import './Navbar.css';
 import { useNavigate, NavLink, useMatch } from 'react-router-dom';
 import { useState, useEffect, useRef} from 'react';
@@ -19,6 +20,7 @@ function Navbar(){
     const { logout } = useAuth();
     const navigate = useNavigate();
     const [showProfileMenu, setShowProfileMenu] = useState(false);
+    const [sidebarOpen, setSidebarOpen] = useState(false);
     const menuRef = useRef(null);
     const [isProfileHovered, setIsProfileHovered] = useState(false);
     const [isProfileClicked, setProfileClicked] = useState(false);
@@ -70,16 +72,33 @@ function Navbar(){
         setShowProfileMenu(!showProfileMenu);
     };
 
+    const toggleSidebar = () => {
+        setSidebarOpen(!sidebarOpen);
+        // Dispatch an event to notify the layout that sidebar state has changed
+        document.dispatchEvent(new CustomEvent('sidebarToggle', {
+            detail: { isOpen: !sidebarOpen }
+        }));
+    };
+
     return (
         <div className='navbar-container'>
             <div className="navbar">
-                <img 
-                    className='logo' 
-                    src={logo} 
-                    alt="News Digest" 
-                    onClick={() => navigate('/')}
-                    style={{ cursor: 'pointer' }}
-                />
+                <div className="navbar-left">
+                    <img 
+                        className='hamburger' 
+                        src={hamburger} 
+                        alt="Hamburger" 
+                        onClick={toggleSidebar}
+                    />
+                    <img 
+                        className='logo' 
+                        src={logo} 
+                        alt="News Digest" 
+                        onClick={() => navigate('/')}
+                        style={{ cursor: 'pointer' }}
+                    />
+                </div>
+                
                 <form className='Searchform' onSubmit={handleSearch}>
                     <input 
                         className='Searchinput' 
