@@ -110,6 +110,7 @@ function SourceComponent(props) {
         });
         
         if (response.status === 200) {
+            console.log(response.data.data);
             if (response.data.data == "subscribed"){
                 setSubscribed(true);
             }else if(response.data.data == "unsubscribed"){

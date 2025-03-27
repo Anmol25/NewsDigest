@@ -73,25 +73,38 @@ class SubscriptionsRequest(BaseModel):
 
 @router.post("/subscribe")
 async def add_subscriptions(request: SubscriptionsRequest, current_user: Users = Depends(get_current_active_user), db: Session = Depends(get_db)):
-    source = request.source
-    source_id = db.query(Sources.id).filter(
-        Sources.source == source).first()
-    # If Source exists extract id else None
-    source_id = source_id[0] if source_id else None
-    if source_id:
-        subscription = db.query(UserSubscriptions).filter(UserSubscriptions.user_id == current_user.id,
-                                                          UserSubscriptions.source_id == source_id).first()
+    try:
+        source = request.source
+        source_id = db.query(Sources.id).filter(Sources.source == source).first()
+        
+        # If Source exists extract id else None
+        source_id = source_id[0] if source_id else None
+        if not source_id:
+            raise HTTPException(status_code=404, detail="Source not found")
+        
+        subscription = db.query(UserSubscriptions).filter(
+            UserSubscriptions.user_id == current_user.id,
+            UserSubscriptions.source_id == source_id
+        ).first()
+        
         if subscription:  # Unsubscribe
             db.delete(subscription)
             db.commit()
-            return {"data": "unsubscribed"}
+            return {"data": "unsubscribed", "status": "success"}
         else:
             subscription = UserSubscriptions(
-                user_id=current_user.id, source_id=source_id)
+                user_id=current_user.id, source_id=source_id
+            )
             db.add(subscription)
             db.commit()
-            return {"data": "subscribed"}
-    return {"data": "Some error occured"}
+            return {"data": "subscribed", "status": "success"}
+    except HTTPException as e:
+        raise e  # Re-raise HTTP exceptions
+    except Exception as e:
+        db.rollback()  # Rollback in case of any error
+        raise HTTPException(
+            status_code=500, detail=f"An error occurred: {str(e)}"
+        )
 
 
 @router.get("/getuser")
