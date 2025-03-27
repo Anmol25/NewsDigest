@@ -1,38 +1,31 @@
 import "./HomeElements.css"
 import { NavLink } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
-import getFeed from "../../services/API";
 import News from "../News/News";
 import { useAxios } from "../../services/AxiosConfig";
+import PropTypes from 'prop-types';
 
 function HomeElements(props) {
     const [feed, setFeed] = useState([]);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
     const [loading, setLoading] = useState(false);
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const scrollContainerRef = useRef(null);
     const axiosInstance = useAxios();
 
-    // Listen for sidebar toggle events
-    useEffect(() => {
-        const handleSidebarToggle = (event) => {
-            setIsSidebarOpen(event.detail.isOpen);
-        };
-
-        document.addEventListener('sidebarToggle', handleSidebarToggle);
-        
-        return () => {
-            document.removeEventListener('sidebarToggle', handleSidebarToggle);
-        };
-    }, []);
 
     const loadFeed = async (currentPage) => {
         if (loading || !hasMore) return;
         setLoading(true);
 
         try {
-            const { data: newData, hasMore: moreData } = await getFeed(props.name, currentPage, axiosInstance);
+            const response = await axiosInstance.get(`/feed/${props.name}`, {
+                params: {
+                    page: currentPage,
+                }
+            });
+            const newData = response.data || [];
+            const moreData = newData.length === 20;
             setFeed(prev => currentPage === 1 ? newData : [...prev, ...newData]);
             setHasMore(moreData);
             setPage(currentPage + 1);
@@ -66,18 +59,8 @@ function HomeElements(props) {
         }
     };
 
-    // Add a resize event handler to adjust scroll behavior based on available width
-    useEffect(() => {
-        const handleResize = () => {
-            // You can add responsive logic here if needed
-        };
-
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
-
     return (
-        <div className={`HomeElement ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
+        <div className={`HomeElement`}>
             <div className="HomeHeader">
                 <div className="Homediv">
                     <img className="HomeTitleImg" src={props.icon} alt={props.name} />
@@ -114,5 +97,10 @@ function HomeElements(props) {
         </div>
     );
 }
+
+HomeElements.propTypes = {
+    name: PropTypes.string.isRequired,
+    icon: PropTypes.string.isRequired
+};
 
 export default HomeElements;

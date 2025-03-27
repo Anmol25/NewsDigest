@@ -1,7 +1,6 @@
 import "./Subscriptions.css"
 import pageactive from "../../assets/Icons/page_active.svg"
-import { useState, useRef, useCallback } from "react";
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useAxios } from "../../services/AxiosConfig";
 import toi from "../../assets/news_source/Icons/Times of India.png";
 import ndtv from "../../assets/news_source/NDTV.png";
@@ -13,7 +12,8 @@ import zeenews from "../../assets/news_source/Icons/Zee News.png";
 import dnaindia from "../../assets/news_source/DNA India.png";
 import news18 from "../../assets/news_source/News18.png";
 import { NavLink } from "react-router-dom";
-import News from "../../components/News/News";
+import NewsLoader from "../../components/NewsLoader/NewsLoader";
+
 
 function Subscriptions(){
     const sourcelist = [
@@ -32,11 +32,6 @@ function Subscriptions(){
     const [UserSubscriptions, setUserSubscriptions] = useState([]);
     const axiosInstance = useAxios();
 
-    const [feed, setFeed] = useState([]);
-    const [page, setPage] = useState(1);
-    const [hasMore, setHasMore] = useState(true);
-    const loadingRef = useRef(false);
-
     const fetchSubscriptions = async () => {
         const response = await axiosInstance("/getSubscriptions");
 
@@ -49,50 +44,6 @@ function Subscriptions(){
         fetchSubscriptions();
     }, [])
 
-    const loadFeed = useCallback(async (currentPage) => {
-        if (loadingRef.current || !hasMore) return;
-        loadingRef.current = true;
-
-        try {
-            const response = await axiosInstance.get('/subscribed-articles', {
-                params: {
-                    page: currentPage
-                }
-            });
-
-            const newData = response.data || [];
-            
-            const moreData = newData.length === 20;
-            setFeed(prev => currentPage === 1 ? newData : [...prev, ...newData]);
-            setHasMore(moreData);
-            setPage(currentPage + 1);
-        } catch (error) {
-            console.error('Error loading feed:', error);
-            setHasMore(false);
-        } finally {
-            loadingRef.current = false;
-        }
-    }, [hasMore, axiosInstance]);
-
-    useEffect(() => {
-        setFeed([]);
-        setPage(1);
-        setHasMore(true);
-        loadingRef.current = false;
-        loadFeed(1);
-    }, [UserSubscriptions]);
-
-    useEffect(() => {
-        const handleScroll = () => {
-            if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 100) {
-                loadFeed(page);
-            }
-        };
-
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, [loadFeed, page]);
-    
 
     return (
         <div className="MainPageContainer">
@@ -115,10 +66,7 @@ function Subscriptions(){
                 </div>
                 <div className="SubsciptionFeed">
                     <p className="SubHeading">Latest from Your Subscriptions:</p>
-                    <div className="GridContainer">
-                        {feed.map((item) => <News key={item.id} {...item} />)}
-                        {hasMore ? <p>Loading...</p> : feed.length ? <p></p> : <p>No news found</p>}
-                    </div>
+                    <NewsLoader url="/subscribed-articles" />
                 </div>
             </div> : <div className="NotFoundClass">No User Subscriptions Found</div> }
         </div>

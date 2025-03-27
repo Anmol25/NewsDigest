@@ -249,7 +249,7 @@ async def get_bookmarked_articles(
     return format_article_results(results)
 
 
-@router.get("/source/")
+@router.get("/source")
 async def get_source_articles(
     source: str,
     page: int = Query(1, ge=1),

@@ -1,8 +1,6 @@
-import News from "../../components/News/News";
-import getFeed from "../../services/API";
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useCallback } from "react";
 import { useParams } from "react-router-dom";
-import { useAxios } from "../../services/AxiosConfig";
+import NewsLoader from "../../components/NewsLoader/NewsLoader";
 
 // Import images
 import foryou from "../../assets/navbarbuttons/for-you.png";
@@ -34,48 +32,11 @@ const topicImages = {
 function Feed() {
     const { topic } = useParams();
     const title = formatTitle(topic);
-    const axiosInstance = useAxios();
-    
-    const [feed, setFeed] = useState([]);
-    const [page, setPage] = useState(1);
-    const [hasMore, setHasMore] = useState(true);
-    const loadingRef = useRef(false);
 
-    const loadFeed = useCallback(async (currentPage) => {
-        if (loadingRef.current || !hasMore) return;
-        loadingRef.current = true;
-
-        try {
-            const { data: newData, hasMore: moreData } = await getFeed(title, currentPage, axiosInstance);
-            setFeed(prev => currentPage === 1 ? newData : [...prev, ...newData]);
-            setHasMore(moreData);
-            setPage(currentPage + 1);
-        } catch (error) {
-            console.error('Error loading feed:', error);
-            setHasMore(false);
-        } finally {
-            loadingRef.current = false;
-        }
-    }, [hasMore, title, axiosInstance]);
-
-    useEffect(() => {
-        setFeed([]);
-        setPage(1);
-        setHasMore(true);
-        loadingRef.current = false;
-        loadFeed(1);
-    }, [topic]);
-
-    useEffect(() => {
-        const handleScroll = () => {
-            if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 100) {
-                loadFeed(page);
-            }
-        };
-
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, [loadFeed, page]);
+    const url = useCallback(() => {
+        if (topic === "for-you") return "/foryou";
+        else return `/feed/${title}`;
+    }, [topic, title]);
 
     return (
         <div className="MainPageContainer">
@@ -87,10 +48,10 @@ function Feed() {
                 />
                 <h1 className="MainHeadingTitle">{title}</h1>
             </div>
-            <div className="GridContainer">
-                {feed.map((item) => <News key={item.id} {...item} />)}
-                {hasMore ? <p>Loading...</p> : feed.length ? <p>No more news to load</p> : <p>No news found</p>}
-            </div>
+            <NewsLoader 
+                key={topic} 
+                url={url()} 
+            />
         </div>
     );
 }
