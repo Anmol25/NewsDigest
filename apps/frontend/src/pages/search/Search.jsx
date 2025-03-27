@@ -1,7 +1,7 @@
 import './Search.css';
 import { useLocation } from 'react-router-dom';
 import { useState, useEffect, useRef, useCallback } from 'react';
-import News from '../News/News';
+import News from '../../components/News/News';
 import { useAxios } from '../../services/AxiosConfig';
 
 function Search() {

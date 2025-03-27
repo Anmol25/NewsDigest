@@ -4,7 +4,7 @@ import PageLayout from "./layout/PageLayout"
 import ProtectedRoute from "./contexts/ProtectedRoute"
 import LoginForm from "./pages/authentication/LoginForm"
 import RegisterUserForm from "./pages/authentication/RegisterUserForm"
-import Search from "./components/Search/Search"
+import Search from "./pages/search/Search"
 import Feed from "./pages/feed/Feed";
 import Home from "./pages/home/Home";
 import Subscriptions from "./pages/subscriptions/Subscriptions";
