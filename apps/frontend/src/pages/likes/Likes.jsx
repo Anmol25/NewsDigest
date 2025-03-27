@@ -1,4 +1,3 @@
-import "./Likes.css";
 import heart from '../../assets/Icons/heart.svg';
 import { useAxios } from "../../services/AxiosConfig";
 import { useEffect, useState, useRef, useCallback } from "react";
@@ -57,13 +56,12 @@ function Likes(){
     }, [loadLiked, page]);
 
     return (
-        <div className="LikesPage">
+        <div className="MainPageContainer">
             <div className="MainHeadings">
                 <img 
                     src={heart} 
                     alt='Likes'
-                    className="MainHeadingIcon"
-                    id="LikeIcon"
+                    className="MainHeadingIcon filter-black"
                 />
                 <h1 className="MainHeadingTitle">Liked Articles</h1>
             </div>

@@ -1,4 +1,3 @@
-import "./Bookmarks.css";
 import bookmark from '../../assets/Icons/bookmarked.svg';
 import { useAxios } from "../../services/AxiosConfig";
 import { useEffect, useState, useRef, useCallback } from "react";
@@ -57,13 +56,12 @@ function Bookmarks(){
     }, [loadBookmarked, page]);
 
     return (
-        <div className="BookmarksPage">
+        <div className="MainPageContainer">
             <div className="MainHeadings">
                 <img 
                     src={bookmark} 
                     alt='Booksmark'
-                    className="MainHeadingIcon"
-                    id="BookmarkPageIcon"
+                    className="MainHeadingIcon filter-black"
                 />
                 <h1 className="MainHeadingTitle">Bookmarked Articles</h1>
             </div>

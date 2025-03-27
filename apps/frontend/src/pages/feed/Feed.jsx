@@ -1,4 +1,3 @@
-import "./Feed.css";
 import News from "../../components/News/News";
 import getFeed from "../../services/API";
 import { useEffect, useState, useRef, useCallback } from "react";
@@ -79,7 +78,7 @@ function Feed() {
     }, [loadFeed, page]);
 
     return (
-        <div className="Feed">
+        <div className="MainPageContainer">
             <div className="MainHeadings">
                 <img 
                     src={topicImages[topic] || foryou} 

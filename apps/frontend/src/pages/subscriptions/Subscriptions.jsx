@@ -95,7 +95,7 @@ function Subscriptions(){
     
 
     return (
-        <div className="SubscriptionsContainer">
+        <div className="MainPageContainer">
             <div className="MainHeadings">
                 <img className="MainHeadingIcon" src={pageactive} alt="" />
                 <p className="MainHeadingTitle">Subscriptions</p>
@@ -114,8 +114,8 @@ function Subscriptions(){
                     })}
                 </div>
                 <div className="SubsciptionFeed">
-                    <p className="SubscriptionFeedTitle">Latest from Your Subscriptions:</p>
-                    <div className="FeedList">
+                    <p className="SubHeading">Latest from Your Subscriptions:</p>
+                    <div className="GridContainer">
                         {feed.map((item) => <News key={item.id} {...item} />)}
                         {hasMore ? <p>Loading...</p> : feed.length ? <p></p> : <p>No news found</p>}
                     </div>

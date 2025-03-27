@@ -130,8 +130,8 @@ function SourceComponent(props) {
                     {isSubscribed ? <div>Unsubscribe<img src={cross} alt="Unsubscribe" /></div> : <div>Subscribe<img src={plus} alt="Subscribe" /></div>}
                 </button>
             </div>
-            <p className="SourceNewsHeading">{`Latest News from ${formattedTitle}:`}</p>
-            <div className="FeedList">
+            <p className="SubHeading">{`Latest News from ${formattedTitle}:`}</p>
+            <div className="GridContainer">
                 {sourceArticles.length > 0 ? (
                     sourceArticles.map((item) => <News key={item.id} {...item} />)
                 ) : !isLoading ? (

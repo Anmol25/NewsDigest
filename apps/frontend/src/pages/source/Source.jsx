@@ -1,4 +1,3 @@
-import "./Source.css"
 import SourceComponent from "../../components/SourceComponent/SourceComponent";
 import { useParams } from "react-router-dom";
 import toi from "../../assets/news_source/Icons/Times of India.png";
@@ -28,7 +27,7 @@ function Source(){
     const selectedSource = sourcelist.find(item => item.name.toLowerCase().replace(/\s+/g, '-') === source);
     
     return(
-        <div className="SourcePageContainer">
+        <div className="MainPageContainer">
             {selectedSource ? (
                 <SourceComponent source={selectedSource.name} image={selectedSource.icon} />
             ) : (

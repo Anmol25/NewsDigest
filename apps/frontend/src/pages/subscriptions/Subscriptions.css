@@ -1,7 +1,3 @@
-.SubscriptionsContainer{
-    padding: 15px 14px;
-}
-
 .UserSubscriptions {
     display: flex;
     overflow-x: auto;
@@ -82,15 +78,6 @@
     margin-top: 30px;
 }
 
-
-.SubscriptionFeedTitle{
-    font-size: 24px;
-    font-weight: 600;
-    color: #34495e;
-    margin-bottom: 20px;
-    padding-left: 10px;
-    border-left: 4px solid #3498db;
-}
 
 .NotFoundClass{
     display: flex;
