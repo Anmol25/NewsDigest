@@ -1,10 +1,10 @@
 import "./SourceComponent.css"
 import { useAxios } from "../../services/AxiosConfig";
 import { useEffect, useState, useCallback } from "react";
-import News from "../../components/NewsComponent/News";
+import News from "../../components/News/News";
 import { useLocation } from "react-router-dom";
-import plus from "../../assets/plus.svg"
-import cross from "../../assets/cross.svg"
+import plus from "../../assets/Icons/plus.svg"
+import cross from "../../assets/Icons/cross.svg"
 
 function formatTitle(slug) {
     return slug

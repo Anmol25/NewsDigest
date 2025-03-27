@@ -2,8 +2,8 @@ import './News.css';
 import { useState, useEffect } from 'react';
 import handleFallbackImage from '../../services/HandleFallbackImg';
 import { useAxios } from '../../services/AxiosConfig';
-import heart from '../../assets/heart.svg';
-import bookmarked from '../../assets/bookmarked.svg';
+import heart from '../../assets/Icons/heart.svg';
+import bookmarked from '../../assets/Icons/bookmarked.svg';
 import { NavLink } from 'react-router-dom';
 
 function News(props) {

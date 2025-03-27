@@ -1,4 +1,4 @@
-import "./SourceList.css"
+import "./SideBar.css"
 import { NavLink } from "react-router-dom";
 import toi from "../../assets/news_source/Icons/Times of India.png";
 import ndtv from "../../assets/news_source/NDTV.png";
@@ -11,7 +11,7 @@ import dnaindia from "../../assets/news_source/DNA India.png";
 import news18 from "../../assets/news_source/News18.png";
 import React, { useState, useEffect } from 'react';
 
-const SourceList = () => {
+const SideBar = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     
     useEffect(() => {
@@ -61,4 +61,4 @@ const SourceList = () => {
     )
 }
 
-export default SourceList;
+export default SideBar;

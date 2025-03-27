@@ -2,7 +2,7 @@ import "./HomeElements.css"
 import { NavLink } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import getFeed from "../../services/API";
-import News from "../NewsComponent/News";
+import News from "../News/News";
 import { useAxios } from "../../services/AxiosConfig";
 
 function HomeElements(props) {

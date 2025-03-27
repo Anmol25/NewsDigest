@@ -1,4 +1,4 @@
-import "./Navbarbottom.css";
+import "./NavBarBottom.css";
 import { NavLink } from "react-router-dom";
 import home from "../../assets/navbarbuttons/home.png";
 import foryou from "../../assets/navbarbuttons/for-you.png";
@@ -12,7 +12,7 @@ import tech from "../../assets/navbarbuttons/tech.png";
 import sports from "../../assets/navbarbuttons/sports.png";
 import entertainment from "../../assets/navbarbuttons/entertainment.png";
 
-function Navbarbottom() {
+function NavBarBottom() {
     const topicsWithIcons = [
         { name: "Home", icon: home },
         { name: "For You", icon: foryou },
@@ -45,4 +45,4 @@ function Navbarbottom() {
     )
 }
 
-export default Navbarbottom;
+export default NavBarBottom;

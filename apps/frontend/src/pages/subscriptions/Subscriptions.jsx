@@ -1,5 +1,5 @@
-import "./SubscriptionsPage.css"
-import pageactive from "../../assets/page_active.svg"
+import "./Subscriptions.css"
+import pageactive from "../../assets/Icons/page_active.svg"
 import { useState, useRef, useCallback } from "react";
 import { useEffect } from "react";
 import { useAxios } from "../../services/AxiosConfig";
@@ -13,9 +13,9 @@ import zeenews from "../../assets/news_source/Icons/Zee News.png";
 import dnaindia from "../../assets/news_source/DNA India.png";
 import news18 from "../../assets/news_source/News18.png";
 import { NavLink } from "react-router-dom";
-import News from "../../components/NewsComponent/News";
+import News from "../../components/News/News";
 
-function SubscriptionsPage(){
+function Subscriptions(){
     const sourcelist = [
         {name: "Times of India", icon: toi},
         {name: "NDTV", icon: ndtv},
@@ -125,4 +125,4 @@ function SubscriptionsPage(){
     )
 }
 
-export default SubscriptionsPage;
+export default Subscriptions;

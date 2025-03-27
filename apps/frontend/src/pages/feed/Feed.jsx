@@ -1,5 +1,5 @@
 import "./Feed.css";
-import News from "../NewsComponent/News";
+import News from "../../components/News/News";
 import getFeed from "../../services/API";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams } from "react-router-dom";

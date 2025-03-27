@@ -1,4 +1,4 @@
-import "./SourcePage.css"
+import "./Source.css"
 import SourceComponent from "../../components/SourceComponent/SourceComponent";
 import { useParams } from "react-router-dom";
 import toi from "../../assets/news_source/Icons/Times of India.png";
@@ -11,7 +11,7 @@ import zeenews from "../../assets/news_source/Icons/Zee News.png";
 import dnaindia from "../../assets/news_source/DNA India.png";
 import news18 from "../../assets/news_source/News18.png";
 
-function SourcePage(){
+function Source(){
     const { source } = useParams();
     const sourcelist = [
         { name: "Times of India", icon: toi },
@@ -38,4 +38,4 @@ function SourcePage(){
     )
 }
 
-export default SourcePage;
+export default Source;

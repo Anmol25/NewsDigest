@@ -1,4 +1,4 @@
-import "./ProfilePage.css"
+import "./Profile.css"
 import edit from "../../assets/Icons/edit.svg"
 import key from "../../assets/Icons/key.svg"
 import trash from "../../assets/Icons/trash.svg"
@@ -6,7 +6,7 @@ import { useAxios } from "../../services/AxiosConfig";
 import { useEffect, useState } from "react";
 
 
-function ProfilePage(){
+function Profile(){
     const axiosInstance = useAxios();
     const [userData, setUserData] = useState({
         username: "",
@@ -268,4 +268,4 @@ function ProfilePage(){
     )
 }
 
-export default ProfilePage;
+export default Profile;

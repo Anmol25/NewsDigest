@@ -1,18 +1,18 @@
 import { Route, Routes } from "react-router-dom";
 import { Navigate } from "react-router-dom";
 import PageLayout from "./layout/PageLayout"
-import Feed from "./components/Feed/Feed"
-import LoginForm from "./components/AuthComponent/LoginForm"
 import ProtectedRoute from "./contexts/ProtectedRoute"
-import RegisterUserForm from "./components/AuthComponent/RegisterUserForm"
+import LoginForm from "./pages/authentication/LoginForm"
+import RegisterUserForm from "./pages/authentication/RegisterUserForm"
 import Search from "./components/Search/Search"
-import HomePage from "./pages/HomePage/Home";
-import SubscriptionsPage from "./pages/SubscritpionsPage/SubscriptionsPage"
-import ProfilePage from "./pages/ProfileDetailsPage/ProfilePage";
-import BookmarksPage from "./pages/BookmarksPage/BookmarksPage";
-import LikesPage from "./pages/LikesPage/LikesPage";
-import SourcePage from "./pages/SourcePage/SourcePage";
-import UserHistoryPage from "./pages/UserHistoryPage/UserHistoryPage";
+import Feed from "./pages/feed/Feed";
+import Home from "./pages/home/Home";
+import Subscriptions from "./pages/subscriptions/Subscriptions";
+import Profile from "./pages/profile/Profile";
+import Bookmarks from "./pages/bookmarks/Bookmarks";
+import Likes from "./pages/likes/Likes";
+import Source from "./pages/source/Source";
+import UserHistory from "./pages/user-history/UserHistory";
 
 function App() {
   return (
@@ -20,15 +20,15 @@ function App() {
       <Route element={<ProtectedRoute />}>
         <Route element={<PageLayout />}>
           <Route path="/" element={<Navigate to="/home" />} />
-          <Route path="/home" element={<HomePage />} />
+          <Route path="/home" element={<Home />} />
           <Route path="/search" element={<Search />} />
           <Route path="/:topic" element={<Feed />} />
-          <Route path="/bookmarks" element={<BookmarksPage />} />
-          <Route path="/likes" element={<LikesPage />} />\
-          <Route path="/subscriptions" element={<SubscriptionsPage />} />
-          <Route path="/source/:source" element={<SourcePage />} />
-          <Route path="/profile/details" element={<ProfilePage />} />
-          <Route path="/profile/history" element={<UserHistoryPage />} />
+          <Route path="/bookmarks" element={<Bookmarks />} />
+          <Route path="/likes" element={<Likes />} />
+          <Route path="/subscriptions" element={<Subscriptions />} />
+          <Route path="/source/:source" element={<Source />} />
+          <Route path="/profile/details" element={<Profile />} />
+          <Route path="/profile/history" element={<UserHistory />} />
         </Route>
       </Route>
       <Route path="/login" element={<LoginForm />} />

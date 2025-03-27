@@ -1,22 +1,22 @@
 import logo from '../../assets/logo.png';
-import profile from '../../assets/profile.svg';
-import profileactive from '../../assets/profile_active.svg';
-import search from '../../assets/search.svg';
-import heart from '../../assets/heart.svg';
-import bookmarked from '../../assets/bookmarked.svg';
-import page from '../../assets/page.svg';
-import pageactive from '../../assets/page_active.svg';
-import user from '../../assets/user.svg';
-import history from '../../assets/history.svg'
-import exit from '../../assets/exit.svg'
+import profile from '../../assets/Icons/profile.svg';
+import profileactive from '../../assets/Icons/profile_active.svg';
+import search from '../../assets/Icons/search.svg';
+import heart from '../../assets/Icons/heart.svg';
+import bookmarked from '../../assets/Icons/bookmarked.svg';
+import page from '../../assets/Icons/page.svg';
+import pageactive from '../../assets/Icons/page_active.svg';
+import user from '../../assets/Icons/user.svg';
+import history from '../../assets/Icons/history.svg'
+import exit from '../../assets/Icons/exit.svg'
 import hamburger from '../../assets/Icons/hamburger.svg';
-import './Navbar.css';
+import './NavBar.css';
 import { useNavigate, NavLink, useMatch } from 'react-router-dom';
 import { useState, useEffect, useRef} from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import Navbarbottom from './Navbarbottom';
+import NavBarBottom from './NavBarBottom';
 
-function Navbar(){
+function NavBar(){
     const { logout } = useAuth();
     const navigate = useNavigate();
     const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -152,9 +152,9 @@ function Navbar(){
                         )}
                 </div>
             </div>
-            <Navbarbottom />
+            <NavBarBottom />
         </div>
     )
 }
 
-export default Navbar;
+export default NavBar;

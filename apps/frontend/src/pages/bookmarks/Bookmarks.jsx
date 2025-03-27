@@ -1,11 +1,11 @@
-import "./BookmarksPage.css";
-import bookmark from '../../assets/bookmarked.svg';
+import "./Bookmarks.css";
+import bookmark from '../../assets/Icons/bookmarked.svg';
 import { useAxios } from "../../services/AxiosConfig";
 import { useEffect, useState, useRef, useCallback } from "react";
-import News from "../../components/NewsComponent/News";
+import News from "../../components/News/News";
 
 
-function BookmarksPage(){
+function Bookmarks(){
     const axiosInstance = useAxios();
 
     const [bookmarked, setBookmarked] = useState([]);
@@ -75,4 +75,4 @@ function BookmarksPage(){
     )
 }
 
-export default BookmarksPage;
+export default Bookmarks;

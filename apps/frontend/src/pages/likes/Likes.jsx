@@ -1,11 +1,11 @@
-import "./LikesPage.css";
-import heart from '../../assets/heart.svg';
+import "./Likes.css";
+import heart from '../../assets/Icons/heart.svg';
 import { useAxios } from "../../services/AxiosConfig";
 import { useEffect, useState, useRef, useCallback } from "react";
-import News from "../../components/NewsComponent/News";
+import News from "../../components/News/News";
 
 
-function LikesPage(){
+function Likes(){
     const axiosInstance = useAxios();
 
     const [liked, setLiked] = useState([]);
@@ -75,4 +75,4 @@ function LikesPage(){
     )
 }
 
-export default LikesPage;
+export default Likes;

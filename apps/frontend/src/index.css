@@ -32,3 +32,9 @@ body{
     line-height: 1;
 }
 
+.GridContainer {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(325px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}

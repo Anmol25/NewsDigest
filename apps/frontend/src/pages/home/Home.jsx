@@ -1,4 +1,4 @@
-import "./Home.css"
+import "./Home.css";
 import HomeElements from "../../components/HomeElements/HomeElements";
 import topstories from "../../assets/navbarbuttons/top-stories.png";
 import latest from "../../assets/navbarbuttons/latest.png";
@@ -10,9 +10,9 @@ import tech from "../../assets/navbarbuttons/tech.png";
 import sports from "../../assets/navbarbuttons/sports.png";
 import entertainment from "../../assets/navbarbuttons/entertainment.png";
 
-function HomePage(){
+function Home(){
     const topicsWithIcons = [
-        { name: "Top Stories", icon: topstories },
+        { name: "Top Stories", icon: topstories }, 
         { name: "Latest", icon: latest },
         { name: "India", icon: india },
         { name: "World", icon: world },
@@ -32,4 +32,4 @@ function HomePage(){
     )
 }
 
-export default HomePage;
+export default Home;

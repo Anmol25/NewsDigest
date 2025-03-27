@@ -1,5 +1,5 @@
-import Navbar from "../components/Navbar/Navbar";
-import SourceList from "../components/SourceList/SourceList";
+import NavBar from "../components/NavBar/NavBar";
+import SideBar from "../components/SideBar/SideBar";
 import { Outlet } from "react-router-dom";
 import { useState, useEffect } from "react";
 import "./PageLayout.css";
@@ -20,11 +20,11 @@ const FeedLayout = () => {
   }, []);
 
   return (
-    <div className="feed-layout">
-      <Navbar />
+    <div className="page-layout">
+      <NavBar />
       <div className="content-container">
         <div className={`sidebar ${sidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
-          <SourceList />
+          <SideBar />
         </div>
         <main className={`main-content ${sidebarOpen ? 'content-shifted' : ''}`}>
           <Outlet />

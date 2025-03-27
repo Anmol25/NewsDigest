@@ -1,11 +1,11 @@
-import "./UserHistoryPage.css"
+import "./UserHistory.css"
 import trash from "../../assets/Icons/trash.svg"
 import { useAxios } from "../../services/AxiosConfig";
 import { useEffect, useState, useRef, useCallback } from "react";
 import HistoryComponent from "../../components/HistoryComponent/HistoryComponent"
 
 
-function UserHistoryPage(){
+function UserHistory(){
     const axiosInstance = useAxios();
 
     const [history, setHistory] = useState([]);
@@ -94,4 +94,4 @@ function UserHistoryPage(){
     )
 }
 
-export default UserHistoryPage;
+export default UserHistory;
