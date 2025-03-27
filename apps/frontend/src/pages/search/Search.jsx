@@ -1,4 +1,3 @@
-import './Search.css';
 import { useLocation } from 'react-router-dom';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import News from '../../components/News/News';
@@ -76,9 +75,11 @@ function Search() {
     };
 
     return (
-        <div className="search-container">
-            <p className='searchTitle'>Search Results for "{query}"</p>
-            <div className="search-results">
+        <div className="MainPageContainer">
+            <div className="MainHeadings">
+                <p className='MainHeadingTitle'>Search Results for "{query}"</p>
+            </div>
+            <div className="GridContainer">
                 {searchResults.map((item, index) => (
                     <News 
                         key={`${item.id || index}`}
