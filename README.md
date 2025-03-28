@@ -34,7 +34,7 @@
 <p align="center">
 <img src="https://github.com/user-attachments/assets/a390975f-9561-49f5-b148-3d64d4ae9480" width= "100%"></p>
 <p align="center"><strong>Generating Summaries</strong></p>
-<p align = "center"><img src="https://github.com/user-attachments/assets/d8e3a1bd-f571-46da-a1d8-f48bfbffa2b9" width="350px"></p>
+<p align = "center"><img src="https://github.com/user-attachments/assets/d4d64cc1-33f8-4e4c-ae6c-9c2c4e4e2923" width="350px"></p>
 
 ## Tech Stack
 - **Frontend:** ReactJS, HTML, CSS, Javascript
