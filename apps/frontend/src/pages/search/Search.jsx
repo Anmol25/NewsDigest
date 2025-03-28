@@ -12,7 +12,7 @@ function Search() {
                 <p className='MainHeadingTitle'>Search Results for &quot;{query}&quot;</p>
             </div>
             <div>
-                <NewsLoader url="/search" parameters={{query: query}} />
+                <NewsLoader key={query} url="/search" parameters={{query: query}} />
             </div>
         </div>
     );

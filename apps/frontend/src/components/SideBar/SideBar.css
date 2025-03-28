@@ -225,3 +225,13 @@
     justify-content: center;
 }
 
+/* When sidebar is collapsed, hide scrollbar but maintain functionality */
+.SourceListContainer.collapsed {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;     /* Firefox */
+}
+
+.SourceListContainer.collapsed::-webkit-scrollbar {
+    display: none;            /* Chrome, Safari and Opera */
+}
+

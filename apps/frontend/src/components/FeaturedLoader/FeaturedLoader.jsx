@@ -62,7 +62,7 @@ function FeaturedLoader() {
             setCurrentIndex(nextIndex);
           }
         }
-      }, 10000);
+      }, 6500);
     };
 
     if (featuredNews.length > 1 && !isHovering) {
