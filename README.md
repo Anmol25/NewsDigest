@@ -1,10 +1,12 @@
 # AI-Powered News Aggregator and Summarizer
 
 ## Features
-- <strong>Comprehensive News Aggregation:</strong> Collects news from multiple sources via RSS feeds, applying advanced de-duplication techniques to ensure a diverse and clutter-free news feed.
-- <strong>AI-Powered News Summarization: </strong> Instantly generates concise and informative news summaries using the DistilBART model, saving time while retaining key insights.
-- <strong>Personalized News Feed:</strong> Delivers a customized news experience through an intelligent recommendation system that adapts to user interests and reading habits.
-- <strong>Advanced Search Functionality:</strong> Enables fast and accurate news retrieval with a robust search engine, leveraging contextual embeddings and similarity algorithms for precise results.
+- <strong>Comprehensive News Aggregation:</strong> Collects news from multiple sources via RSS Feeds, removing duplicates for a clean feed.
+- <strong>AI-Powered News Summarization: </strong> Generates concise summaries with key insights using DistilBART.
+- <strong>Personalized News Feed:</strong> Recommends articles based on user interests and reading habits.
+- <strong>Advanced Search Functionality:</strong> Provides fast, accurate news retrieval with a robust search engine.
+- <strong>News Channel Subscriptions:</strong> Follow favorite channels for a personalized news feed.
+- <strong>Smart Article Engagement:</strong> Engage with news by liking, bookmarking, and accessing your reading history for effortless content discovery.
 
 ## Project Snapshots
 <p align="center"><strong>Home Page</strong></p>
@@ -29,7 +31,7 @@
 <img src="https://github.com/user-attachments/assets/06dee4c7-6eea-4ded-9d93-89c3892af2a9" width= "100%"></p>
 <p align="center"><strong>Profile Settings</strong></p>
 <p align="center">
-<img src="https://github.com/user-attachments/assets/f4ca320e-25e3-4267-aa6e-f5b507b272f1" width= "100%"></p>
+<img src="https://github.com/user-attachments/assets/25c6ef93-37f7-425a-bb8b-342448cb6964" width= "100%"></p>
 <p align="center"><strong>User History</strong></p>
 <p align="center">
 <img src="https://github.com/user-attachments/assets/a390975f-9561-49f5-b148-3d64d4ae9480" width= "100%"></p>
