@@ -57,7 +57,7 @@ function NewsLoader(props){
     return(
         <div className="GridContainer">
                 {items.map((item) => <News key={item.id} {...item} />)}
-                {hasMore ? <p>Loading...</p> : items.length ? "" : <p>No Article found</p>}
+                {hasMore ? <p>Loading...</p> : items.length ? "" : <p>No Articles found</p>}
         </div>
     )
 }   

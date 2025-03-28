@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import "./authentication.css";
 import logo from "../../assets/logo.png";
 import { Link } from 'react-router-dom';
-import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const LoginForm = () => {
@@ -66,7 +65,7 @@ const LoginForm = () => {
             {WrongPassword && <p className='auth-form-error'>Invalid password</p>}
           </div>
           <button className='auth-form-button' type="submit">Login</button>
-          <p className='auth-form-text'>Don't have an account? <Link className='auth-form-link' to="/register">Register</Link></p>
+          <p className='auth-form-text'>Don&apos;t have an account? <Link className='auth-form-link' to="/register">Register</Link></p>
         </form>
     </div>
     </div>
