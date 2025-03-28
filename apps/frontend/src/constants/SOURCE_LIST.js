@@ -7,6 +7,7 @@ import indiatv from "../assets/news_source/India TV.png";
 import zeenews from "../assets/news_source/Icons/Zee News.png";
 import dnaindia from "../assets/news_source/DNA India.png";
 import news18 from "../assets/news_source/News18.png";
+import cnbctv18 from "../assets/news_source/Icons/CNBCTV18.png";
 
 export const SOURCE_LIST = [
     {name: "Times of India", icon: toi},
@@ -17,5 +18,6 @@ export const SOURCE_LIST = [
     {name: "India TV", icon: indiatv},
     {name: "Zee News", icon: zeenews},
     {name: "DNA India", icon: dnaindia},
-    {name: "News18", icon: news18}
+    {name: "News18", icon: news18},
+    {name: "CNBCTV18", icon: cnbctv18}
 ];

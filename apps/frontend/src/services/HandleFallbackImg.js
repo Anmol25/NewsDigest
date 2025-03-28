@@ -7,6 +7,7 @@ import indiatv from '../assets/news_source/India TV.png'
 import zee from '../assets/news_source/Zee News.png'
 import dna from '../assets/news_source/DNA India.png'
 import news18 from '../assets/news_source/News18.png'
+import cnbctv18 from '../assets/news_source/CNBCTV18.png'
 
 function handleFallbackImage(source){
     switch (source){
@@ -28,6 +29,8 @@ function handleFallbackImage(source){
             return dna;
         case "News18":
             return news18;
+        case "CNBCTV18":
+            return cnbctv18;
         default:
             return toi;
     }

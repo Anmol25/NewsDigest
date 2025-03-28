@@ -10,6 +10,7 @@ Latest:
   Firstpost: https://www.firstpost.com/commonfeeds/v1/mfp/rss/latest.xml
   DNA India: https://www.dnaindia.com/feeds/latest.xml
   News18: https://www.news18.com/commonfeeds/v1/eng/rss/latest.xml
+  CNBCTV18: http://cnbctv18.com/commonfeeds/v1/cne/rss/latest.xml
 
 India:
   The Times Of India: http://timesofindia.indiatimes.com/rssfeeds/-2128936835.cms
@@ -21,6 +22,7 @@ India:
   Zee News: https://zeenews.india.com/rss/india-national-news.xml
   DNA India: https://www.dnaindia.com/feeds/india.xml
   News18: https://www.news18.com/commonfeeds/v1/eng/rss/india.xml
+  CNBCTV18: https://www.cnbctv18.com/commonfeeds/v1/cne/rss/india.xml
 
 World:
   The Times Of India: http://timesofindia.indiatimes.com/rssfeeds/296589292.cms
@@ -32,6 +34,7 @@ World:
   Zee News: https://zeenews.india.com/rss/world-news.xml
   DNA India: https://www.dnaindia.com/feeds/world.xml
   News18: https://www.news18.com/commonfeeds/v1/eng/rss/world.xml
+  CNBCTV18: https://www.cnbctv18.com/commonfeeds/v1/cne/rss/world.xml
 
 Economy:
   The Times Of India: https://timesofindia.indiatimes.com/rssfeeds/1898055.cms
@@ -43,11 +46,13 @@ Economy:
   Zee News: https://zeenews.india.com/rss/business.xml
   DNA India: https://www.dnaindia.com/feeds/business.xml
   News18: https://www.news18.com/commonfeeds/v1/eng/rss/business.xml
+  CNBCTV18: https://www.cnbctv18.com/commonfeeds/v1/cne/rss/economy.xml
 
 Science:
   The Times Of India: http://timesofindia.indiatimes.com/rssfeeds/-2128672765.cms
   Hindustan Times: https://www.hindustantimes.com/feeds/rss/science/rssfeed.xml
   Zee News: https://zeenews.india.com/rss/science-environment-news.xml
+  CNBCTV18: https://www.cnbctv18.com/commonfeeds/v1/cne/rss/science.xml
 
 Tech:
   The Times Of India: http://timesofindia.indiatimes.com/rssfeeds/66949542.cms
@@ -57,6 +62,7 @@ Tech:
   Zee News: https://zeenews.india.com/rss/technology-news.xml
   DNA India: https://www.dnaindia.com/feeds/technology.xml
   News18: https://www.news18.com/commonfeeds/v1/eng/rss/tech.xml
+  CNBCTV18: https://www.cnbctv18.com/commonfeeds/v1/cne/rss/technology.xml
 
 Sports:
   The Times Of India: http://timesofindia.indiatimes.com/rssfeeds/4719148.cms
@@ -68,6 +74,7 @@ Sports:
   Zee News: https://zeenews.india.com/rss/sports-news.xml
   DNA India: https://www.dnaindia.com/feeds/sports.xml
   News18: https://www.news18.com/commonfeeds/v1/eng/rss/sports.xml
+  CNBCTV18: https://www.cnbctv18.com/commonfeeds/v1/cne/rss/sports.xml
 
 Entertainment:
   The Times Of India: http://timesofindia.indiatimes.com/rssfeeds/1081479906.cms
@@ -77,3 +84,4 @@ Entertainment:
   Zee News: https://zeenews.india.com/rss/entertainment-news.xml
   DNA India: https://www.dnaindia.com/feeds/entertainment.xml
   News18: https://www.news18.com/commonfeeds/v1/eng/rss/entertainment.xml
+  CNBCTV18: https://www.cnbctv18.com/commonfeeds/v1/cne/rss/entertainment.xml
