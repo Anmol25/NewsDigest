@@ -1,6 +1,6 @@
 import numpy as np
 import logging
-from scipy.spatial.distance import cosine
+from scipy.spatial.distance import cosine, pdist, squareform
 
 logger = logging.getLogger(__name__)
 
@@ -9,7 +9,7 @@ class Deduplicator:
     @staticmethod
     def deduplicate(input: list, model, device: str) -> list:
         """
-        Remove Articles with very similiar articles using cosine similiarity
+        Remove Articles with very similar articles using cosine similarity (vectorized)
         Args:
             input: list of articles
             model: Embedding creation model to be used remove duplicate headlines
@@ -22,28 +22,37 @@ class Deduplicator:
             if len_before > 0:
                 # Generate embeddings
                 titles = [item['title'] for item in input]
-
                 embeddings = model.encode(titles, device=device)
 
-                # Save Embeddings in feed
-                [input.update({"embeddings": emb})
-                 for input, emb in zip(input, embeddings)]
+                # Save Embeddings in feed (list of dictionaries, so we update in place)
+                for i, item in enumerate(input):
+                    item['embeddings'] = embeddings[i]
 
-                # Find duplicates using cosine similarity
-                to_remove = set()
-                for i in range(len(embeddings)):
-                    for j in range(i+1, len(embeddings)):
-                        similarity = 1 - cosine(embeddings[i], embeddings[j])
-                        if similarity > 0.9:
-                            to_remove.add(j)
+                # Find duplicates using cosine similarity (vectorized)
+                num_embeddings = len(embeddings)
+                if num_embeddings > 1:
+                    # Calculate pairwise cosine distances
+                    cosine_distances = pdist(embeddings, metric='cosine')
+
+                    # Convert the condensed distance matrix to a square matrix
+                    similarity_matrix = 1 - squareform(cosine_distances)
+
+                    to_remove = set()
+                    for i in range(num_embeddings):
+                        for j in range(i + 1, num_embeddings):
+                            if similarity_matrix[i, j] > 0.9:
+                                to_remove.add(j)
+
+                else:
+                    to_remove = set()
 
                 # Filter out duplicates
-                input = [item for idx, item in enumerate(
-                    input) if idx not in to_remove]
-                len_after = len(input)
+                input_deduplicated = [item for idx, item in enumerate(input) if idx not in to_remove]
+                len_after = len(input_deduplicated)
                 logger.info(f"Duplicates Removed: {(len_before - len_after)}")
-                return input
+                return input_deduplicated
             else:
                 return []
         except Exception as e:
             logger.error(f"Error in Deduplicating Feed: {e}")
+            return input

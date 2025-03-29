@@ -6,6 +6,7 @@ from sqlalchemy import desc
 from sqlalchemy.orm import Session
 from users.schemas import UserCreate
 from datetime import datetime, timezone
+from tqdm import tqdm
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +67,7 @@ def insert_to_db(articles: list):
 
     try:
         with context_db() as db:
-            for item in articles:
+            for item in tqdm(articles, desc="Inserting articles in DB", unit="article"):
                 existing_article = check_in_db(item, db)
 
                 if existing_article:
