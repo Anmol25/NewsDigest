@@ -8,6 +8,7 @@ from datetime import datetime
 from dateutil import parser
 from dateutil import tz
 from .deduplicator import Deduplicator
+from urllib.parse import urlparse
 
 logger = logging.getLogger(__name__)
 
@@ -148,6 +149,17 @@ class FeedParser:
             logger.error(f"Skipping entry due to invalid date: {
                 dt_str}")
             return None
+        
+    @staticmethod
+    def normalize_url(url):
+        """Remove #fragment from URL."""
+        try:
+            # Remove URL fragment using urlparse
+            parsed = urlparse(url)
+            return parsed._replace(fragment="").geturl()
+        except Exception as e:
+            logger.error(f"Error in Normalizing URL: {e}")
+            return None
 
     @staticmethod
     def parse_feed(topic: str, pub_xml: dict, model, device: str) -> list:
@@ -185,9 +197,15 @@ class FeedParser:
                         published_time = pytz.utc.localize(published_time)
                     published_time = published_time.astimezone(ist)
 
+                    url = FeedParser.normalize_url(entry.get('link'))
+                    
+                    # Check if URL is valid
+                    if not url:
+                        continue
+
                     metadata = {
                         'title': entry.get('title'),
-                        'link': entry.get('link'),
+                        'link': url,
                         'published': published_time,
                         'image': FeedParser.extract_image_link(entry),
                         'source': publisher,

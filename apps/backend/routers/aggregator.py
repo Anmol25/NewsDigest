@@ -34,11 +34,11 @@ async def refresh_feeds(sleep_time: int = 15 * 60):
 
             await articles.refresh_articles(rss_feeds)
             articles_list = articles.get_articles()
-
-            # Insert to database if new articles found
+            logger.info(f"Fetched {len(articles_list)} articles")
+            # Insert to database
+            logger.info("Inserting articles to database")
             if articles_list:
                 insert_to_db(articles_list)
-
             logger.info(
                 f"Refreshed Feeds Successfully, Next Refresh in {int(sleep_time/60)} minutes")
             await asyncio.sleep(sleep_time)

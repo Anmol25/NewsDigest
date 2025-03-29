@@ -91,7 +91,7 @@ def insert_to_db(articles: list):
                         logger.debug(
                             f"Integrity error while adding to DB: {item}")
 
-        logger.debug(
+        logger.info(
             f"Database update summary: {added_count} articles added, {updated_count} articles updated.")
     except Exception as e:
         logger.exception(
