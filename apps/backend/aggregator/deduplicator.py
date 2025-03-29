@@ -34,14 +34,14 @@ class Deduplicator:
                 for i in range(len(embeddings)):
                     for j in range(i+1, len(embeddings)):
                         similarity = 1 - cosine(embeddings[i], embeddings[j])
-                        if similarity > 0.85:
+                        if similarity > 0.9:
                             to_remove.add(j)
 
                 # Filter out duplicates
                 input = [item for idx, item in enumerate(
                     input) if idx not in to_remove]
                 len_after = len(input)
-                logger.debug(f"Duplicates Removed: {(len_before - len_after)}")
+                logger.info(f"Duplicates Removed: {(len_before - len_after)}")
                 return input
             else:
                 return []

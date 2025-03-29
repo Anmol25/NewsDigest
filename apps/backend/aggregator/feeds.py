@@ -2,6 +2,7 @@ import asyncio
 from .feed_parser import FeedParser
 from datetime import datetime
 import logging
+from .deduplicator import Deduplicator
 
 logger = logging.getLogger(__name__)
 
@@ -9,8 +10,8 @@ logger = logging.getLogger(__name__)
 class Feeds:
     def __init__(self, sbert):
         self._articles = None
-        self._model = sbert.model
-        self._device = sbert.device
+        self.model = sbert.model
+        self.device = sbert.device
 
     def get_articles(self):
         """
@@ -49,8 +50,12 @@ class Feeds:
             articles = []
             for topic, xml_data in zip(rss_feeds, responses):
                 articles.extend(FeedParser.parse_feed(
-                    topic, xml_data, self._model, self._device))
-            return articles
+                    topic, xml_data))
+            logger.debug(f"Fetched {len(articles)} Articles")
+            # Deduplicate Articles
+            logger.debug("Deduplicating Articles")
+            result = Deduplicator.deduplicate(articles, self.model, self.device)
+            return result
         except Exception as e:
             logger.error(f"Error in Fetching Feeds: {e}")
 

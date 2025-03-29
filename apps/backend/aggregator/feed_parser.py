@@ -4,10 +4,8 @@ import pytz
 import feedparser
 import re
 import logging
-from datetime import datetime
 from dateutil import parser
 from dateutil import tz
-from .deduplicator import Deduplicator
 from urllib.parse import urlparse
 
 logger = logging.getLogger(__name__)
@@ -162,7 +160,7 @@ class FeedParser:
             return None
 
     @staticmethod
-    def parse_feed(topic: str, pub_xml: dict, model, device: str) -> list:
+    def parse_feed(topic: str, pub_xml: dict) -> list:
         """
         Parse and Extract metadata from feed.
         Then Perform Deduplication and sort based on publishing date.
@@ -212,9 +210,6 @@ class FeedParser:
                         'topic': topic
                     }
                     result.append(metadata)
-
-            # Deduplication using cosine similarity
-            result = Deduplicator.deduplicate(result, model, device)
             logger.debug(
                 f"{topic}'s Feed Parsed Successfully!, Total Articles:{len(result)}")
             return result
