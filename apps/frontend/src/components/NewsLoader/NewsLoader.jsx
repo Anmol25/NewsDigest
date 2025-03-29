@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import News from '../News/News';
 import PropTypes from 'prop-types';
 import { useAxios } from '../../services/AxiosConfig';
+import { debounce } from 'lodash'; // Or use your own debounce/throttle implementation
 
 function NewsLoader(props){
     const axiosInstance = useAxios();
@@ -43,24 +44,24 @@ function NewsLoader(props){
         loadItems(1);
     }, []);
 
-    useEffect(() => {
-        const handleScroll = () => {
-            if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 100) {
-                loadItems(page);
-            }
-        };
+    const handleScroll = useCallback(debounce(() => {
+        if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 100) {
+            loadItems(page);
+        }
+    }, 200), [loadItems, page]); // Adjust the delay (200ms) as needed
 
+    useEffect(() => {
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
-    }, [loadItems, page]);
+    }, [handleScroll]);
 
     return(
         <div className="GridContainer">
-                {items.map((item) => <News key={item.id} {...item} />)}
-                {hasMore ? <p>Loading...</p> : items.length ? "" : <p>No Articles found</p>}
+            {items.map((item) => <News key={item.id} {...item} />)}
+            {hasMore ? <p>Loading...</p> : items.length ? "" : <p>No Articles found</p>}
         </div>
     )
-}   
+}
 
 NewsLoader.propTypes = {
     url: PropTypes.string.isRequired,
