@@ -19,7 +19,10 @@ function HomeElements(props) {
         setLoading(true);
 
         try {
-            const response = await axiosInstance.get(`/feed/${props.name}`, {
+            const response = await axiosInstance.post(`/articles`, {
+                type: "topic",
+                topic: props.name
+            }, {
                 params: {
                     page: currentPage,
                 }

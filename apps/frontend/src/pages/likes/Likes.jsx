@@ -13,7 +13,7 @@ function Likes(){
                 <h1 className="MainHeadingTitle">Liked Articles</h1>
             </div>
             <div>
-                <NewsLoader url="/liked-articles" />
+                <NewsLoader url="/articles" requestBody={{type: "liked"}} />
             </div>
         </div>
     )

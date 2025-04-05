@@ -2,11 +2,11 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import News from '../News/News';
 import PropTypes from 'prop-types';
 import { useAxios } from '../../services/AxiosConfig';
-import { debounce } from 'lodash'; // Or use your own debounce/throttle implementation
+import { debounce } from 'lodash';
 
 function NewsLoader(props){
     const axiosInstance = useAxios();
-    const {url, parameters} = props;
+    const {url, parameters, requestBody} = props;
     const [items, setItems] = useState([]);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
@@ -17,12 +17,23 @@ function NewsLoader(props){
         loadingRef.current = true;
 
         try {
-            const response = await axiosInstance.get(url, {
-                params: {
-                    page: currentPage,
-                    ...parameters
-                }
-            });
+            let response;
+            if (requestBody) {
+                response = await axiosInstance.post(url, {...requestBody}, {
+                    params: {
+                        page: currentPage,
+                        ...parameters
+                    }
+                });
+            } else {
+                response = await axiosInstance.get(url, {
+                    params: {
+                        page: currentPage,
+                        ...parameters
+                    }
+                });
+            }
+            console.log(currentPage);
             const newData = response.data || [];
             const moreData = newData.length === 20;
             setItems(prev => currentPage === 1 ? newData : [...prev, ...newData]);
@@ -65,7 +76,8 @@ function NewsLoader(props){
 
 NewsLoader.propTypes = {
     url: PropTypes.string.isRequired,
-    parameters: PropTypes.object
+    parameters: PropTypes.object,
+    requestBody: PropTypes.object
 };
 
 export default NewsLoader;

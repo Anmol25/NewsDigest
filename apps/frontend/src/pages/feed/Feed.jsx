@@ -1,4 +1,3 @@
-import { useCallback } from "react";
 import { useParams } from "react-router-dom";
 import NewsLoader from "../../components/NewsLoader/NewsLoader";
 import { TOPICS_LIST } from "../../constants/TOPICS_LIST";
@@ -10,10 +9,22 @@ function Feed() {
     const { topic } = useParams();
     const title = formatTitle(topic);
 
-    const url = useCallback(() => {
+    const url = () => {
         if (topic === "for-you") return "/foryou";
-        else return `/feed/${title}`;
-    }, [topic, title]);
+        else {
+            return `/articles`
+        };
+    };
+
+    const requestbody = () => {
+        if (topic === "for-you") return null;
+        else {
+            return {
+                "type": "topic",
+                "topic": title,
+            }
+        }
+    }
 
     return (
         <div className="MainPageContainer">
@@ -28,6 +39,7 @@ function Feed() {
             <NewsLoader 
                 key={topic} 
                 url={url()} 
+                requestBody={requestbody()}
             />
         </div>
     );

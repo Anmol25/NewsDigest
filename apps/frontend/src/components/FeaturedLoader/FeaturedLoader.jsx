@@ -22,7 +22,10 @@ function FeaturedLoader() {
     }
     
     try {
-      const response = await axiosInstance.get('/feed/Top Stories', {
+      const response = await axiosInstance.post('/articles', {
+        type: "topic",
+        topic: "Top Stories"
+      }, {
         params: {
           page: currentPage,
         }

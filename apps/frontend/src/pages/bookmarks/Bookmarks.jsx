@@ -13,7 +13,7 @@ function Bookmarks(){
                 <h1 className="MainHeadingTitle">Bookmarked Articles</h1>
             </div>
             <div>
-                <NewsLoader url="/bookmarked-articles" />
+                <NewsLoader url="/articles" requestBody={{type: "bookmarked"}} />
             </div>
         </div>
     )

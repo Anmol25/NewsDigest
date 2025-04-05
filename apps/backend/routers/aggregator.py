@@ -1,3 +1,9 @@
+"""
+This module provides endpoints for fetching articles, searching, and managing user subscriptions.
+
+It includes functionality for refreshing feeds, checking user subscriptions, and retrieving personalized feeds.
+"""
+
 import yaml
 import asyncio
 import logging
@@ -14,6 +20,8 @@ from database.operations import insert_to_db
 from database.models import Articles, Users, UserLikes, UserBookmarks, Sources, UserSubscriptions, UserHistory
 from users.services import get_current_active_user
 from users.recommendation import Recommendar
+from pydantic import BaseModel
+from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -37,14 +45,14 @@ QUERY_STRUCTURE = (Articles.id,
              else_=False).label("bookmarked"))
 
 async def refresh_feeds(sleep_time: int = 15 * 60):
-    """Automatically fetch feeds and update database periodically
+    """Automatically fetch feeds and update database periodically.
     
     Args:
         sleep_time (int): Time interval in seconds for refreshing feeds.
     """
     try:
         while True:
-            logger.debug("Refreshing Feeds")
+            logger.info("Refreshing Feeds")
             # Load feed links and refresh articles
             with open("feeds.yaml", 'r') as file:
                 rss_feeds = yaml.safe_load(file)
@@ -64,7 +72,10 @@ async def refresh_feeds(sleep_time: int = 15 * 60):
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Manage the feed refresh task lifecycle"""
+    """Manage the feed refresh task lifecycle.
+    
+    Args:
+        app (FastAPI): FastAPI application instance."""
     task = asyncio.create_task(refresh_feeds())
     yield
     task.cancel()
@@ -73,15 +84,14 @@ async def lifespan(app: FastAPI):
 router = APIRouter(lifespan=lifespan)
 
 
-def format_article_results(results: list):
-    """Format query results into a consistent response structure
+def format_article_results(results: list) -> list:
+    """Format query results into a consistent response structure.
     
     Args:
         results (list): List of articles from the database.
     
     Returns:
-        list: Formatted list of articles with user interaction data.
-    """
+        list: Formatted list of articles with user interaction data."""
     if not results:
         return []
     return [
@@ -101,14 +111,13 @@ def format_article_results(results: list):
 
 
 def get_article_query(db:Session, current_user_id: int) -> list:
-    """Create base query for articles with user interaction data
+    """Create base query for articles with user interaction data.
     
     Args:
         db (Session): Database session.
         current_user_id (int): ID of the current user.
     Returns:
-        list: SQLAlchemy query object.
-    """
+        list: SQLAlchemy query object."""
     return (db.query(*QUERY_STRUCTURE)
         .outerjoin(like_alias, (Articles.id == like_alias.article_id) &
                    (like_alias.user_id == current_user_id))
@@ -117,8 +126,7 @@ def get_article_query(db:Session, current_user_id: int) -> list:
 
 
 def paginate_and_format(query: Query, order_by_col: ColumnElement, offset: int, limit: int) -> list:
-    """
-    Paginate the query results and format them
+    """Paginate the query results and format them.
     
     Args:
         query (Query): SQLAlchemy query object.
@@ -127,8 +135,7 @@ def paginate_and_format(query: Query, order_by_col: ColumnElement, offset: int, 
         limit (int): Limit for pagination.
     
     Returns:
-        list: Formatted list of articles.
-    """
+        list: Formatted list of articles."""
     results = (
         query
         .order_by(desc(order_by_col))
@@ -138,133 +145,82 @@ def paginate_and_format(query: Query, order_by_col: ColumnElement, offset: int, 
     )
     return format_article_results(results)
 
-@router.get("/feed/{topic}")
-async def retrieve_feed(
-    topic: str,
-    page: int = 1,
-    limit: int = 20,
+def fetch_article(db: Session, current_user_id: int, page: int, page_size: int, filter_by: ColumnElement, order_by: ColumnElement) -> list:
+    """Fetch articles based on user preferences and filters.
+
+    Args:
+        db (Session): Database session.
+        current_user_id (int): ID of the current user.
+        page (int): Page number for pagination.
+        page_size (int): Number of results per page.
+        filter_by (ColumnElement): Filter condition for articles.
+        order_by (ColumnElement): Column to order by.
+    
+    Returns:
+        list: List of articles based on the filter and pagination."""
+    try:
+        skip = (page - 1) * page_size
+        query = get_article_query(db, current_user_id)
+        query = query.filter(filter_by)
+        results = paginate_and_format(query, order_by, skip, page_size)
+        return results
+    except Exception as e:
+        logger.error(f"Error in fetching articles: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+class ArticleRequest(BaseModel):
+    type: str
+    source: Optional[str] = None
+    topic: Optional[str] = None
+
+def handle_article_request(request: ArticleRequest, page: int, page_size:int , db: Session, current_user_id: int) -> list:
+    """Handle article request based on type.
+    
+    Args:
+        request (ArticleRequest): Request object containing filter criteria.
+        db (Session): Database session.
+        current_user (Users): Current logged-in user.
+    
+    Returns:
+        list: List of articles based on the request type and filters."""
+    if request.type == "liked":
+        return fetch_article(db, current_user_id, page, page_size, like_alias.article_id.isnot(None), Articles.published_date)
+    elif request.type == "bookmarked":
+        return fetch_article(db, current_user_id, page, page_size, bookmark_alias.article_id.isnot(None), Articles.published_date)
+    elif request.type == "source":
+        return fetch_article(db, current_user_id, page, page_size, Articles.source == request.source, Articles.published_date)
+    elif request.type == "topic":
+        return fetch_article(db, current_user_id, page, page_size, Articles.topic == request.topic, Articles.published_date)
+    else:
+        raise HTTPException(status_code=400, detail="Invalid article type")
+    
+
+@router.post("/articles")
+async def get_articles(
+    request: ArticleRequest,
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=50),
     db: Session = Depends(get_db),
     current_user: Users = Depends(get_current_active_user)
 ) -> list:
-    """Retrieve feed articles for a specific topic.
+    """Get articles based on user preferences and filters.
     
     Args:
-        topic (str): Topic of the feed.
-        page (int): Page number for pagination.
-        limit (int): Number of results per page.
+        request (ArticleRequest): Request object containing filter criteria.
         db (Session): Database session.
         current_user (Users): Current logged-in user.
+    
     Returns:
-        list: List of articles for the specified topic.
-    """
+        list: List of articles based on the request type and filters."""
     try:
-        skip = (page - 1) * limit
-        query = get_article_query(db, current_user.id)
-        query = query.filter(Articles.topic == topic)
-        results = paginate_and_format(query, Articles.published_date, skip, limit)
+        results = handle_article_request(request, page, page_size, db, current_user.id)
         if not results:
-            raise HTTPException(
-                status_code=404, detail=f"{topic}'s Feed not found")
+            raise HTTPException(status_code=404, detail="No articles found")
         return results
     except Exception as e:
-        logger.error(f"Error in retrieving feed for topic {topic}: {e}")
+        logger.error(f"Error in retrieving articles: {e}")
         if isinstance(e, HTTPException): raise
         raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get("/liked-articles")
-async def get_liked_articles(
-    page: int = Query(1, ge=1),
-    page_size: int = Query(20, ge=1, le=50),
-    current_user: Users = Depends(get_current_active_user),
-    db: Session = Depends(get_db)
-) -> list:
-    """Get articles liked by the current user.
-
-    Args:
-        page (int): Page number for pagination.
-        page_size (int): Number of results per page.
-        current_user (Users): Current logged-in user.
-        db (Session): Database session.
-
-    Returns:
-        list: List of articles liked by the user.
-    """
-    try:
-        offset = (page - 1) * page_size
-        query = get_article_query(db, current_user.id).filter(like_alias.article_id.isnot(None))
-        results = paginate_and_format(query, like_alias.liked_at, offset, page_size)
-        if not results:
-            raise HTTPException(status_code=404, detail="No liked articles found")
-        return results
-    except Exception as e:
-        logger.error(f"Error in retrieving liked articles: {e}")
-        if isinstance(e, HTTPException): raise
-        raise HTTPException(status_code=500, detail="Internal Server Error")
-
-
-@router.get("/bookmarked-articles")
-async def get_bookmarked_articles(
-    page: int = Query(1, ge=1),
-    page_size: int = Query(20, ge=1, le=50),
-    current_user: Users = Depends(get_current_active_user),
-    db: Session = Depends(get_db)
-) -> list:
-    """Get articles bookmarked by the current user.
-    
-    Args:
-        page (int): Page number for pagination.
-        page_size (int): Number of results per page.
-        current_user (Users): Current logged-in user.
-        db (Session): Database session.
-    
-    Returns:
-        list: List of articles bookmarked by the user.
-    """
-    try:
-        offset = (page - 1) * page_size
-        query = get_article_query(db, current_user.id).filter(bookmark_alias.article_id.isnot(None))
-        results = paginate_and_format(query, bookmark_alias.bookmarked_at, offset, page_size)
-        if not results:
-            raise HTTPException(status_code=404, detail="No bookmarked articles found")
-        return results
-    except Exception as e:
-        logger.error(f"Error in retrieving bookmarked articles: {e}")
-        if isinstance(e, HTTPException): raise
-        raise HTTPException(status_code=500, detail="Internal Server Error")
-
-
-@router.get("/source")
-async def get_source_articles(
-    source: str,
-    page: int = Query(1, ge=1),
-    page_size: int = Query(20, ge=1, le=50),
-    current_user: Users = Depends(get_current_active_user),
-    db: Session = Depends(get_db)
-):
-    """Get articles from a specific source
-    
-    Args:
-        source (str): Source name.
-        page (int): Page number for pagination.
-        page_size (int): Number of results per page.
-        current_user (Users): Current logged-in user.
-        db (Session): Database session.
-        
-    Returns:
-        list: List of articles from the specified source.
-    """
-    try:
-        offset = (page - 1) * page_size
-        query = get_article_query(db, current_user.id).filter(Articles.source == source)
-        results = paginate_and_format(query, Articles.published_date, offset, page_size)
-        if not results:
-            raise HTTPException(status_code=404, detail=f"No articles found for source {source}")
-        return results
-    except Exception as e:
-        logger.error(f"Error in retrieving articles from source {source}: {e}")
-        if isinstance(e, HTTPException): raise
-        raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
 @router.get("/search")
@@ -285,8 +241,7 @@ async def search_article(
         current_user (Users): Current logged-in user.
     
     Returns:
-        list: List of articles matching the search query.
-    """
+        list: List of articles matching the search query."""
     try:
         skip = (page - 1) * limit
         similar_items = search_db(current_user.id, query, db, skip, limit)
@@ -316,8 +271,7 @@ async def personalized_feed(
         db (Session): Database session.
     
     Returns:
-        list: List of personalized article recommendations.
-    """
+        list: List of personalized article recommendations."""
     try:
         feed = Recommendar.get_recommendations(
             current_user, db, page, page_size)
@@ -335,7 +289,16 @@ async def personalized_feed(
 
 
 @router.get("/isSubscribed")
-def is_subscribed(source: str, current_user: Users = Depends(get_current_active_user), db: Session = Depends(get_db)):
+def is_subscribed(source: str, current_user: Users = Depends(get_current_active_user), db: Session = Depends(get_db)) -> dict:
+    """Check if the user is subscribed to a specific source.
+    
+    Args:
+        source (str): Source name to check subscription status.
+        current_user (Users): Current logged-in user.
+        db (Session): Database session.
+    
+    Returns:
+        dict: Subscription status."""
     try:
         source_id = db.query(Sources.id).filter(
             Sources.source == source).first()
@@ -354,7 +317,15 @@ def is_subscribed(source: str, current_user: Users = Depends(get_current_active_
 
 
 @router.get("/getSubscriptions")
-def get_user_subscriptions(current_user: Users = Depends(get_current_active_user), db: Session = Depends(get_db)):
+def get_user_subscriptions(current_user: Users = Depends(get_current_active_user), db: Session = Depends(get_db))->list:
+    """Get all sources the user is subscribed to.
+    
+    Args:
+        current_user (Users): Current logged-in user.
+        db (Session): Database session.
+        
+    Returns:
+        list: List of subscribed sources."""
     try:
         subscriptions = db.query(Sources.source).\
             join(UserSubscriptions, Sources.id == UserSubscriptions.source_id).\
@@ -373,10 +344,18 @@ async def get_subscribed_articles(
     page_size: int = Query(20, ge=1, le=50),
     current_user: Users = Depends(get_current_active_user),
     db: Session = Depends(get_db)
-):
-    """Get articles from all sources the user has subscribed to"""
+)-> list:
+    """Get articles from all sources the user has subscribed to.
+    
+    Args:
+        page (int): Page number for pagination.
+        page_size (int): Number of results per page.
+        current_user (Users): Current logged-in user.
+        db (Session): Database session.
+        
+    Returns:
+        list: List of articles from subscribed sources."""
     try:
-        offset = (page - 1) * page_size
         # Get all sources the user is subscribed to
         subscribed_sources = db.query(Sources.source).\
             join(UserSubscriptions, Sources.id == UserSubscriptions.source_id).\
@@ -386,8 +365,7 @@ async def get_subscribed_articles(
         if not source_names:
             raise HTTPException(status_code=404, detail="No news source subscribed")
         # Get articles from subscribed sources
-        query = get_article_query(db, current_user.id).filter(Articles.source.in_(source_names))
-        results = paginate_and_format(query, Articles.published_date, offset, page_size)
+        results = fetch_article(db, current_user.id, page, page_size, Articles.source.in_(source_names), Articles.published_date)
         if not results:
             raise HTTPException(status_code=404, detail="No subscribed articles found")
         return results
@@ -402,8 +380,8 @@ async def get_history(
         page: int = Query(1, ge=1),
         page_size: int = Query(20, ge=1, le=50),
         current_user: Users = Depends(get_current_active_user),
-        db: Session = Depends(get_db)):
-    """Get User History
+        db: Session = Depends(get_db)) -> list:
+    """Get User History.
     
     Args:
         page (int): Page number for pagination.
@@ -412,8 +390,7 @@ async def get_history(
         db (Session): Database session.
         
     Returns:
-        List[Dict]: List of articles with user history details.
-    """
+        List[Dict]: List of articles with user history details."""
     try:
         offset = (page - 1) * page_size
 
