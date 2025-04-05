@@ -42,7 +42,7 @@ function UserHistory(){
                     page: currentPage
                 }
             });
-
+            console.log("History response:", response.data);
             const newData = response.data || [];
             const moreData = newData.length === 20;
             setHistory(prev => currentPage === 1 ? newData : [...prev, ...newData]);

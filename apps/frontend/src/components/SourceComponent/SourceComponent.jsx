@@ -20,16 +20,14 @@ function SourceComponent(props) {
     const [isSubscribed, setSubscribed] = useState(false);
 
     const checkSubscribed = async (title) =>{
-        const response = await axiosInstance.post("/isSubscribed", {
-            source : title
+        const response = await axiosInstance.get("/isSubscribed", {
+            params: {source : title}
         });
         
         if (response.status === 200) {
-            if (response.data == true){
-                console.log("subscribed");
+            if (response.data.isSubscribed == true){
                 return true;
             }else{
-                console.log("Not subscribed");
                 return false;
             }
         }

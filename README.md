@@ -10,15 +10,15 @@
 
 ## Project Snapshots
 
-![Alt Text](images/home.png)
-| ![Alt Text](images/recommendation.png) | ![Alt Text](images/search.png) |
+![Home](images/home.png)
+| ![Recommendation](images/recommendation.png) | ![Search](images/search.png) |
 |---------|---------|
-| ![Alt Text](images/subscriptions.png) | ![Alt Text](images/source.png) |
-| ![Alt Text](images/Liked.png) | ![Alt Text](images/bookmarked.png) |
-| ![Alt Text](images/profile.png) | ![Alt Text](images/history.png) |
+| ![Subscriptions](images/subscriptions.png) | ![Source](images/source.png) |
+| ![Liked](images/Liked.png) | ![Bookmarked](images/bookmarked.png) |
+| ![Profile](images/profile.png) | ![History](images/history.png) |
 
 <p><strong>Generating Summaries</strong></p>
-<p align="center"><img src="images/summary.gif" width=50%></p>
+<p align="center"><img src="images/summary.gif" width=50% alt="Summary"></p>
 
 
 
