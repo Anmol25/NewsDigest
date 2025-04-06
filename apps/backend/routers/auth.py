@@ -8,10 +8,9 @@ from fastapi import APIRouter, Depends, HTTPException, status, Response, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from datetime import timedelta
 from database.session import get_db
-from database.models import Users
 from database.operations import create_user_in_db, check_user_in_db
 from sqlalchemy.orm import Session
-from users.schemas import Token, User, UserCreate
+from users.schemas import Token, UserCreate
 from users.services import (authenticate_user, create_access_token, get_current_active_user,
                             get_password_hash, create_refresh_token, decode_refresh_token)
 

@@ -22,12 +22,16 @@ from users.services import get_current_active_user
 from users.recommendation import Recommendar
 from pydantic import BaseModel
 from typing import Optional
+from concurrent.futures import ThreadPoolExecutor
+import threading
+import time
 
 logger = logging.getLogger(__name__)
 
 # Initialize model and article fetcher
 sbert = SBERT()
 articles = Feeds(sbert)
+REFRESH_INTERVAL = 60 * 10 # 10 minutes
 # Define aliases for user interactions
 like_alias = aliased(UserLikes)
 bookmark_alias = aliased(UserBookmarks)
@@ -46,43 +50,37 @@ QUERY_STRUCTURE = (
          else_=False).label("bookmarked")
 )
 
-
-async def refresh_feeds(sleep_time: int = 15 * 60):
-    """Automatically fetch feeds and update database periodically.
-
-    Args:
-        sleep_time (int): Time interval in seconds for refreshing feeds.
-    """
-    try:
-        while True:
-            logger.info("Refreshing Feeds")
-            # Load feed links and refresh articles
-            with open("feeds.yaml", 'r') as file:
-                rss_feeds = yaml.safe_load(file)
-            await articles.refresh_articles(rss_feeds)
-            articles_list = articles.get_articles()
-            logger.info(f"Fetched {len(articles_list)} articles")
-            # Insert to database
-            logger.info("Inserting articles to database")
-            if articles_list:
-                insert_to_db(articles_list)
-            logger.info(
-                f"Refreshed Feeds Successfully, Next Refresh in {int(sleep_time/60)} minutes")
-            await asyncio.sleep(sleep_time)
-    except Exception as e:
-        logger.error(f"Error in executing refresh feeds task: {e}")
-
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Manage the feed refresh task lifecycle.
-
+    
     Args:
         app (FastAPI): FastAPI application instance."""
-    task = asyncio.create_task(refresh_feeds())
+    executor = ThreadPoolExecutor(max_workers=1)
+    
+    def refresh_worker():
+        while True:
+            try:
+                logger.info("Refreshing Feeds")
+                with open("feeds.yaml", 'r') as file:
+                    rss_feeds = yaml.safe_load(file)
+                # Run the async code in a separate event loop in this thread
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                loop.run_until_complete(articles.refresh_articles(rss_feeds))
+                articles_list = articles.get_articles()
+                logger.info(f"Fetched {len(articles_list)} articles")
+                if articles_list:
+                    insert_to_db(articles_list)
+                logger.info(f"Refreshed Feeds Successfully, Next Refresh in {REFRESH_INTERVAL//60} minutes")
+            except Exception as e:
+                logger.error(f"Error refreshing feeds: {e}")
+            time.sleep(REFRESH_INTERVAL)
+    # Start the worker thread
+    thread = threading.Thread(target=refresh_worker, daemon=True)
+    thread.start()
     yield
-    task.cancel()
-
+    executor.shutdown(wait=False)
 
 router = APIRouter(lifespan=lifespan)
 
