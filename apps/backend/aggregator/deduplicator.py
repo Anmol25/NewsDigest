@@ -1,6 +1,10 @@
-import numpy as np
+"""
+deduplicator.py
+This module contains the deduplicator for the aggregator.
+"""
+
 import logging
-from scipy.spatial.distance import cosine, pdist, squareform
+from scipy.spatial.distance import pdist, squareform
 
 logger = logging.getLogger(__name__)
 

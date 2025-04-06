@@ -1,3 +1,8 @@
+"""
+summarizer.py
+This module contains the summarizer for the aggregator.
+"""
+
 import torch
 import aiohttp
 import logging

@@ -87,7 +87,9 @@ function HomeElements(props) {
                             <News {...item} />
                         </div>
                     ))}
-                    {loading && <div className="LoadingIndicator">Loading...</div>}
+                    {loading && <div className="big-spinner-container">
+                                <div className="big-spinner"></div>
+                        </div>}
                 </div>
                 <button 
                     className="ScrollButton ScrollButtonRight" 

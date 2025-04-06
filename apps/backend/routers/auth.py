@@ -9,7 +9,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from datetime import timedelta
 from database.session import get_db
 from database.models import Users
-from database.operations import create_user_in_db, get_user_history, check_user_in_db
+from database.operations import create_user_in_db, check_user_in_db
 from sqlalchemy.orm import Session
 from users.schemas import Token, User, UserCreate
 from users.services import (authenticate_user, create_access_token, get_current_active_user,
@@ -18,7 +18,7 @@ from users.services import (authenticate_user, create_access_token, get_current_
 logger = logging.getLogger(__name__)
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
-REFRESH_TOKEN_EXPIRE_DAYS = 7
+REFRESH_TOKEN_EXPIRE_DAYS = 365
 
 router = APIRouter()
 

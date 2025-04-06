@@ -7,7 +7,6 @@ import logging
 from fastapi import APIRouter, HTTPException, Depends, Response
 from sqlalchemy.orm import Session
 from database.session import get_db
-from database.operations import get_user_history
 from database.models import Users, UserLikes, UserBookmarks, Sources, UserSubscriptions, UserHistory
 from users.services import get_current_active_user, verify_password, get_password_hash
 from pydantic import BaseModel
@@ -17,27 +16,6 @@ from datetime import datetime, timezone
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
-
-
-@router.get("/userhistory")
-async def get_current_user_history(current_user: Users = Depends(get_current_active_user), db: Session = Depends(get_db)):
-    """Returns the History of current history.
-
-    Args:
-        current_user (Users): Current active user.
-        db (Session): Database session.
-
-    Returns:
-        list: List of user history."""
-    try:
-        if current_user:
-            history = get_user_history(current_user.id, db)
-            return history
-        raise HTTPException(
-            status_code=401, detail="User not logged in.")
-    except Exception as e:
-        logger.error(f"Error in retrieving current user history: {e}")
-
 
 class ArticleRequest(BaseModel):
     article_id: int

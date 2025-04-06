@@ -88,7 +88,11 @@ function UserHistory(){
             </div>
             <div className="HistoryList">
                 {history.map((item) => <HistoryComponent key={item.id} {...item} handleDelete={handleDelete} />)}
-                {hasMore ? <p>Loading...</p> : history.length ? "" : <p>History Not found</p>}
+                {hasMore ? (
+                    <div className="big-spinner-container">
+                        <div className="big-spinner"></div>
+                    </div>
+                ) : history.length ? "" : <p>History Not found</p>}
             </div>
         </div>
     )

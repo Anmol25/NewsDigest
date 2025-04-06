@@ -1,3 +1,8 @@
+"""
+recommendation.py
+This module contains the recommendation functionality for the users.
+"""
+
 import numpy as np
 from database.models import Articles, UserHistory, UserLikes, UserBookmarks
 from sqlalchemy import desc
@@ -8,12 +13,27 @@ from sqlalchemy.orm import aliased
 class Recommendar:
     @staticmethod
     def check_history(user, db):
+        """
+        Check if the user has any history in the UserHistory table.
+        Args:
+            user: The user object to check history for.
+           db: The database session to use for the query.
+        Returns:
+            bool: True if the user has history, False otherwise."""
         hist_exist = db.query(exists().where(
             UserHistory.user_id == user.id)).scalar()
         return hist_exist
 
     @staticmethod
     def get_mean_embedding_and_ids(user, db, hist_len=5):
+        """
+        Fetches the mean embedding of the user's last viewed articles and their IDs.
+        Args:
+            user: The user object to fetch history for.
+            db: The database session to use for the query.
+            hist_len: The number of articles to consider for mean embedding.
+        Returns:
+            tuple: A tuple containing the mean embedding and a list of article IDs."""
         results = db.query(Articles. id, Articles.embeddings).join(
             UserHistory, UserHistory.article_id == Articles.id).filter(
                 UserHistory.user_id == user.id).order_by(desc(UserHistory.watched_at)).limit(
@@ -27,10 +47,17 @@ class Recommendar:
 
     @staticmethod
     def personalized_feed(user_id, mean_embedding, article_ids, db, page=1, page_size=10):
-        """
-        Fetches a personalized feed of articles based on cosine similarity to the user's mean embedding,
+        """Fetches a personalized feed of articles based on cosine similarity to the user's mean embedding,
         excluding already viewed articles.
-        """
+        Args:
+            user_id: The ID of the user to fetch the feed for.
+            mean_embedding: The mean embedding of the user's last viewed articles.
+            article_ids: A list of article IDs to exclude from the feed.
+            db: The database session to use for the query.
+            page: The page number for pagination.
+            page_size: The number of articles per page.
+        Returns:
+            list: A list of dictionaries containing article details and user interactions."""
         offset = (page - 1) * page_size
         like_alias = aliased(UserLikes)
         bookmark_alias = aliased(UserBookmarks)
@@ -78,6 +105,14 @@ class Recommendar:
 
     @staticmethod
     def get_recommendations(user, db, page=1, page_size=10):
+        """Fetches personalized recommendations for a user based on their history.
+        Args:
+            user: The user object to fetch recommendations for.
+            db: The database session to use for the query.
+            page: The page number for pagination.
+            page_size: The number of articles per page.
+        Returns:
+            list: A list of dictionaries containing article details and user interactions."""
         # Check if User history exists
         hist_exist = Recommendar.check_history(user, db)
         if not hist_exist:

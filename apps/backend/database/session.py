@@ -1,3 +1,8 @@
+"""
+session.py
+This module contains the session for the database.
+"""
+
 from contextlib import contextmanager
 from .base import SessionLocal
 

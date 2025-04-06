@@ -1,3 +1,8 @@
+"""
+operations.py
+This module contains the operations for the database.
+"""
+
 import logging
 from .session import context_db
 from .models import Articles, Users, UserHistory
@@ -12,9 +17,13 @@ logger = logging.getLogger(__name__)
 
 
 def update_entry(existing_article, new_article_data, db):
-    """
-    Updates an existing article entry in the database.
-    """
+    """Updates an existing article entry in the database.
+    Args:
+        existing_article: The existing article object to update.
+        new_article_data: The new article data to update the existing article with.
+        db: The database session to use for the update.
+    Returns:
+        bool: True if the update was successful, False otherwise."""
     try:
         existing_article.title = new_article_data["title"]
         existing_article.link = new_article_data["link"]
@@ -34,10 +43,13 @@ def update_entry(existing_article, new_article_data, db):
 
 
 def handle_update(existing_article, new_article_data, db):
-    """
-    Handles updates if an article is already in the database.
-    Returns True if an update occurred, False otherwise.
-    """
+    """Handles updates if an article is already in the database.
+    Args:
+        existing_article: The existing article object to update.
+        new_article_data: The new article data to update the existing article with.
+        db: The database session to use for the update.
+    Returns:
+        bool: True if an update occurred, False otherwise."""
     try:
         time_in_db = existing_article.published_date
         time_in_article = new_article_data["published"]
@@ -52,16 +64,21 @@ def handle_update(existing_article, new_article_data, db):
 
 
 def check_in_db(article: dict, db: Session):
-    """
-    Checks if an article exists in the database and returns the ORM object.
-    """
+    """Checks if an article exists in the database and returns the ORM object.
+    Args:
+        article: The article data to check in the database.
+        db: The database session to use for the query.
+    Returns:
+        Articles: The ORM object if the article exists, None otherwise."""
     return db.query(Articles).filter(Articles.link == article["link"]).first()
 
 
 def insert_to_db(articles: list):
-    """
-    Inserts a list of new articles into the database and logs counts of added and updated articles.
-    """
+    """Inserts a list of new articles into the database and logs counts of added and updated articles.
+    Args:
+        articles: A list of dictionaries containing article data.
+    Returns:
+        None"""
     added_count = 0
     updated_count = 0
 
@@ -100,6 +117,12 @@ def insert_to_db(articles: list):
 
 
 def check_user_in_db(user: UserCreate, db: Session):
+    """Checks if a user exists in the database and returns a response indicating if the user exists.
+    Args:
+        user: The user data to check in the database.
+        db: The database session to use for the query.
+    Returns:
+        dict: A dictionary containing two boolean values indicating if the user exists."""
     try:
         response = {"userExists": False, "emailExists": False}
         # Check Email
@@ -116,6 +139,12 @@ def check_user_in_db(user: UserCreate, db: Session):
 
 
 def create_user_in_db(user: UserCreate, db: Session):
+    """Creates a new user in the database.
+    Args:
+        user: The user data to create in the database.
+        db: The database session to use for the creation.
+    Returns:
+        bool: True if the user was created successfully, False otherwise."""
     try:
         UserDB = Users(
             username=user.username,
@@ -136,8 +165,14 @@ def create_user_in_db(user: UserCreate, db: Session):
 
 
 def update_user_history(db: Session, userid: int, art_id):
+    """Updates the user history in the database.
+    Args:
+        db: The database session to use for the update.
+        userid: The user ID to update the history for.
+        art_id: The article ID to update the history for.
+    Returns:
+        bool: True if the update was successful, False otherwise."""
     try:
-        # Check if already in history -> Update Time
         hist_item = db.query(UserHistory).filter(
             (UserHistory.user_id == userid) & (UserHistory.article_id == art_id)).first()
         if hist_item:
@@ -162,27 +197,3 @@ def update_user_history(db: Session, userid: int, art_id):
                 logger.error(f"Cannot add article to user history: {e}")
     except Exception as e:
         logger.error(f"Unexpected error while updating user history: {e}")
-
-
-def get_user_history(userid: int, db: Session):
-    try:
-        history = []
-        hist_list = db.query(UserHistory).filter(
-            UserHistory.user_id == userid).order_by(desc(UserHistory.watched_at)).all()
-        for item in hist_list:
-            article = db.query(Articles).filter(
-                Articles.id == item.article_id).first()
-            if article:
-                hist_item = {
-                    "title": article.title,
-                    "link": article.link,
-                    "image": article.image,
-                    "published_date": article.published_date,
-                    "source": article.source,
-                    "watched_at": item.watched_at
-                }
-                history.append(hist_item)
-        return history
-    except Exception as e:
-        logger.error(f"Unexpected error while retrieving user history: {e}")
-        return []

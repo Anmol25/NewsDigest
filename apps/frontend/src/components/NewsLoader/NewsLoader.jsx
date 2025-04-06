@@ -69,7 +69,11 @@ function NewsLoader(props){
     return(
         <div className="GridContainer">
             {items.map((item) => <News key={item.id} {...item} />)}
-            {hasMore ? <p>Loading...</p> : items.length ? "" : <p>No Articles found</p>}
+            {hasMore ? (
+                <div className="big-spinner-container">
+                    <div className="big-spinner"></div>
+                </div>
+            ) : items.length ? "" : <p>No Articles found</p>}
         </div>
     )
 }

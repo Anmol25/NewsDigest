@@ -1,3 +1,8 @@
+"""
+search.py
+This module contains the search functionality for the aggregator.
+"""
+
 from sqlalchemy import or_
 import logging
 from database.models import Articles, UserLikes, UserBookmarks

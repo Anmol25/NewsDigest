@@ -1,3 +1,8 @@
+"""
+feed_parser.py
+This module contains the feed parser for the aggregator.
+"""
+
 import aiohttp
 import asyncio
 import pytz

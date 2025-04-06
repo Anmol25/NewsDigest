@@ -1,6 +1,10 @@
+"""
+feeds.py
+This module fetches and parses RSS feeds for the aggregator.
+"""
+
 import asyncio
 from .feed_parser import FeedParser
-from datetime import datetime
 import logging
 from .deduplicator import Deduplicator
 
