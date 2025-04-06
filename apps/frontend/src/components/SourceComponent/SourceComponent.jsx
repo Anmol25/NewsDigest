@@ -69,7 +69,7 @@ function SourceComponent(props) {
                 </button>
             </div>
             <p className="SubHeading">{`Latest News from ${formattedTitle}:`}</p>
-            <NewsLoader key={props.source} url={`/source`} parameters={{source: formattedTitle}} />
+            <NewsLoader key={props.source} url={`/articles`} requestBody= {{type:"source", source:formattedTitle}} />
         </div>
     );
 }
