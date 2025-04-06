@@ -1,6 +1,6 @@
 """
+aggregator.py
 This module provides endpoints for fetching articles, searching, and managing user subscriptions.
-
 It includes functionality for refreshing feeds, checking user subscriptions, and retrieving personalized feeds.
 """
 

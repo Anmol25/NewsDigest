@@ -1,3 +1,8 @@
+"""
+summarizer.py
+This module provides an API endpoint for summarizing articles.
+"""
+
 import logging
 from fastapi import APIRouter, Depends, HTTPException
 from summarizer.summarizer import Summarizer
@@ -22,6 +27,16 @@ class ArticleUrl(BaseModel):
 
 @router.get("/summarize")
 def summarize(id: int, update_history: bool = True, db: Session = Depends(get_db), current_user: Users = Depends(get_current_active_user)):
+    """Summarize an article by its ID.
+
+    Args:
+        id (int): Article ID
+        update_history (bool): Flag to update user history
+        db (Session): Database session
+        current_user (Users): Current active user
+
+    Returns:
+        dict: Summary of the article"""
     try:
         articleid = id
         # Check article in db
