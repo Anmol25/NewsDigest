@@ -62,7 +62,7 @@ function NavBar(){
             if (searchInputRef.current) {
                 searchInputRef.current.value = '';
             }
-            return; // Stop the function execution if search is empty or just whitespace
+            return;
         }
         navigate(`/search?query=${searchQuery}`);
     }
@@ -72,9 +72,14 @@ function NavBar(){
         setShowProfileMenu(!showProfileMenu);
     };
 
+    const handleProfileMenuNavigation = (path) => {
+        navigate(path);
+        setShowProfileMenu(false);
+        setProfileClicked(false);
+    };
+
     const toggleSidebar = () => {
         setSidebarOpen(!sidebarOpen);
-        // Dispatch an event to notify the layout that sidebar state has changed
         document.dispatchEvent(new CustomEvent('sidebarToggle', {
             detail: { isOpen: !sidebarOpen }
         }));
@@ -136,15 +141,19 @@ function NavBar(){
                         />
                         {showProfileMenu && (
                             <div className="profile-menu">
-                                <button onClick={() => navigate('/profile/details')}>
+                                <button onClick={() => handleProfileMenuNavigation('/profile/details')}>
                                     <img className='profileimg' src={user} alt="User" />
                                     Profile
                                 </button>
-                                <button onClick={() => navigate('/profile/history')}>
+                                <button onClick={() => handleProfileMenuNavigation('/profile/history')}>
                                     <img className='profileimg' src={history} alt="History" />
                                     History
                                 </button>
-                                <button onClick={logout}>
+                                <button onClick={() => {
+                                    setShowProfileMenu(false);
+                                    setProfileClicked(false);
+                                    logout();
+                                }}>
                                     <img className='profileimg' src={exit} alt="Exit" />
                                     Logout
                                 </button>
