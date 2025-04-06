@@ -239,6 +239,29 @@ async def update_password(request: UpdatePassword, current_user: Users = Depends
     raise HTTPException(
         status_code=400, detail="Current Password is incorrect")
 
+@router.get("/checkhistory")
+async def check_history(current_user: Users = Depends(get_current_active_user), db: Session = Depends(get_db)):
+    """Check if User History exists.
+
+    Args:
+        current_user (Users): Current active user.
+        db (Session): Database session.
+    
+    Returns:
+        dict: History check status."""
+    try:
+        history_exists = db.query(db.query(UserHistory).filter(
+            UserHistory.user_id == current_user.id).exists()).scalar()
+        if not history_exists:
+            raise HTTPException(status_code=404, detail="No history found")
+        return {"message": "history exists"}
+    except Exception as e:
+        logger.error(f"Error in checking user history: {e}")
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(
+            status_code=500, detail=f"Error checking user history: {str(e)}")
+
 
 @router.get("/clearhistory")
 async def clear_history(current_user: Users = Depends(get_current_active_user), db: Session = Depends(get_db)):

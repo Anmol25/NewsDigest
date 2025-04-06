@@ -163,7 +163,7 @@ function HistoryComponent(props) {
         )}
       </div>
       <div className='HistDelete'>
-        <p>Watched At</p>
+        <p>Read At</p>
         <div className="watched-time-container">
           <div className="watched-time-value">{watchdateFormatted}</div>
           <div className="watched-time-value">{watchedtimeformatted}</div>

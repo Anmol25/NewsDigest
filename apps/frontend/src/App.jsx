@@ -13,6 +13,7 @@ import Bookmarks from "./pages/bookmarks/Bookmarks";
 import Likes from "./pages/likes/Likes";
 import Source from "./pages/source/Source";
 import UserHistory from "./pages/user-history/UserHistory";
+import ForYou from "./pages/foryou/ForYou";
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
           <Route path="/" element={<Navigate to="/home" />} />
           <Route path="/home" element={<Home />} />
           <Route path="/search" element={<Search />} />
+          <Route path="/for-you" element={<ForYou />} />
           <Route path="/:topic" element={<Feed />} />
           <Route path="/bookmarks" element={<Bookmarks />} />
           <Route path="/likes" element={<Likes />} />

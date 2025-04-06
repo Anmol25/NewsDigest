@@ -126,22 +126,3 @@ async def logout(response: Response):
         dict: Logout message."""
     response.delete_cookie("refresh_token")
     return {"message": "Logged out"}
-
-
-@router.get("/users/me/", response_model=User)
-async def read_users_me(current_user: Users = Depends(get_current_active_user)):
-    """Returns current user details.
-
-    Args:
-        current_user (Users): Current user object.
-
-    Returns:
-        dict: Current user details."""
-    try:
-        current_user = User.model_validate(current_user)
-        if not current_user:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED, detail="User not logged in.")
-        return current_user
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
