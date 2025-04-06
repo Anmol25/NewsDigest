@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
+
 class ArticleRequest(BaseModel):
     article_id: int
 
@@ -161,6 +162,13 @@ async def update_profile(request: UpdateProfile, current_user: Users = Depends(g
 
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+
+    # Check if the email is already in use by another user
+    existing_user = db.query(Users).filter(
+        Users.email == request.email, Users.id != current_user.id).first()
+    if existing_user:
+        raise HTTPException(
+            status_code=400, detail="Email is already in use by another user")
 
     try:
         user.fullname = request.fullname
