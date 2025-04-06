@@ -4,7 +4,7 @@ import key from "../../assets/Icons/key.svg"
 import trash from "../../assets/Icons/trash.svg"
 import { useAxios } from "../../services/AxiosConfig";
 import { useEffect, useState } from "react";
-
+import { validateProfileForm, validatePasswordUpdate } from '../../services/validations';
 
 function Profile(){
     const axiosInstance = useAxios();
@@ -21,7 +21,13 @@ function Profile(){
         oldPassword: '',
         newPassword: ''
     });
-    const [passwordError, setPasswordError] = useState('');
+    const [errors, setErrors] = useState({
+        fullname: '',
+        email: '',
+        newPassword: '',
+        emailExists: '',
+        currentPassword: ''
+    });
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -34,14 +40,51 @@ function Profile(){
         fetchUser();
     }, []);
 
+    const clearErrors = (field) => {
+        setErrors(prev => ({
+            ...prev,
+            [field]: '',
+            emailExists: field === 'email' ? '' : prev.emailExists,
+            currentPassword: field === 'oldPassword' ? '' : prev.currentPassword
+        }));
+    };
+
     const handleEditToggle = () => {
         if (isEditing) {
             setUserData(originalData);
+            setErrors(prev => ({ ...prev, emailExists: '', email: '', fullname: '' }));
         }
         setIsEditing(!isEditing);
     };
 
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        const trimmedValue = value.replace(/^\s+/g, '');
+        
+        if (name === 'oldPassword' || name === 'newPassword') {
+            setPasswordData(prev => ({
+                ...prev,
+                [name]: trimmedValue
+            }));
+        } else {
+            setUserData(prev => ({
+                ...prev,
+                [name]: trimmedValue
+            }));
+        }
+        clearErrors(name);
+    };
+
     const handleUpdateProfile = async () => {
+        const { errors: validationErrors, isValid } = validateProfileForm(userData);
+        setErrors(prev => ({ 
+            ...prev, 
+            ...validationErrors,
+            emailExists: '' 
+        }));
+
+        if (!isValid) return;
+
         try {
             const { fullname, email } = userData;
             const response = await axiosInstance.post("/updateprofile", {
@@ -54,16 +97,40 @@ function Profile(){
                 setIsEditing(false);
             }
         } catch (error) {
-            console.error("Failed to update profile:", error);
+            if (error.response?.status === 400) {
+                setErrors(prev => ({ ...prev, emailExists: 'Email already exists' }));
+            } else {
+                console.error("Failed to update profile:", error);
+            }
         }
     };
 
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setUserData(prev => ({
-            ...prev,
-            [name]: value
+    const handleUpdatePassword = async () => {
+        const { errors: validationErrors, isValid } = validatePasswordUpdate(passwordData);
+        setErrors(prev => ({ 
+            ...prev, 
+            ...validationErrors,
+            currentPassword: '' 
         }));
+
+        if (!isValid) return;
+
+        try {
+            const response = await axiosInstance.post("/updatepassword", passwordData);
+
+            if (response.status === 200) {
+                setIsUpdatingPassword(false);
+                setPasswordData({ oldPassword: '', newPassword: '' });
+                setErrors(prev => ({ ...prev, currentPassword: '', newPassword: '' }));
+            }
+        } catch (error) {
+            if (error.response?.status === 400) {
+                setErrors(prev => ({ ...prev, currentPassword: 'Incorrect current password' }));
+                setPasswordData(prev => ({ ...prev, oldPassword: '' }));
+            } else {
+                console.error("Failed to update password:", error);
+            }
+        }
     };
 
     const handleDeleteAccount = async () => {
@@ -77,35 +144,11 @@ function Profile(){
         }
     };
 
-    const handlePasswordChange = (e) => {
-        const { name, value } = e.target;
-        setPasswordData(prev => ({
-            ...prev,
-            [name]: value
-        }));
-        if (name === 'oldPassword') {
-            setPasswordError('');
-        }
-    };
-
-    const handleUpdatePassword = async () => {
-        try {
-            const response = await axiosInstance.post("/updatepassword", {
-                oldPassword: passwordData.oldPassword,
-                newPassword: passwordData.newPassword
-            });
-
-            if (response.status === 200) {
-                setIsUpdatingPassword(false);
-                setPasswordData({ oldPassword: '', newPassword: '' });
-                setPasswordError('');
-            }
-        } catch (error) {
-            if (error.response?.status === 400) {
-                setPasswordError('Incorrect current password');
-            } else {
-                console.error("Failed to update password:", error);
-            }
+    const togglePasswordUpdate = () => {
+        setIsUpdatingPassword(!isUpdatingPassword);
+        if (isUpdatingPassword) {
+            setPasswordData({ oldPassword: '', newPassword: '' });
+            setErrors(prev => ({ ...prev, currentPassword: '', newPassword: '' }));
         }
     };
 
@@ -144,8 +187,9 @@ function Profile(){
                                 value={userData.fullname}
                                 onChange={handleInputChange}
                                 disabled={!isEditing}
-                                className="ProfileInput"
+                                className={`ProfileInput ${errors.fullname ? 'ErrorInput' : ''}`}
                             />
+                            {errors.fullname && <span className="ErrorMessage">{errors.fullname}</span>}
                         </div>
                         <div className="InfoItem">
                             <label>Email</label>
@@ -155,8 +199,10 @@ function Profile(){
                                 value={userData.email}
                                 onChange={handleInputChange}
                                 disabled={!isEditing}
-                                className="ProfileInput"
+                                className={`ProfileInput ${errors.email || errors.emailExists ? 'ErrorInput' : ''}`}
                             />
+                            {errors.email && <span className="ErrorMessage">{errors.email}</span>}
+                            {errors.emailExists && <span className="ErrorMessage">{errors.emailExists}</span>}
                         </div>
                     </div>
                 </div>
@@ -168,23 +214,12 @@ function Profile(){
                             <span className="HeadingDescription">Manage your password and security settings</span>
                         </div>
                         <div className="ButtonGroup">
-                            <button 
-                                className="IconButton" 
-                                onClick={() => {
-                                    if (isUpdatingPassword) {
-                                        setPasswordData({ oldPassword: '', newPassword: '' });
-                                    }
-                                    setIsUpdatingPassword(!isUpdatingPassword);
-                                }}
-                            >
+                            <button className="IconButton" onClick={togglePasswordUpdate}>
                                 <img src={key} alt="Key" className="ButtonIcon" />
                                 {isUpdatingPassword ? 'Cancel' : 'Update Password'}
                             </button>
                             {isUpdatingPassword && (
-                                <button 
-                                    className="IconButton UpdateButton" 
-                                    onClick={handleUpdatePassword}
-                                >
+                                <button className="IconButton UpdateButton" onClick={handleUpdatePassword}>
                                     Confirm Update
                                 </button>
                             )}
@@ -199,12 +234,12 @@ function Profile(){
                                         type="password"
                                         name="oldPassword"
                                         value={passwordData.oldPassword}
-                                        onChange={handlePasswordChange}
-                                        className={`ProfileInput ${passwordError ? 'ErrorInput' : ''}`}
+                                        onChange={handleInputChange}
+                                        className={`ProfileInput ${errors.currentPassword ? 'ErrorInput' : ''}`}
                                         placeholder="Enter current password"
                                     />
-                                    {passwordError && (
-                                        <span className="ErrorMessage">{passwordError}</span>
+                                    {errors.currentPassword && (
+                                        <span className="ErrorMessage">{errors.currentPassword}</span>
                                     )}
                                 </div>
                                 <div className="InfoItem">
@@ -213,10 +248,11 @@ function Profile(){
                                         type="password"
                                         name="newPassword"
                                         value={passwordData.newPassword}
-                                        onChange={handlePasswordChange}
-                                        className="ProfileInput"
+                                        onChange={handleInputChange}
+                                        className={`ProfileInput ${errors.newPassword ? 'ErrorInput' : ''}`}
                                         placeholder="Enter new password"
                                     />
+                                    {errors.newPassword && <span className="ErrorMessage">{errors.newPassword}</span>}
                                 </div>
                             </div>
                         </div>
@@ -248,16 +284,10 @@ function Profile(){
                         <h2>Delete Account</h2>
                         <p>Are you sure you want to delete your account? This action cannot be undone.</p>
                         <div className="ModalButtons">
-                            <button 
-                                className="IconButton" 
-                                onClick={() => setShowDeleteModal(false)}
-                            >
+                            <button className="IconButton" onClick={() => setShowDeleteModal(false)}>
                                 Cancel
                             </button>
-                            <button 
-                                className="DangerButton" 
-                                onClick={handleDeleteAccount}
-                            >
+                            <button className="DangerButton" onClick={handleDeleteAccount}>
                                 Delete Account
                             </button>
                         </div>
@@ -265,7 +295,7 @@ function Profile(){
                 </div>
             )}
         </div>
-    )
+    );
 }
 
 export default Profile;

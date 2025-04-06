@@ -2,81 +2,76 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import "./authentication.css";
 import AuthFormMain from './authformmain';
-import { Link } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { validateLoginForm } from '../../services/validations';
 
 const LoginForm = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [formErrors, setFormErrors] = useState({
+  const [formData, setFormData] = useState({
     username: '',
     password: ''
   });
+  const [errors, setErrors] = useState({
+    username: '',
+    password: '',
+    credentials: ''
+  });
+
   const { accessToken, login } = useAuth();
   const navigate = useNavigate();
-  const [invalidCredentials, setInvalidCredentials] = useState(false);
 
-  // If user is already logged in, redirect to home page  
   useEffect(() => {
     if (accessToken) {
       navigate('/');
     }
   }, [accessToken, navigate]);
 
-  const validateForm = () => {
-    const errors = {
-      username: '',
-      password: ''
-    };
-    let isValid = true;
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    const trimmedValue = value.replace(/^\s+/g, '');
+    
+    setFormData(prev => ({
+      ...prev,
+      [name]: trimmedValue
+    }));
 
-    // Username validation
-    const trimmedUsername = username.trim();
-    if (!trimmedUsername) {
-      errors.username = 'Username is required';
-      isValid = false;
-    }
-
-    // Password validation
-    const trimmedPassword = password.trim();
-    if (!trimmedPassword) {
-      errors.password = 'Password is required';
-      isValid = false;
-    }
-
-    setFormErrors(errors);
-    return isValid;
+    // Clear errors when user types
+    setErrors(prev => ({
+      ...prev,
+      [name]: '',
+      credentials: ''
+    }));
   };
 
   const handleSubmit = async (e) => {   
     e.preventDefault();
-    setInvalidCredentials(false);
-    setFormErrors({ username: '', password: '' });
+    
+    const { errors: validationErrors, isValid } = validateLoginForm(formData);
+    setErrors(prev => ({
+      ...prev,
+      ...validationErrors,
+      credentials: ''
+    }));
 
-    if (!validateForm()) {
-      return;
-    }
+    if (!isValid) return;
 
     try {
-        const formData = new URLSearchParams();
-        formData.append("username", username.trim());
-        formData.append("password", password.trim());
+      const formDataToSend = new URLSearchParams();
+      formDataToSend.append("username", formData.username.trim());
+      formDataToSend.append("password", formData.password.trim());
 
-        const response = await login(formData);
-        if (response.status == 401) {
-          setInvalidCredentials(true);
-        }
-        else if (response.status == 200) {
-          navigate('/');
-        }
+      const response = await login(formDataToSend);
+      
+      if (response.status === 200) {
+        navigate('/');
+      } else if (response.status === 401) {
+        setErrors(prev => ({
+          ...prev,
+          credentials: 'Invalid username or password'
+        }));
+      }
     } catch (error) {
       console.error('Login failed:', error);
     }
-  };
-
-  const handleInputChange = (e, setter) => {
-    // Remove leading/trailing spaces as user types
-    setter(e.target.value.replace(/^\s+/g, ''));
   };
 
   return (
@@ -88,27 +83,31 @@ const LoginForm = () => {
           <div className='auth-form-input-container'>
             <label className='auth-form-label' htmlFor="username">Username</label>
             <input 
-              className={`auth-form-input ${formErrors.username ? 'error-input' : ''}`}
+              className={`auth-form-input ${errors.username ? 'error-input' : ''}`}
               type="text" 
-              value={username}
+              name="username"
+              value={formData.username}
               placeholder='Enter your username'
-              onChange={(e) => handleInputChange(e, setUsername)}
+              onChange={handleInputChange}
             />
-            {formErrors.username && <p className='auth-form-error'>{formErrors.username}</p>}
+            {errors.username && <p className='auth-form-error'>{errors.username}</p>}
             
             <label className='auth-form-label' htmlFor="password">Password</label>
             <input 
-              className={`auth-form-input ${formErrors.password ? 'error-input' : ''}`}
+              className={`auth-form-input ${errors.password ? 'error-input' : ''}`}
               type="password"
-              value={password}
+              name="password"
+              value={formData.password}
               placeholder='Enter your password'
-              onChange={(e) => handleInputChange(e, setPassword)}
+              onChange={handleInputChange}
             />
-            {formErrors.password && <p className='auth-form-error'>{formErrors.password}</p>}
-            {invalidCredentials && <p className='auth-form-error'>Invalid username or password</p>}
+            {errors.password && <p className='auth-form-error'>{errors.password}</p>}
+            {errors.credentials && <p className='auth-form-error'>{errors.credentials}</p>}
           </div>
           <button className='auth-form-button' type="submit">Login</button>
-          <p className='auth-form-text'>Don&apos;t have an account? <Link className='auth-form-link' to="/register">Register</Link></p>
+          <p className='auth-form-text'>
+            Don&apos;t have an account? <Link className='auth-form-link' to="/register">Register</Link>
+          </p>
         </form>
       </div>
     </div>

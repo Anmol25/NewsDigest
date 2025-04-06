@@ -24,7 +24,7 @@ function AuthFormMain(){
                             </div>
                             <div className='feature-content'>
                                 <h3>Smart Aggregation</h3>
-                                <p>Curated news from premium sources</p>
+                                <p>Curated news from reputed sources</p>
                             </div>
                         </div>
                         <div className='feature-item'>
