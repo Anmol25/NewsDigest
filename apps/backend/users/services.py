@@ -60,16 +60,11 @@ def authenticate_user(db: Session, username: str, password: str):
         username (str): The username of the user to authenticate.
         password (str): The password of the user to authenticate.
     Returns:
-        dict: A dictionary containing the authentication status of the user and password."""
-    response = {"user": True, "password": True}
+        bool: True if authentication is successful, False otherwise."""
     user = get_user(db, username)
     if not user:
-        response["user"] = False
-        response["password"] = False
-        return response
-    elif not verify_password(password, user.hashed_password):
-        response["password"] = False
-    return response
+        return False
+    return True
 
 
 def create_access_token(data: dict, expires_delta: timedelta = None):

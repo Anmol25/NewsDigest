@@ -21,11 +21,12 @@ app.include_router(feed_router)
 app.include_router(summarize_router)
 app.include_router(user_router)
 
+origins = ["http://localhost:5173"]
+
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    # Allows all origins, or specify domains like ["http://example.com"]
-    allow_origins=["*"],
+    allow_origins=origins,  # Allows requests from specified origins
     allow_credentials=True,
     allow_methods=["*"],  # Allows all methods (GET, POST, OPTIONS, etc.)
     allow_headers=["*"],  # Allows all headers

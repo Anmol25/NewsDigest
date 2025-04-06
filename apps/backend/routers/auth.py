@@ -63,9 +63,9 @@ async def login_user(response: Response, form_data: OAuth2PasswordRequestForm = 
         dict: Access token details."""
     auth_response = authenticate_user(
         db, form_data.username, form_data.password)
-    if not auth_response["user"] or not auth_response["password"]:
+    if not auth_response:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                            detail=auth_response, headers={"WWW-Authenticate": "Bearer"})
+                            detail={"message":"Invalid Credentials"}, headers={"WWW-Authenticate": "Bearer"})
     try:
         # ACCESS TOKEN
         access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
