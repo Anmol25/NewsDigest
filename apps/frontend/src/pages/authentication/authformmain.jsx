@@ -41,12 +41,23 @@ function AuthFormMain(){
                         <div className='feature-item'>
                             <div className='feature-icon'>
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M13 10V3L4 14H11V21L20 10H13Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                    <path d="M17.5 21H6.5C5.11929 21 4 19.8807 4 18.5V5.5C4 4.11929 5.11929 3 6.5 3H17.5C18.8807 3 20 4.11929 20 5.5V18.5C20 19.8807 18.8807 21 17.5 21Z M8 7H16 M8 11H16 M8 15H12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                                 </svg>
                             </div>
                             <div className='feature-content'>
-                                <h3>Lightning Fast</h3>
-                                <p>One-click access to insights</p>
+                                <h3>Personalized News</h3>
+                                <p>Tailored content based on your interests</p>
+                            </div>
+                        </div>
+                        <div className='feature-item'>
+                            <div className='feature-icon'>
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                </svg>
+                            </div>
+                            <div className='feature-content'>
+                                <h3>Smart Search</h3>
+                                <p>Contextual search across all articles</p>
                             </div>
                         </div>
                     </div>

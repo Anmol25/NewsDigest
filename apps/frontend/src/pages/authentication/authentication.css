@@ -23,16 +23,12 @@
 .auth-form-main {
     display: flex;
     justify-content: center;
-    align-items: flex-start;
-    padding: 40px;
+    align-items: center;
+    padding: 0;
     min-height: calc(100vh - 82px);
     position: relative;
     z-index: 1;
     overflow-y: auto;
-}
-
-.auth-form-main::before {
-    display: none;
 }
 
 .auth-form-intro {
@@ -42,10 +38,6 @@
     padding: 20px 0;
 }
 
-.brand-section {
-    margin-bottom: 40px;
-}
-
 .auth-form-logo {
     width: 240px;
     height: auto;
@@ -53,14 +45,10 @@
     object-fit: contain;
 }
 
-.intro-content {
-    margin-bottom: 40px;
-}
-
 .auth-form-intro-title {
     font-size: 3.2rem;
     font-weight: 800;
-    margin-bottom: 12px;
+    margin: 0;
     background: linear-gradient(135deg, #000000 0%, #333333 100%);
     -webkit-background-clip: text;
     background-clip: text;
@@ -117,13 +105,6 @@
     margin: 0;
 }
 
-.social-proof,
-.stats,
-.stat-item {
-    display: none;
-}
-
-/* Auth Form Styles */
 .auth-form-container {
     display: flex;
     flex-direction: column;
@@ -136,13 +117,7 @@
     overflow-y: auto;
 }
 
-.auth-form-container::before {
-    display: none;
-}
-
 .auth-form {
-    position: relative;
-    z-index: 1;
     width: calc(100% - 60px);
     max-width: 360px;
     padding: 30px;
