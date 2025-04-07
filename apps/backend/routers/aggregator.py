@@ -4,60 +4,54 @@ This module provides endpoints for fetching articles, searching, and managing us
 It includes functionality for refreshing feeds, checking user subscriptions, and retrieving personalized feeds.
 """
 
-import yaml
 import asyncio
 import logging
-from fastapi import APIRouter, HTTPException, FastAPI, Depends, Query
-from contextlib import asynccontextmanager
-from sqlalchemy.orm import Session, aliased
-from sqlalchemy import desc
-from sqlalchemy.sql import case, ColumnElement
-from aggregator.feeds import Feeds
-from aggregator.model import SBERT
-from aggregator.search import search_db
-from database.session import get_db
-from database.operations import insert_to_db
-from database.models import Articles, Users, UserLikes, UserBookmarks, Sources, UserSubscriptions, UserHistory
-from users.services import get_current_active_user
-from users.recommendation import Recommendar
-from pydantic import BaseModel
-from typing import Optional
-from concurrent.futures import ThreadPoolExecutor
 import threading
 import time
+from contextlib import asynccontextmanager
+from concurrent.futures import ThreadPoolExecutor
+
+import yaml
+from fastapi import APIRouter, HTTPException, FastAPI, Depends, Query
+from pydantic import BaseModel
+from sqlalchemy.orm import Session
+from sqlalchemy import desc
+from sqlalchemy.sql import ColumnElement
+from typing import Optional
+
+from aggregator.feeds import Feeds
+from aggregator.model import SBERT
+from aggregator.search import search_db, context_search
+from database.session import get_db
+from database.operations import insert_to_db
+from database.models import Articles, Users, Sources, UserSubscriptions, UserHistory
+from database.queries import (
+    like_alias,
+    bookmark_alias,
+    get_article_query,
+    paginate_and_format,
+)
+from users.services import get_current_active_user
+from users.recommendation import Recommendar
 
 logger = logging.getLogger(__name__)
 
-# Initialize model and article fetcher
-sbert = SBERT()
-articles = Feeds(sbert)
-REFRESH_INTERVAL = 60 * 10 # 10 minutes
-# Define aliases for user interactions
-like_alias = aliased(UserLikes)
-bookmark_alias = aliased(UserBookmarks)
-# Define the basic query structure for articles
-QUERY_STRUCTURE = (
-    Articles.id,
-    Articles.title,
-    Articles.link,
-    Articles.published_date,
-    Articles.image,
-    Articles.source,
-    Articles.topic,
-    case((like_alias.article_id.isnot(None), True),
-         else_=False).label("liked"),
-    case((bookmark_alias.article_id.isnot(None), True),
-         else_=False).label("bookmarked")
-)
+# Initialize sbert for context search
+sbert_search = SBERT()
+# Initialize separate sbert for fetching articles (for thread safety)
+sbert_feeds = SBERT()
+articles = Feeds(sbert_feeds)
+REFRESH_INTERVAL = 60 * 10  # 10 minutes
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Manage the feed refresh task lifecycle.
-    
+
     Args:
         app (FastAPI): FastAPI application instance."""
     executor = ThreadPoolExecutor(max_workers=1)
-    
+
     def refresh_worker():
         while True:
             try:
@@ -67,12 +61,14 @@ async def lifespan(app: FastAPI):
                 # Run the async code in a separate event loop in this thread
                 loop = asyncio.new_event_loop()
                 asyncio.set_event_loop(loop)
-                loop.run_until_complete(articles.refresh_articles(rss_feeds))
+                loop.run_until_complete(
+                    articles.refresh_articles(rss_feeds))
                 articles_list = articles.get_articles()
                 logger.info(f"Fetched {len(articles_list)} articles")
                 if articles_list:
                     insert_to_db(articles_list)
-                logger.info(f"Refreshed Feeds Successfully, Next Refresh in {REFRESH_INTERVAL//60} minutes")
+                logger.info(
+                    f"Refreshed Feeds Successfully, Next Refresh in {REFRESH_INTERVAL//60} minutes")
             except Exception as e:
                 logger.error(f"Error refreshing feeds: {e}")
             time.sleep(REFRESH_INTERVAL)
@@ -83,68 +79,6 @@ async def lifespan(app: FastAPI):
     executor.shutdown(wait=False)
 
 router = APIRouter(lifespan=lifespan)
-
-
-def format_article_results(results: list) -> list:
-    """Format query results into a consistent response structure.
-
-    Args:
-        results (list): List of articles from the database.
-
-    Returns:
-        list: Formatted list of articles with user interaction data."""
-    if not results:
-        return []
-    return [
-        {
-            'id': item.id,
-            'title': item.title,
-            'link': item.link,
-            'published_date': item.published_date,
-            'image': item.image,
-            'source': item.source,
-            'topic': item.topic,
-            'liked': item.liked,
-            'bookmarked': item.bookmarked
-        }
-        for item in results
-    ]
-
-
-def get_article_query(db: Session, current_user_id: int) -> list:
-    """Create base query for articles with user interaction data.
-
-    Args:
-        db (Session): Database session.
-        current_user_id (int): ID of the current user.
-    Returns:
-        list: SQLAlchemy query object."""
-    return (db.query(*QUERY_STRUCTURE)
-            .outerjoin(like_alias, (Articles.id == like_alias.article_id) &
-                       (like_alias.user_id == current_user_id))
-            .outerjoin(bookmark_alias, (Articles.id == bookmark_alias.article_id) &
-                       (bookmark_alias.user_id == current_user_id)))
-
-
-def paginate_and_format(query: Query, order_by_col: ColumnElement, offset: int, limit: int) -> list:
-    """Paginate the query results and format them.
-
-    Args:
-        query (Query): SQLAlchemy query object.
-        order_by_col (ColumnElement): Column to order by.
-        offset (int): Offset for pagination.
-        limit (int): Limit for pagination.
-
-    Returns:
-        list: Formatted list of articles."""
-    results = (
-        query
-        .order_by(desc(order_by_col))
-        .offset(offset)
-        .limit(limit)
-        .all()
-    )
-    return format_article_results(results)
 
 
 def fetch_article(db: Session, current_user_id: int, page: int, page_size: int, filter_by: ColumnElement, order_by: ColumnElement) -> list:
@@ -163,8 +97,8 @@ def fetch_article(db: Session, current_user_id: int, page: int, page_size: int, 
     try:
         skip = (page - 1) * page_size
         query = get_article_query(db, current_user_id)
-        query = query.filter(filter_by)
-        results = paginate_and_format(query, order_by, skip, page_size)
+        query = query.filter(filter_by).order_by(order_by)
+        results = paginate_and_format(query, skip, page_size)
         return results
     except Exception as e:
         logger.error(f"Error in fetching articles: {e}")
@@ -188,13 +122,13 @@ def handle_article_request(request: ArticleRequest, page: int, page_size: int, d
     Returns:
         list: List of articles based on the request type and filters."""
     if request.type == "liked":
-        return fetch_article(db, current_user_id, page, page_size, like_alias.article_id.isnot(None), Articles.published_date)
+        return fetch_article(db, current_user_id, page, page_size, like_alias.article_id.isnot(None), Articles.published_date.desc())
     elif request.type == "bookmarked":
-        return fetch_article(db, current_user_id, page, page_size, bookmark_alias.article_id.isnot(None), Articles.published_date)
+        return fetch_article(db, current_user_id, page, page_size, bookmark_alias.article_id.isnot(None), Articles.published_date.desc())
     elif request.type == "source":
-        return fetch_article(db, current_user_id, page, page_size, Articles.source == request.source, Articles.published_date)
+        return fetch_article(db, current_user_id, page, page_size, Articles.source == request.source, Articles.published_date.desc())
     elif request.type == "topic":
-        return fetch_article(db, current_user_id, page, page_size, Articles.topic == request.topic, Articles.published_date)
+        return fetch_article(db, current_user_id, page, page_size, Articles.topic == request.topic, Articles.published_date.desc())
     else:
         raise HTTPException(status_code=400, detail="Invalid article type")
 
@@ -225,7 +159,7 @@ async def get_articles(request: ArticleRequest, page: int = Query(1, ge=1), page
 
 
 @router.get("/search")
-async def search_article(query: str, page: int = Query(1, description="Page number"), limit: int = Query(20, description="Results per page"),
+async def search_article(query: str, context: Optional[bool] = False, page: int = Query(1, description="Page number"), limit: int = Query(20, description="Results per page"),
                          db: Session = Depends(get_db), current_user: Users = Depends(get_current_active_user)) -> list:
     """Search for articles in DataBase.
 
@@ -240,11 +174,16 @@ async def search_article(query: str, page: int = Query(1, description="Page numb
         list: List of articles matching the search query."""
     try:
         skip = (page - 1) * limit
-        similar_items = search_db(current_user.id, query, db, skip, limit)
-        if not similar_items:
+        search_results = None
+        if context:
+            search_results = context_search(
+                current_user.id, query, sbert_search.model, sbert_search.get_device(), db, skip, limit)
+        else:
+            search_results = search_db(current_user.id, query, db, skip, limit)
+        if not search_results:
             raise HTTPException(
                 status_code=404, detail="Relevant Results not found")
-        return similar_items
+        return search_results
     except Exception as e:
         logger.error(f"Error in searching articles: {e}")
         if isinstance(e, HTTPException):
@@ -387,15 +326,10 @@ async def get_history(page: int = Query(1, ge=1), page_size: int = Query(20, ge=
         List[Dict]: List of articles with user history details."""
     try:
         offset = (page - 1) * page_size
-
+        extra_cols = [Articles.summary, UserHistory.watched_at]
+        query = get_article_query(db, current_user.id, *extra_cols)
         results = (
-            db.query(
-                *QUERY_STRUCTURE,
-                Articles.summary,
-                UserHistory.watched_at
-            )
-            .outerjoin(like_alias, (Articles.id == like_alias.article_id) & (like_alias.user_id == current_user.id))
-            .outerjoin(bookmark_alias, (Articles.id == bookmark_alias.article_id) & (bookmark_alias.user_id == current_user.id))
+            query
             .join(UserHistory, UserHistory.article_id == Articles.id)
             .filter(UserHistory.user_id == current_user.id)
             .order_by(desc(UserHistory.watched_at))
