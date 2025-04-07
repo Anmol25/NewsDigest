@@ -124,9 +124,9 @@ def handle_article_request(request: ArticleRequest, page: int, page_size: int, d
     Returns:
         list: List of articles based on the request type and filters."""
     if request.type == "liked":
-        return fetch_article(db, current_user_id, page, page_size, like_alias.article_id.isnot(None), Articles.published_date.desc())
+        return fetch_article(db, current_user_id, page, page_size, like_alias.article_id.isnot(None), like_alias.liked_at.desc())
     elif request.type == "bookmarked":
-        return fetch_article(db, current_user_id, page, page_size, bookmark_alias.article_id.isnot(None), Articles.published_date.desc())
+        return fetch_article(db, current_user_id, page, page_size, bookmark_alias.article_id.isnot(None), bookmark_alias.bookmarked_at.desc())
     elif request.type == "source":
         return fetch_article(db, current_user_id, page, page_size, Articles.source == request.source, Articles.published_date.desc())
     elif request.type == "topic":

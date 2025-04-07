@@ -40,24 +40,40 @@ function News(props) {
   };
 
   useEffect(() => {
-    if (!summary) return;
+    if (!summary || props.summary) return; // Skip typing animation if summary is from props
 
     setIsTyping(true);
-    let index = 0;
-    const typingSpeed = 5; // milliseconds
+    setDisplayText(''); // Reset the text
+    // Calculate the total duration you want for the animation (e.g., 2 seconds)
+    const totalDuration = 2000; // 2 seconds
+    const totalChars = summary.length;
+    // Use requestAnimationFrame for smoother animation
+    let startTime = null;
     
-    const typingInterval = setInterval(() => {
-      if (index < summary.length) {
-        setDisplayText((prev) => prev + summary.charAt(index));
-        index++;
+    const animate = (currentTime) => {
+      if (!startTime) startTime = currentTime;
+      
+      const elapsedTime = currentTime - startTime;
+      const progress = Math.min(elapsedTime / totalDuration, 1);
+      
+      // Calculate how many characters should be shown
+      const charsToShow = Math.floor(progress * totalChars);
+      setDisplayText(summary.slice(0, charsToShow));
+      
+      if (progress < 1) {
+        requestAnimationFrame(animate);
       } else {
-        clearInterval(typingInterval);
         setIsTyping(false);
       }
-    }, typingSpeed);
+    };
 
-    return () => clearInterval(typingInterval);
-  }, [summary]);
+    const animationFrame = requestAnimationFrame(animate);
+
+    return () => {
+      cancelAnimationFrame(animationFrame);
+      setIsTyping(false);
+    };
+  }, [summary, props.summary]);
 
   const handleSummarize = () => {
     setIsLoading(true);
