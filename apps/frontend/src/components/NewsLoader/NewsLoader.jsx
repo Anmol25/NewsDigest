@@ -33,7 +33,6 @@ function NewsLoader(props){
                     }
                 });
             }
-            console.log(currentPage);
             const newData = response.data || [];
             const moreData = newData.length === 20;
             setItems(prev => currentPage === 1 ? newData : [...prev, ...newData]);

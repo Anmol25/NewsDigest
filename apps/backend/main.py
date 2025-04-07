@@ -9,9 +9,10 @@ from routers.userops import router as user_router
 from database.base import Base, engine  # Import Base and engine
 from contextlib import asynccontextmanager
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    #Create tables if they dont exist
+    # Create tables if they dont exist
     Base.metadata.create_all(bind=engine)
     yield
 
@@ -21,7 +22,7 @@ app.include_router(feed_router)
 app.include_router(summarize_router)
 app.include_router(user_router)
 
-origins = ["http://localhost:5173"]
+origins = ["http://localhost:5173", "http://localhost:3000"]
 
 # Add CORS middleware
 app.add_middleware(

@@ -32,7 +32,7 @@ from database.queries import (
     paginate_and_format,
 )
 from users.services import get_current_active_user
-from users.recommendation import Recommendar
+from users.recommendation import Recommender
 
 logger = logging.getLogger(__name__)
 
@@ -209,7 +209,7 @@ async def personalized_feed(page: int = Query(1, ge=1), page_size: int = Query(2
     Returns:
         list: List of personalized article recommendations."""
     try:
-        feed = Recommendar.get_recommendations(
+        feed = Recommender.get_recommendations(
             current_user, db, page, page_size)
         if not feed:
             raise HTTPException(
