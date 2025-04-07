@@ -11,8 +11,8 @@ from database.session import get_db
 from database.operations import create_user_in_db, check_user_in_db
 from sqlalchemy.orm import Session
 from users.schemas import Token, UserCreate
-from users.services import (authenticate_user, create_access_token, get_current_active_user,
-                            get_password_hash, create_refresh_token, decode_refresh_token)
+from users.services import (authenticate_user, create_access_token, get_password_hash,
+                            create_refresh_token, decode_refresh_token)
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +64,7 @@ async def login_user(response: Response, form_data: OAuth2PasswordRequestForm = 
         db, form_data.username, form_data.password)
     if not auth_response:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                            detail={"message":"Invalid Credentials"}, headers={"WWW-Authenticate": "Bearer"})
+                            detail={"message": "Invalid Credentials"}, headers={"WWW-Authenticate": "Bearer"})
     try:
         # ACCESS TOKEN
         access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)

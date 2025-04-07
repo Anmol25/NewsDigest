@@ -5,27 +5,27 @@ This module contains the search functionality for the aggregator.
 
 from sqlalchemy import or_
 import logging
-from database.models import Articles, UserLikes, UserBookmarks
-from sqlalchemy.orm import Session, aliased
-from sqlalchemy import select, func
-from sqlalchemy.sql import case
-from database.queries import like_alias, bookmark_alias, QUERY_STRUCTURE, get_article_query, paginate_and_format
+from database.models import Articles
+from sqlalchemy.orm import Session
+from sqlalchemy import func
+from database.queries import get_article_query, paginate_and_format
+from typing import List, Any
 
 logger = logging.getLogger(__name__)
 
 
-def search_db(user_id: int, query: str, db: Session, skip: int, limit: int):
-    """
-    Perform Full Text Search with flexible matching.
+def search_db(user_id: int, query: str, db: Session, skip: int, limit: int) -> List[dict]:
+    """Perform Full Text Search with flexible matching.
+
     Args:
-        current_user (int): User ID of current user
-        query (str): Query to be searched in database.
-        db (Session): Database Session to perform queries.
+        user_id (int): ID of the current user.
+        query (str): Query string to search in the database.
+        db (Session): SQLAlchemy database session.
         skip (int): Number of records to skip for pagination.
-        limit (int): Number of records to return.
+        limit (int): Maximum number of records to return.
+
     Returns:
-        similar_items (list): List of similar items(dict) for requested query.
-    """
+        List[dict]: A list of dictionaries representing similar articles."""
     try:
         # Convert query to OR-based search (splitting into individual words)
         words = query.split()
@@ -53,19 +53,20 @@ def search_db(user_id: int, query: str, db: Session, skip: int, limit: int):
         return []
 
 
-def context_search(current_user_id: int, query: str, model, device: str, db: Session, skip: int, limit: int):
-    """
-    Perform Cosine Similarity Search and find most relevant articles with pagination.
+def context_search(current_user_id: int, query: str, model: Any, device: str, db: Session, skip: int, limit: int) -> List[dict]:
+    """Perform Cosine Similarity Search and find the most relevant articles with pagination.
+
     Args:
-        query (str): Query to be searched in database.
-        model : Model to create embeddings of query.
-        device (str): Device (cuda/CPU) to store the embeddings on.
-        db (Session): Database Session to perform queries.
+        current_user_id (int): ID of the current user.
+        query (str): Query string to search in the database.
+        model (Any): Model used to create embeddings for the query.
+        device (str): Device (e.g., 'cuda' or 'cpu') to store the embeddings on.
+        db (Session): SQLAlchemy database session.
         skip (int): Number of records to skip for pagination.
-        limit (int): Number of records to return.
+        limit (int): Maximum number of records to return.
+
     Returns:
-        similar_items (list): List of similar items(dict) for requested query.
-    """
+        List[dict]: A list of dictionaries representing similar articles."""
     try:
         embedding = model.encode(query, device=device)
         extra_cols = [Articles.embeddings.cosine_distance(

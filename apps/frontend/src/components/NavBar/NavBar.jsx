@@ -53,6 +53,7 @@ function NavBar(){
     useEffect(() => {
         if (!matchSearch && searchInputRef.current) {
             searchInputRef.current.value = '';
+            setUseContext(false);
         }
     }, [matchSearch]);
 

@@ -159,8 +159,9 @@ async def get_articles(request: ArticleRequest, page: int = Query(1, ge=1), page
 
 
 @router.get("/search")
-async def search_article(query: str, context: Optional[bool] = False, page: int = Query(1, description="Page number"), limit: int = Query(20, description="Results per page"),
-                         db: Session = Depends(get_db), current_user: Users = Depends(get_current_active_user)) -> list:
+async def search_article(query: str, context: Optional[bool] = False, page: int = Query(1, description="Page number"),
+                         limit: int = Query(20, description="Results per page"), db: Session = Depends(get_db),
+                         current_user: Users = Depends(get_current_active_user)) -> list:
     """Search for articles in DataBase.
 
     Args:
@@ -179,7 +180,8 @@ async def search_article(query: str, context: Optional[bool] = False, page: int 
             search_results = context_search(
                 current_user.id, query, sbert_search.model, sbert_search.get_device(), db, skip, limit)
         else:
-            search_results = search_db(current_user.id, query, db, skip, limit)
+            search_results = search_db(
+                current_user.id, query, db, skip, limit)
         if not search_results:
             raise HTTPException(
                 status_code=404, detail="Relevant Results not found")
