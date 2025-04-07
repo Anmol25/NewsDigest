@@ -21,11 +21,7 @@ const SideBar = () => {
     
     return(
         <div className={`SourceListContainer ${isSidebarOpen ? 'expanded' : 'collapsed'}`}>
-            <div className="SourceList">
-                {/* <div className={`SourceListHeader ${!isSidebarOpen ? 'hidden' : ''}`}>
-                    <p className="SourceListTitle">All News Sources</p>
-                </div> */}
-                
+            <div className="SourceList">                
                 {SOURCE_LIST.map((item, index) =>
                 <NavLink 
                     key={index}

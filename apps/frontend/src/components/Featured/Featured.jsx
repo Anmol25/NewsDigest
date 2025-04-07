@@ -1,10 +1,12 @@
 import './Featured.css';
+import PropTypes from 'prop-types';
 import { useState, useEffect } from 'react';
-import handleFallbackImage from '../../services/HandleFallbackImg';
 import { useAxios } from '../../services/AxiosConfig';
+import handleFallbackImage from '../../services/HandleFallbackImg';
 import heart from '../../assets/Icons/heart.svg';
 import bookmarked from '../../assets/Icons/bookmarked.svg';
 import { NavLink } from 'react-router-dom';
+import { formatDate, handleTypingEffect, handleSummarize, handleLike, handleBookmark } from '../../utils/articleUtils';
 
 function Featured(props) {
   const { image, source, title, link, published_date, id } = props;
@@ -18,99 +20,23 @@ function Featured(props) {
   
   const fallbackImage = handleFallbackImage(source);
 
-  const formatDate = (time) => {
-    const date = new Date(time);
-
-    const formattedDate = date.toLocaleString("en-US", {
-      month: "long",
-      day: "numeric",
-      year: "numeric",
-    });
-
-    const formattedTime = date.toLocaleString("en-IN", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-      timeZone: "Asia/Kolkata"
-    }).replace(",", "");
-
-    return [formattedDate, `${formattedTime} IST`];
-  };
-
   useEffect(() => {
-    if (!summary || props.summary) return; // Skip typing animation if summary is from props
-
-    setIsTyping(true);
-    setDisplayText(''); // Reset the text
-    // Calculate the total duration you want for the animation (e.g., 2 seconds)
-    const totalDuration = 2000; // 2 seconds
-    const totalChars = summary.length;
-    // Use requestAnimationFrame for smoother animation
-    let startTime = null;
-    
-    const animate = (currentTime) => {
-      if (!startTime) startTime = currentTime;
-      
-      const elapsedTime = currentTime - startTime;
-      const progress = Math.min(elapsedTime / totalDuration, 1);
-      
-      // Calculate how many characters should be shown
-      const charsToShow = Math.floor(progress * totalChars);
-      setDisplayText(summary.slice(0, charsToShow));
-      
-      if (progress < 1) {
-        requestAnimationFrame(animate);
-      } else {
-        setIsTyping(false);
-      }
-    };
-
-    const animationFrame = requestAnimationFrame(animate);
-
-    return () => {
-      cancelAnimationFrame(animationFrame);
-      setIsTyping(false);
-    };
+    if (!summary || props.summary) return;
+    return handleTypingEffect(summary, setDisplayText, setIsTyping);
   }, [summary, props.summary]);
 
-  const handleSummarize = () => {
-    setIsLoading(true);
-    setDisplayText('');
-    
-    axiosInstance.get('/summarize', {
-      params: { id }
-    })
-      .then((response) => {
-        setSummary(response.data.data);
-      })
-      .catch((error) => {
-        console.error('Error fetching summary:', error);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
+  const onSummarize = () => {
+    handleSummarize(axiosInstance, id, true, setIsLoading, setDisplayText, setSummary);
   };
 
   const [dateFormatted, timeFormatted] = formatDate(published_date);
 
-  const handleLike = async () => {
-    const response = await axiosInstance.post('/like', {
-      article_id: props.id
-    });
-
-    if (response.status === 200) {
-      setIsLiked(!isLiked);
-    }
+  const onLike = () => {
+    handleLike(axiosInstance, id, setIsLiked);
   };
   
-  const handleBookmark = async () => {
-    const response = await axiosInstance.post('/bookmark', {
-      article_id: props.id
-    });
-
-    if (response.status === 200) {
-      setIsBookmarked(!isBookmarked);
-    }
+  const onBookmark = () => {
+    handleBookmark(axiosInstance, id, setIsBookmarked);
   };
 
   return (
@@ -139,10 +65,10 @@ function Featured(props) {
             
             {summary && (
               <div className="featured-buttons">
-                <div className={`featured-btn-icon ${isLiked ? "active" : ""}`} onClick={handleLike}>
+                <div className={`featured-btn-icon ${isLiked ? "active" : ""}`} onClick={onLike}>
                   <img src={heart} alt="Like" />
                 </div>
-                <div className={`featured-btn-icon ${isBookmarked ? "active" : ""}`} onClick={handleBookmark}>
+                <div className={`featured-btn-icon ${isBookmarked ? "active" : ""}`} onClick={onBookmark}>
                   <img src={bookmarked} alt="Bookmark" />
                 </div>
               </div>
@@ -153,7 +79,7 @@ function Featured(props) {
             <div className="featured-actions">
               <button 
                 className={`featured-summarize-btn ${isLoading ? 'loading' : ''}`}
-                onClick={handleSummarize}
+                onClick={onSummarize}
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -167,10 +93,10 @@ function Featured(props) {
               </button>
               
               <div className="featured-buttons">
-                <div className={`featured-btn-icon ${isLiked ? "active" : ""}`} onClick={handleLike}>
+                <div className={`featured-btn-icon ${isLiked ? "active" : ""}`} onClick={onLike}>
                   <img src={heart} alt="Like" />
                 </div>
-                <div className={`featured-btn-icon ${isBookmarked ? "active" : ""}`} onClick={handleBookmark}>
+                <div className={`featured-btn-icon ${isBookmarked ? "active" : ""}`} onClick={onBookmark}>
                   <img src={bookmarked} alt="Bookmark" />
                 </div>
               </div>
@@ -189,5 +115,17 @@ function Featured(props) {
     </div>
   );
 }
+
+Featured.propTypes = {
+  image: PropTypes.string,
+  source: PropTypes.string.isRequired,
+  title: PropTypes.string.isRequired,
+  link: PropTypes.string.isRequired,
+  published_date: PropTypes.string.isRequired,
+  id: PropTypes.string.isRequired,
+  liked: PropTypes.bool,
+  bookmarked: PropTypes.bool,
+  summary: PropTypes.string
+};
 
 export default Featured;
