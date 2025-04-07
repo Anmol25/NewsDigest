@@ -25,7 +25,8 @@ class Summarizer:
             "cuda" if torch.cuda.is_available() else "cpu")
         self.tokenizer = BartTokenizer.from_pretrained(
             model_name, cache_dir=cache_dir)
-        # print(self.tokenizer)
+        # Load Model
+        logger.info("Loading DistilBART Model for Summarization")
         self.model = BartForConditionalGeneration.from_pretrained(
             model_name, cache_dir=cache_dir).to(self.device)
         if str(self.device) == "cuda":

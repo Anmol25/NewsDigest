@@ -37,8 +37,10 @@ from users.recommendation import Recommendar
 logger = logging.getLogger(__name__)
 
 # Initialize sbert for context search
+logger.info("Initializing SBERT for context search")
 sbert_search = SBERT()
 # Initialize separate sbert for fetching articles (for thread safety)
+logger.info("Initializing SBERT for fetching articles")
 sbert_feeds = SBERT()
 articles = Feeds(sbert_feeds)
 REFRESH_INTERVAL = 60 * 10  # 10 minutes

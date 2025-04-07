@@ -110,7 +110,7 @@ def insert_to_db(articles: list):
                             f"Integrity error while adding to DB: {item}")
 
         logger.info(
-            f"Database update summary: {added_count} articles added, {updated_count} articles updated.")
+            f"Database update summary: {added_count} new articles added, {updated_count} articles updated.")
     except Exception as e:
         logger.exception(
             f"Unexpected error inserting articles into database: {e}")
@@ -177,7 +177,8 @@ def update_user_history(db: Session, userid: int, art_id):
             (UserHistory.user_id == userid) & (UserHistory.article_id == art_id)).first()
         if hist_item:
             try:
-                hist_item.watched_at = datetime.now(timezone.utc)  # Use timezone.utc
+                hist_item.watched_at = datetime.now(
+                    timezone.utc)  # Use timezone.utc
                 db.commit()
             except Exception as e:
                 db.rollback()
