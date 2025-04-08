@@ -50,10 +50,16 @@ class FeedParser:
             result = await asyncio.gather(*tasks)
             data = {}
             for publisher, xml in zip(topic.keys(), result):
-                data[publisher] = xml
+                # Only include feeds that were successfully fetched
+                if xml is not None:
+                    data[publisher] = xml
+                else:
+                    logger.warning(
+                        f"Skipping {publisher} feed due to fetch failure")
             return data
         except Exception as e:
             logger.error(f"Error in Fetching XML Feed of {topic}: {e}")
+            return {}  # Return empty dict instead of None on error
 
     @staticmethod
     def extract_image_link(entry: str) -> str:
@@ -152,7 +158,7 @@ class FeedParser:
             logger.error(f"Skipping entry due to invalid date: {
                 dt_str}")
             return None
-        
+
     @staticmethod
     def normalize_url(url):
         """Remove #fragment from URL."""
@@ -172,8 +178,6 @@ class FeedParser:
         Args:
             topic: Topic of article
             pub_xml: Publisher and XML data in dict form
-            model: Embedding creation model to be used to remove duplicate headlines
-            device: Device to run model on (CPU/GPU)
         Return:
             list: List of Articles
         """
@@ -183,40 +187,65 @@ class FeedParser:
 
             # Parse and collect metadata with time conversion
             for publisher, xml in pub_xml.items():
+                if xml is None:  # Skip if XML is None
+                    logger.warning(f"Skipping {publisher} feed - XML is None")
+                    continue
+
                 feed = feedparser.parse(xml)
                 for entry in feed.entries:
-                    # Process published time
-                    published_str = entry.get('published')
-                    corrected_str = FeedParser.correct_time_components(
-                        published_str)
-                    published_time = FeedParser.handle_time_str(corrected_str)
+                    try:
+                        # Process published time
+                        published_str = entry.get('published')
+                        if not published_str:
+                            logger.debug(
+                                f"Skipping entry from {publisher} - no publish date")
+                            continue
 
-                    # If published date is None skip entry
-                    if published_time == None:
-                        continue
+                        corrected_str = FeedParser.correct_time_components(
+                            published_str)
+                        published_time = FeedParser.handle_time_str(
+                            corrected_str)
 
-                    # Convert to IST
-                    if published_time.tzinfo is None:  # Handle naive datetime
-                        published_time = pytz.utc.localize(published_time)
-                    published_time = published_time.astimezone(ist)
+                        # If published date is None skip entry
+                        if published_time is None:
+                            continue
 
-                    url = FeedParser.normalize_url(entry.get('link'))
-                    
-                    # Check if URL is valid
-                    if not url:
-                        continue
+                        # Convert to IST
+                        if published_time.tzinfo is None:  # Handle naive datetime
+                            published_time = pytz.utc.localize(published_time)
+                        published_time = published_time.astimezone(ist)
 
-                    metadata = {
-                        'title': entry.get('title'),
-                        'link': url,
-                        'published': published_time,
-                        'image': FeedParser.extract_image_link(entry),
-                        'source': publisher,
-                        'topic': topic
-                    }
-                    result.append(metadata)
+                        # Check for title and link
+                        title = entry.get('title')
+                        url = entry.get('link')
+                        if not title or not url:
+                            logger.debug(
+                                f"Skipping entry from {publisher} - missing title or link")
+                            continue
+
+                        url = FeedParser.normalize_url(url)
+
+                        # Check if URL is valid
+                        if not url:
+                            continue
+
+                        metadata = {
+                            'title': title,
+                            'link': url,
+                            'published': published_time,
+                            'image': FeedParser.extract_image_link(entry),
+                            'source': publisher,
+                            'topic': topic
+                        }
+                        result.append(metadata)
+                    except Exception as e:
+                        logger.warning(
+                            f"Error processing entry from {publisher}: {e}")
+                        continue  # Skip problematic entries
+
             logger.debug(
                 f"{topic}'s Feed Parsed Successfully!, Total Articles:{len(result)}")
             return result
         except Exception as e:
             logger.error(f"Error in Parsing Feed: {e}")
+            return []  # Return empty list instead of None on error

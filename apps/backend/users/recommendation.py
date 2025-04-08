@@ -1,8 +1,7 @@
 import numpy as np
-from database.models import Articles, UserHistory, UserLikes, UserBookmarks
+from database.models import Articles, UserHistory
 from sqlalchemy import desc, func
-from sqlalchemy.sql import exists, case
-from sqlalchemy.orm import aliased
+from sqlalchemy.sql import exists
 from datetime import datetime
 from database.queries import get_article_query, paginate_and_format
 
