@@ -58,18 +58,28 @@ class Summarizer:
             url: URL of article
         Returns:
             text: Text content of Article
+        Raises:
+            Exception: If article cannot be fetched or parsed
         """
         try:
             # Fetch Article Html content
             article_html = asyncio.run(Summarizer.__fetch_article(url))
+            if not article_html:
+                raise Exception("Failed to fetch article content")
+            
             # Parse HTML content
             article = Article('')
             article.set_html(article_html)
             article.parse()
             text = article.text
+            
+            if not text:
+                raise Exception("No text content found in article")
+                
             return text
         except Exception as e:
             logger.error(f"Error in Parsing Article: {e}")
+            raise Exception(f"Failed to fetch or parse article: {str(e)}")
 
     def summarize(self, article):
         """
@@ -111,12 +121,17 @@ class Summarizer:
             url: URL of article
         Return:
             summary: Summary of article
+        Raises:
+            Exception: If article cannot be fetched or summarized
         """
         try:
             # Fetch Article
             article = Summarizer.__get_article(url)
             # Generate Summary
             summary = self.summarize(article)
+            if not summary:
+                raise Exception("Failed to generate summary")
             return summary
         except Exception as e:
             logger.error(f"Unexpected error in getting summary: {e}")
+            raise Exception(f"Failed to generate summary: {str(e)}")

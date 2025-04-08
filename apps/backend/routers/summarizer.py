@@ -36,23 +36,40 @@ def summarize(id: int, update_history: bool = True, db: Session = Depends(get_db
         current_user (Users): Current active user
 
     Returns:
-        dict: Summary of the article"""
+        dict: Summary of the article
+    
+    Raises:
+        HTTPException: If article not found or summarization fails
+    """
     try:
-        articleid = id
-        # Check article in db
-        article = db.query(Articles).filter(
-            Articles.id == articleid).first()
-        if article:
+        article = db.query(Articles).filter(Articles.id == id).first()
+        if not article:
+            raise HTTPException(
+                status_code=404,
+                detail="Article not found"
+            )
+        # If summary already exists, return it
+        if article.summary:
             if update_history:
                 update_user_history(db, current_user.id, article.id)
-            # Retrieve Summary if available
-            if article.summary:
-                return {"data": article.summary}
-            else:
-                generated_summary = dbart.infer(article.link)
-                article.summary = generated_summary
-                db.commit()
-                return {"data": generated_summary}
+            return {"data": article.summary}
+        # Try to generate new summary
+        try:
+            generated_summary = dbart.infer(article.link)
+            article.summary = generated_summary
+            db.commit()
+            if update_history:
+                update_user_history(db, current_user.id, article.id) 
+            return {"data": generated_summary}
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Failed to generate summary: {str(e)}"
+            )
+    except HTTPException as he:
+        raise he
     except Exception as e:
-        raise HTTPException(status_code=404, detail={
-                            "Article Summary Not Found"})
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal server error: {str(e)}"
+        )

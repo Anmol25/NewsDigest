@@ -1,5 +1,6 @@
 import NavBar from "../components/NavBar/NavBar";
 import SideBar from "../components/SideBar/SideBar";
+import Notification from "../components/Notification/Notification";
 import { Outlet } from "react-router-dom";
 import { useState, useEffect } from "react";
 import "./PageLayout.css";
@@ -30,6 +31,7 @@ const FeedLayout = () => {
           <Outlet />
         </main>
       </div>
+      <Notification />
     </div>
   );
 };

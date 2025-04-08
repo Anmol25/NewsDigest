@@ -58,9 +58,21 @@ export const handleSummarize = async (axiosInstance, id, updateHistory = true, s
     const response = await axiosInstance.get('/summarize', {
       params: { id, update_history: updateHistory }
     });
-    setSummary(response.data.data);
+    if (response.status === 200) {
+      setSummary(response.data.data);
+    } else {
+      throw new Error('Failed to generate summary');
+    }
   } catch (error) {
     console.error('Error fetching summary:', error);
+    setDisplayText('Failed to generate summary. Please try again later.');
+    const errorEvent = new CustomEvent('showNotification', {
+      detail: {
+        message: 'Failed to generate summary. Please try again later.',
+        type: 'error'
+      }
+    });
+    window.dispatchEvent(errorEvent);
   } finally {
     setIsLoading(false);
   }
@@ -74,12 +86,20 @@ export const handleLike = async (axiosInstance, id, setIsLiked) => {
 
     if (response.status === 200) {
       setIsLiked(prev => !prev);
+    } else {
+      throw new Error('Failed to update like status');
     }
   } catch (error) {
     console.error('Error liking article:', error);
+    const errorEvent = new CustomEvent('showNotification', {
+      detail: {
+        message: 'Failed to update like status. Please try again later.',
+        type: 'error'
+      }
+    });
+    window.dispatchEvent(errorEvent);
   }
 };
-
 
 export const handleBookmark = async (axiosInstance, id, setIsBookmarked) => {
   try {
@@ -89,8 +109,17 @@ export const handleBookmark = async (axiosInstance, id, setIsBookmarked) => {
 
     if (response.status === 200) {
       setIsBookmarked(prev => !prev);
+    } else {
+      throw new Error('Failed to update bookmark status');
     }
   } catch (error) {
     console.error('Error bookmarking article:', error);
+    const errorEvent = new CustomEvent('showNotification', {
+      detail: {
+        message: 'Failed to update bookmark status. Please try again later.',
+        type: 'error'
+      }
+    });
+    window.dispatchEvent(errorEvent);
   }
 }; 
