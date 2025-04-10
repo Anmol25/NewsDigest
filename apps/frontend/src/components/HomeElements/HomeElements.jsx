@@ -1,11 +1,12 @@
 import "./HomeElements.css"
 import { NavLink } from "react-router-dom";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import News from "../News/News";
 import { useAxios } from "../../services/AxiosConfig";
 import PropTypes from 'prop-types';
+import { debounce } from 'lodash';
 
-function HomeElements(props) {
+function HomeElements({ name, icon }) {
     const [feed, setFeed] = useState([]);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
@@ -13,19 +14,16 @@ function HomeElements(props) {
     const scrollContainerRef = useRef(null);
     const axiosInstance = useAxios();
 
-
     const loadFeed = async (currentPage) => {
         if (loading || !hasMore) return;
         setLoading(true);
 
         try {
-            const response = await axiosInstance.post(`/articles`, {
+            const response = await axiosInstance.post('/articles', {
                 type: "topic",
-                topic: props.name
+                topic: name
             }, {
-                params: {
-                    page: currentPage,
-                }
+                params: { page: currentPage }
             });
             const newData = response.data || [];
             const moreData = newData.length === 20;
@@ -40,36 +38,53 @@ function HomeElements(props) {
         }
     };
 
-    useEffect(() => {
-        loadFeed(1);
-    }, [props.name]);
+    const checkAndLoadMore = useCallback(
+        debounce(() => {
+            if (!scrollContainerRef.current) return;
+            
+            const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+            const scrolledToEnd = scrollLeft + clientWidth >= scrollWidth - 100;
 
-    const handleScroll = (direction) => {
-        if (scrollContainerRef.current) {
-            const scrollAmount = scrollContainerRef.current.clientWidth;
-            const newScrollPosition = scrollContainerRef.current.scrollLeft + (direction === 'right' ? scrollAmount : -scrollAmount);
-            scrollContainerRef.current.scrollTo({
-                left: newScrollPosition,
-                behavior: 'smooth'
-            });
-
-            // Load more content when scrolling right and near the end
-            if (direction === 'right' && 
-                scrollContainerRef.current.scrollLeft + scrollContainerRef.current.clientWidth >= 
-                scrollContainerRef.current.scrollWidth - scrollContainerRef.current.clientWidth) {
+            if (scrolledToEnd && !loading && hasMore) {
                 loadFeed(page);
             }
+        }, 200),
+        [page, loading, hasMore]
+    );
+
+    const handleScroll = useCallback((direction) => {
+        if (scrollContainerRef.current) {
+            const scrollAmount = scrollContainerRef.current.clientWidth;
+            scrollContainerRef.current.scrollTo({
+                left: scrollContainerRef.current.scrollLeft + (direction === 'right' ? scrollAmount : -scrollAmount),
+                behavior: 'smooth'
+            });
         }
-    };
+    }, []);
+
+    useEffect(() => {
+        setFeed([]);
+        setPage(1);
+        setHasMore(true);
+        loadFeed(1);
+    }, [name]);
+
+    useEffect(() => {
+        const container = scrollContainerRef.current;
+        if (container) {
+            container.addEventListener('scroll', checkAndLoadMore);
+            return () => container.removeEventListener('scroll', checkAndLoadMore);
+        }
+    }, [checkAndLoadMore]);
 
     return (
-        <div className={`HomeElement`}>
+        <div className="HomeElement">
             <div className="HomeHeader">
                 <div className="Homediv">
-                    <img className="HomeTitleImg" src={props.icon} alt={props.name} />
-                    <p className="HomeTitle">{props.name}</p>
+                    <img className="HomeTitleImg" src={icon} alt={name} />
+                    <p className="HomeTitle">{name}</p>
                 </div>
-                <NavLink className="HomeSeeMore" to={`/${props.name.toLowerCase().replace(/\s+/g, "-")}`}>
+                <NavLink className="HomeSeeMore" to={`/${name.toLowerCase().replace(/\s+/g, "-")}`}>
                     See more &gt;
                 </NavLink>
             </div>
@@ -87,9 +102,11 @@ function HomeElements(props) {
                             <News {...item} />
                         </div>
                     ))}
-                    {loading && <div className="big-spinner-container">
-                                <div className="big-spinner"></div>
-                        </div>}
+                    {loading && (
+                        <div className="big-spinner-container">
+                            <div className="big-spinner"></div>
+                        </div>
+                    )}
                 </div>
                 <button 
                     className="ScrollButton ScrollButtonRight" 

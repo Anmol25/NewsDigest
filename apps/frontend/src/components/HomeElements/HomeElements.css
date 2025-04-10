@@ -52,11 +52,16 @@
 
 .NewsScrollContainer {
     display: flex;
-    overflow-x: hidden;
+    overflow-x: auto;
     scroll-behavior: smooth;
     gap: 20px;
     padding: 15px 0;
     width: 100%;
+    scrollbar-width: none;
+}
+
+.NewsScrollContainer::-webkit-scrollbar {
+    display: none;
 }
 
 .NewsItemContainer {
@@ -79,10 +84,9 @@
     font-size: 24px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
-    opacity: 0; /* Hide buttons by default */
+    opacity: 0;
 }
 
-/* Show buttons when hovering over the ScrollContainer */
 .ScrollContainer:hover .ScrollButton {
     opacity: 1;
 }

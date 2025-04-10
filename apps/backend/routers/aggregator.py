@@ -303,7 +303,7 @@ async def get_subscribed_articles(page: int = Query(1, ge=1), page_size: int = Q
                 status_code=404, detail="No news source subscribed")
         # Get articles from subscribed sources
         results = fetch_article(db, current_user.id, page, page_size, Articles.source.in_(
-            source_names), Articles.published_date)
+            source_names), Articles.published_date.desc())
         if not results:
             raise HTTPException(
                 status_code=404, detail="No subscribed articles found")
@@ -336,7 +336,7 @@ async def get_history(page: int = Query(1, ge=1), page_size: int = Query(20, ge=
             query
             .join(UserHistory, UserHistory.article_id == Articles.id)
             .filter(UserHistory.user_id == current_user.id)
-            .order_by(desc(UserHistory.watched_at))
+            .order_by(UserHistory.watched_at.desc())
             .offset(offset)
             .limit(page_size)
             .all()

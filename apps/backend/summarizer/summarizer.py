@@ -66,16 +66,16 @@ class Summarizer:
             article_html = asyncio.run(Summarizer.__fetch_article(url))
             if not article_html:
                 raise Exception("Failed to fetch article content")
-            
+
             # Parse HTML content
             article = Article('')
             article.set_html(article_html)
             article.parse()
             text = article.text
-            
+
             if not text:
                 raise Exception("No text content found in article")
-                
+
             return text
         except Exception as e:
             logger.error(f"Error in Parsing Article: {e}")
