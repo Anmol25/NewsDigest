@@ -192,7 +192,6 @@
   height: 45px;
 }
 
-/* Add these new styles for collapsed sidebar */
 .SourceList a.icon-only {
     justify-content: center;
     padding: 10px 0;
@@ -206,14 +205,12 @@
     display: none;
 }
 
-/* When in icon-only mode, make icons slightly larger and centered */
 .SourceList a.icon-only .SourceIcon {
     margin-right: 0;
     width: 38px;
     height: 38px;
 }
 
-/* Center the icons when sidebar is collapsed */
 .SourceListContainer.collapsed .SourceList {
     display: flex;
     flex-direction: column;
@@ -232,6 +229,6 @@
 }
 
 .SourceListContainer.collapsed::-webkit-scrollbar {
-    display: none;            /* Chrome, Safari and Opera */
+    display: none;
 }
 
