@@ -8,12 +8,18 @@ from routers.summarizer import router as summarize_router
 from routers.userops import router as user_router
 from database.base import Base, engine  # Import Base and engine
 from contextlib import asynccontextmanager
+from initial_data import seed_data
+from sqlalchemy.orm import Session
+from database.base import Base, engine
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Create tables if they dont exist
     Base.metadata.create_all(bind=engine)
+    session = Session(bind=engine)
+    seed_data(session)
+    session.commit()
     yield
 
 app = FastAPI(lifespan=lifespan)
@@ -36,4 +42,4 @@ app.add_middleware(
 
 @app.get('/')
 def index():
-    return {"Welcome To News Aggregator Summarizar api"}
+    return {"Welcome To News Aggregator Summarizer api"}
