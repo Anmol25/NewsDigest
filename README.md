@@ -20,6 +20,7 @@
   - [6. Authentication System](#6-authentication-system)
   - [7. User Operations Module](#7-user-operations-module)
   - [8. User Management System](#8-user-management-system)
+- [Contributors](#contributors)
 
 ---
 
@@ -251,6 +252,7 @@ Generates personalized article recommendations based on user reading history, co
     <p align="center">
     <img src="images/equations/exponential_weight.png" alt="Your Image Description">
     </p>
+
    where **r_i** is the normalized recency, and **β** is the decay strength.
 
    - Final user embedding:
@@ -367,3 +369,7 @@ Enables users to create and manage their accounts. Supports secure registration,
 
 **Output:**
 - Confirmation messages for each operation (e.g., "User registered", "Profile updated", "Password changed", "Account deleted").
+
+## Contributors
+
+- [@Anmol25](https://github.com/Anmol25)
