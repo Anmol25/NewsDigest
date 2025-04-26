@@ -1,21 +1,28 @@
-# AI-Powered News Aggregator and Summarizer
+# NewsDigest: AI-Powered News Aggregator and Summarizer
+
+## Description
+**NewsDigest** is an intelligent news aggregator that collects articles from multiple sources, eliminates duplicates using semantic similarity, summarizes content using AI, and personalizes user feeds based on preferences and interactions. Built with FastAPI and React, it provides a seamless and informative news consumption experience.
 
 ## Features
-- <strong>Comprehensive News Aggregation:</strong> Collects news from multiple sources via RSS Feeds, removing duplicates for a clean feed.
-- <strong>AI-Powered News Summarization: </strong> Generates concise summaries with key insights using DistilBART.
-- <strong>Personalized News Feed:</strong> Recommends articles based on user interests and reading habits.
-- <strong>Advanced Search Functionality:</strong> Provides fast, accurate news retrieval with a robust search engine.
-- <strong>News Channel Subscriptions:</strong> Follow favorite channels for a personalized news feed.
-- <strong>Smart Article Engagement:</strong> Engage with news by liking, bookmarking, and accessing your reading history for effortless content discovery.
+- 📰 Aggregates news from multiple RSS feeds
+- 🤖 AI-generated summaries using DistilBART
+- 🧠 Deduplication using SBERT embeddings + cosine similarity
+- 🔍 Contextual and keyword-based search
+- ❤️ User interactions: likes, bookmarks, history
+- 📌 Personalized feed based on user history and subscriptions
+- 🔐 JWT-based user authentication
 
 ## Project Snapshots
 
-![Home](images/home.png)
-| ![Recommendation](images/recommendation.png) | ![Search](images/search.png) |
-|---------|---------|
-| ![Subscriptions](images/subscriptions.png) | ![Source](images/source.png) |
-| ![Liked](images/Liked.png) | ![Bookmarked](images/bookmarked.png) |
-| ![Profile](images/profile.png) | ![History](images/history.png) |
+![Home](images/home.gif)
+
+<p align="center"><img src="images/recommendation.png" width=50% alt="Home"><img src="images/search.png" width=50% alt="Home"></p>
+
+<p align="center"><img src="images/subscriptions.png" width=50% alt="Home"><img src="images/source.png" width=50% alt="Home"></p>
+
+<p align="center"><img src="images/Liked.png" width=50% alt="Home"><img src="images/bookmarked.png" width=50% alt="Home"></p>
+
+<p align="center"><img src="images/profile.png" width=50% alt="Home"><img src="images/history.png" width=50% alt="Home"></p>
 
 <p><strong>Generating Summaries</strong></p>
 <p align="center"><img src="images/summary.gif" width=50% alt="Summary"></p>
@@ -23,8 +30,11 @@
 
 
 ## Tech Stack
-- **Frontend:** ReactJS, HTML, CSS, Javascript
-- **Backend:** Python, FastAPI
-- **Libraries:** Pytorch, SQLAlchemy, Feedparser, Newspaper3K
-- **Database:** PostgreSQL
+- **Frontend:** ReactJS
+- **Backend:** FastAPI, SQLAlchemy
+- **Database:** PostgreSQL + pgvector (To store embeddings)
+- **AI Models:** DistilBART (To generate summaries), SBERT (To generate contextual embeddings)
+- **Libraries:** Pytorch, Transformers (HuggingFace), Feedparser (To parse RSS Feeds), Newspaper3K (To extract Article Text)
+- **Other Tools:** Docker (For Database), Git etc. 
+
  
