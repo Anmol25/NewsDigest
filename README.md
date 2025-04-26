@@ -248,13 +248,16 @@ Generates personalized article recommendations based on user reading history, co
      - Viewing timestamp.
    - Calculates time-normalized recency for each article, applying exponential weighting:
 
-   $$ w_i=\frac{e^{r_i\cdot\beta}}{\sum_{j=1}^{N}e^{r_j\cdot\beta}} $$
-
+    <p align="center">
+    <img src="images/equations/exponential_weight.png" alt="Your Image Description">
+    </p>
    where **r_i** is the normalized recency, and **β** is the decay strength.
 
    - Final user embedding:
 
-   $$ \vec{u}=\sum_{i=1}^{N}w_i\cdot\vec{e_i} $$
+    <p align="center">
+    <img src="images/equations/final_embedding.png" alt="Your Image Description">
+    </p>
 
    where **e_i** is the embedding of article **i**.
 
@@ -262,7 +265,9 @@ Generates personalized article recommendations based on user reading history, co
    - Filters out articles already viewed by the user.
    - Scores remaining articles using:
 
-   $$ \mathrm{Score}=\left(1-\alpha\right)\cdot\mathrm{CosineDistance}\left(\vec{u},\vec{a}\right)+\alpha\cdot\mathrm{DaysSincePublished} $$
+    <p align="center">
+    <img src="images/equations/scoring.png" alt="Your Image Description">
+    </p>
 
    where **α** is the recency factor.
 
