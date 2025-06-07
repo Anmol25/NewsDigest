@@ -4,11 +4,9 @@ This module contains the summarizer for the aggregator.
 """
 
 import torch
-import aiohttp
 import logging
-import asyncio
 from transformers import BartTokenizer, BartForConditionalGeneration
-from newspaper import Article
+from goose3 import Goose
 
 logger = logging.getLogger(__name__)
 # Disable debug warning of urlib3
@@ -35,22 +33,6 @@ class Summarizer:
             logger.info("DistilBART is Using CPU")
 
     @staticmethod
-    async def __fetch_article(url: str):
-        """
-        Fetch Article from URL
-        Args:
-            url: URL of article
-        Return:
-            str: HTML content of article
-        """
-        try:
-            async with aiohttp.ClientSession(headers={"User-Agent": "Mozilla/5.0"}) as session:
-                async with session.get(url) as response:
-                    return await response.text()
-        except Exception as e:
-            logger.error(f"Unexpected Error in fetching article html: {e}")
-
-    @staticmethod
     def __get_article(url: str):
         """
         Fetch and Parse Article
@@ -62,16 +44,11 @@ class Summarizer:
             Exception: If article cannot be fetched or parsed
         """
         try:
-            # Fetch Article Html content
-            article_html = asyncio.run(Summarizer.__fetch_article(url))
-            if not article_html:
-                raise Exception("Failed to fetch article content")
+            # Fetch Article
+            g = Goose()
+            article = g.extract(url=url)
 
-            # Parse HTML content
-            article = Article('')
-            article.set_html(article_html)
-            article.parse()
-            text = article.text
+            text = article.cleaned_text
 
             if not text:
                 raise Exception("No text content found in article")
