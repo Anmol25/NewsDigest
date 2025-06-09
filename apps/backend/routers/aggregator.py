@@ -21,7 +21,7 @@ from typing import Optional
 
 from aggregator.feeds import Feeds
 from aggregator.model import SBERT
-from aggregator.search import search_db, context_search
+from aggregator.search import search
 from database.session import get_db
 from database.operations import insert_to_db
 from database.models import Articles, Users, Sources, UserSubscriptions, UserHistory
@@ -161,7 +161,7 @@ async def get_articles(request: ArticleRequest, page: int = Query(1, ge=1), page
 
 
 @router.get("/search")
-async def search_article(query: str, context: Optional[bool] = False, page: int = Query(1, description="Page number"),
+async def search_article(query: str, page: int = Query(1, description="Page number"),
                          limit: int = Query(20, description="Results per page"), db: Session = Depends(get_db),
                          current_user: Users = Depends(get_current_active_user)) -> list:
     """Search for articles in DataBase.
@@ -178,12 +178,8 @@ async def search_article(query: str, context: Optional[bool] = False, page: int 
     try:
         skip = (page - 1) * limit
         search_results = None
-        if context:
-            search_results = context_search(
-                current_user.id, query, sbert_search.model, sbert_search.get_device(), db, skip, limit)
-        else:
-            search_results = search_db(
-                current_user.id, query, db, skip, limit)
+        search_results = search(
+            current_user.id, query, sbert_search.model, sbert_search.get_device(), db, skip, limit)
         if not search_results:
             raise HTTPException(
                 status_code=404, detail="Relevant Results not found")

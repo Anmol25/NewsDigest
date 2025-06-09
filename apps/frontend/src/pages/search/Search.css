@@ -67,21 +67,6 @@
     left: 0;
 }
 
-.ContextualBadge {
-    display: inline-block;
-    background: linear-gradient(135deg, #3b82f6, #2563eb);
-    color: white;
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 13px;
-    font-weight: 600;
-    margin-left: 15px;
-    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
-    z-index: 1;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
 @media (max-width: 768px) {
     .SearchContainer {
         padding: 15px;

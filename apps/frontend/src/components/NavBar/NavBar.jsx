@@ -27,7 +27,6 @@ function NavBar(){
     const [isPageHovered, setIsPageHovered] = useState(false);
     const searchInputRef = useRef(null);
     const matchSearch = useMatch('/search/*');
-    const [useContext, setUseContext] = useState(false);
 
     const matchSource = useMatch('/source/*');
     const matchSubscriptions = useMatch('/subscriptions/*');
@@ -53,7 +52,6 @@ function NavBar(){
     useEffect(() => {
         if (!matchSearch && searchInputRef.current) {
             searchInputRef.current.value = '';
-            setUseContext(false);
         }
     }, [matchSearch]);
 
@@ -66,7 +64,7 @@ function NavBar(){
             }
             return;
         }
-        navigate(`/search?query=${searchQuery}${useContext ? '&context=true' : ''}`);
+        navigate(`/search?query=${searchQuery}`);
     }
 
     const handleProfileClick = () => {
@@ -114,15 +112,7 @@ function NavBar(){
                         name="search"
                         ref={searchInputRef}
                     />
-                    <div className='context-button-container'>
-                    <button 
-                        type="button" 
-                        className={`context-button ${useContext ? 'context-active' : ''}`}
-                        onClick={() => setUseContext(!useContext)}
-                    >
-                        Context
-                    </button>
-                    </div>
+                    
                     
                     <button className='searchbutton' type="submit">
                         <img className='searchicon' src={search} alt="Search" />

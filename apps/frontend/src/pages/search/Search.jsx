@@ -6,7 +6,6 @@ function Search() {
     const location = useLocation();
     const searchParams = new URLSearchParams(location.search);
     const query = searchParams.get('query') || '';
-    const context = searchParams.get('context') === 'true';
 
     return (
         <div className="SearchContainer">
@@ -19,15 +18,13 @@ function Search() {
                         </svg>
                     </span>
                     Search Results for &quot;{query}&quot;
-                    {context && <span className="ContextualBadge">Contextual Search</span>}
                 </h1>
             </div>
             <NewsLoader 
-                key={`${query}-${context}`} 
+                key={`${query}`} 
                 url="/search" 
                 parameters={{
-                    query: query, 
-                    context: context
+                    query: query
                 }} 
             />
         </div>
