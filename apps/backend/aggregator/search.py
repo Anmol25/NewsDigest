@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 from database.queries import get_article_query, paginate_and_format
 from typing import List, Any
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -69,10 +70,20 @@ def context_search(current_user_id: int, query: str, model: Any, device: str, db
         List[dict]: A list of dictionaries representing similar articles."""
     try:
         embedding = model.encode(query, device=device)
-        extra_cols = [Articles.embeddings.cosine_distance(
-            embedding).label('distance')]
-        query = get_article_query(db, current_user_id, *extra_cols)
-        query = query.order_by('distance', Articles.published_date.desc())
+
+        current_time = datetime.now()
+        recency_factor = 0.25  # Factor to weight recency vs. similarity
+        dist_col = Articles.embeddings.cosine_distance(
+            embedding).label("distance")
+        combined_score = (dist_col * (1 - recency_factor) +
+                          func.extract('epoch', current_time -
+                                       Articles.published_date) / 86400.0 * recency_factor
+                          ).label("combined_score")
+
+        max_distance = 0.6  # Define a threshold for maximum distance
+        query = get_article_query(
+            db, current_user_id, dist_col, combined_score).filter(dist_col <= max_distance).order_by(combined_score)
+
         results = paginate_and_format(query, skip, limit)
         return results
     except Exception as e:

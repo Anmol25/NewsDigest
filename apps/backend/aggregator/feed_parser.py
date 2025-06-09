@@ -12,6 +12,7 @@ import logging
 from dateutil import parser
 from dateutil import tz
 from urllib.parse import urlparse
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -208,6 +209,10 @@ class FeedParser:
 
                         # If published date is None skip entry
                         if published_time is None:
+                            continue
+                        elif published_time > datetime.now(pytz.utc):
+                            logger.debug(
+                                f"Skipping entry from {publisher} - future publish date")
                             continue
 
                         # Convert to IST
