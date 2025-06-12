@@ -10,11 +10,16 @@ from database.base import Base, engine  # Import Base and engine
 from contextlib import asynccontextmanager
 from initial_data import seed_data
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 from database.base import Base, engine
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Enable pgvector extension if not exists
+    with engine.connect() as conn:
+        conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+        conn.commit()
     # Create tables if they dont exist
     Base.metadata.create_all(bind=engine)
     session = Session(bind=engine)
