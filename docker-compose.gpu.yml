@@ -1,0 +1,51 @@
+services:
+  db:
+    image: pgvector/pgvector:pg17
+    container_name: postgres-db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=News-Feed
+    volumes:
+      - pgvector-data:/var/lib/postgresql/data
+    networks:
+      - newsdigest-network
+    ports:
+      - "5432:5432"
+
+  backend:
+    build: ./apps/backend
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - DATABASE_URL=postgresql://postgres:root@db/News-Feed
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    ports:
+      - "8000:8000"
+    networks:
+      - newsdigest-network
+    depends_on:
+      - db
+
+  frontend:
+    build: 
+      context: ./apps/frontend
+      args:
+        VITE_API_URL: http://localhost:8000
+    ports:
+      - "3000:80"
+    networks:
+      - newsdigest-network
+    depends_on:
+      - backend
+
+volumes:
+  pgvector-data:
+
+networks:
+  newsdigest-network:

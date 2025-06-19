@@ -24,3 +24,4 @@ lxml_html_clean==0.4.1
 bcrypt==3.2.2
 goose3==3.1.19
 tqdm
+python-dotenv

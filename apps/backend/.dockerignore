@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+
+# Byte-compiled / cache
+*.egg-info/
+*.eggs/
+*.pytest_cache/
+.cache/
+*.log
+
+# Virtual environments
+venv/
+env/
+.venv/
+.env/
+
+# Git
+.git/
+.gitignore
+
+# Docker
+Dockerfile*
+.dockerignore
+
+# tests and logs
+tests
+requirements-tests.txt
+errors.log

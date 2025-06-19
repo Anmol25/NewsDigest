@@ -5,10 +5,14 @@ This module contains the base for the database.
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
+from dotenv import load_dotenv
+import os
 
-DATABASE_URL = "postgresql://postgres:root@localhost/News-Feed"
+load_dotenv()
 
-engine = create_engine(DATABASE_URL)
+db_url = os.getenv("DATABASE_URL")
+
+engine = create_engine(db_url)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
