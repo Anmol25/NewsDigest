@@ -2,10 +2,11 @@
 venv
 **/__pycache__
 errors.log
+.env
 
 .vscode
 # Model Folder storing DistilBART and SentenceTransformer
 model/
 
-#Fake tests
+#tests
 test.db

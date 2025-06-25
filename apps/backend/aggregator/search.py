@@ -21,10 +21,10 @@ logger = logging.getLogger(__name__)
 def count_words(text: str) -> int:
     # Remove punctuation
     text = text.translate(str.maketrans('', '', string.punctuation))
-    
+
     # Remove extra spaces (including tabs/newlines) and strip leading/trailing spaces
     text = re.sub(r'\s+', ' ', text).strip()
-    
+
     # Split by space and count words
     words = text.split()
     return len(words)
@@ -60,7 +60,7 @@ def search(current_user_id: int, query: str, model: Any, device: str, db: Sessio
         ts_vector = func.to_tsvector('english', Articles.title)
         ts_query = func.websearch_to_tsquery('english', or_query)
         ts_rank = func.coalesce(
-            func.ts_rank(ts_vector, ts_query, 32), 
+            func.ts_rank(ts_vector, ts_query, 32),
             0.0  # Ensure non-null values
         ).label("ts_rank")
 
@@ -71,15 +71,15 @@ def search(current_user_id: int, query: str, model: Any, device: str, db: Sessio
                 (func.lower(Articles.title).ilike(f'%{word.lower()}%'), 1),
                 else_=0
             )
-        
+
         # Normalize word matches
-        word_match_ratio = (word_match_count / len(words)).label("word_match_ratio")
-        
+        word_match_ratio = (word_match_count / len(words)
+                            ).label("word_match_ratio")
+
         # Enhanced keyword score combining both approaches
         enhanced_ts_rank = (
             (ts_rank * 0.4) + (word_match_ratio * 0.6)
         ).label("enhanced_ts_rank")
-
 
         embedding = model.encode(query, device=device)
         current_time = datetime.now()
@@ -96,21 +96,23 @@ def search(current_user_id: int, query: str, model: Any, device: str, db: Sessio
         # Recency Factor
         RECENCY_DECAY_DAYS = 30
         # Calculate age in days
-        article_age_days = (func.extract('epoch', current_time - Articles.published_date) / 86400.0)
+        article_age_days = (func.extract(
+            'epoch', current_time - Articles.published_date) / 86400.0)
         normalized_recency = (
-                            func.least(
-                                article_age_days / RECENCY_DECAY_DAYS, # Scales from 0 to 1 within the window
-                                1.0 # Caps at 1 for anything older than RECENCY_DECAY_DAYS
-                            )
-                        ).label("normalized_recency")
-        
+            func.least(
+                article_age_days / RECENCY_DECAY_DAYS,  # Scales from 0 to 1 within the window
+                1.0  # Caps at 1 for anything older than RECENCY_DECAY_DAYS
+            )
+        ).label("normalized_recency")
+
         combined_score = (
             (((inverted_kw_rank * kw_factor) +
-            (normalized_cos_dist * cos_factor)) * (1 - recency_factor)) +
+              (normalized_cos_dist * cos_factor)) * (1 - recency_factor)) +
             (normalized_recency * recency_factor)
         ).label("combined_score")
 
-        main_score = ((inverted_kw_rank * kw_factor) + (normalized_cos_dist * cos_factor)).label("main_score")
+        main_score = ((inverted_kw_rank * kw_factor) +
+                      (normalized_cos_dist * cos_factor)).label("main_score")
 
         or_conditions = []
         for word in words:
@@ -118,18 +120,17 @@ def search(current_user_id: int, query: str, model: Any, device: str, db: Sessio
             or_conditions.extend([
                 # Simple text matching
                 func.lower(Articles.title).ilike(f'%{word_lower}%'),
-                # Full-text search matching  
+                # Full-text search matching
                 func.to_tsvector('english', Articles.title).op('@@')(
                     func.websearch_to_tsquery('english', word)
                 )
             ])
 
-
         results = get_article_query(
             db, current_user_id, main_score, combined_score).filter(or_(*or_conditions), main_score <= eliminate_factor).order_by(combined_score)
         results = paginate_and_format(results, skip, limit)
         return results
-        
+
     except Exception as e:
         logger.error(f"Error in performing similarity search: {e}")
         return []
