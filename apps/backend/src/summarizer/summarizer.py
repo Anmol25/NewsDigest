@@ -3,8 +3,9 @@ summarizer.py
 This module contains the summarizer for the aggregator.
 """
 
-import torch
 import logging
+
+import torch
 from transformers import BartTokenizer, BartForConditionalGeneration
 from goose3 import Goose
 
@@ -33,7 +34,7 @@ class Summarizer:
             logger.info("DistilBART is Using CPU")
 
     @staticmethod
-    def __get_article(url: str):
+    def get_article(url: str):
         """
         Fetch and Parse Article
         Args:
@@ -51,7 +52,8 @@ class Summarizer:
             text = article.cleaned_text
 
             if not text:
-                raise Exception("No text content found in article")
+                logger.warning("No text content found in article")
+                return None
 
             return text
         except Exception as e:
@@ -103,7 +105,9 @@ class Summarizer:
         """
         try:
             # Fetch Article
-            article = Summarizer.__get_article(url)
+            article = Summarizer.get_article(url)
+            if not article:
+                return "Summary unavailable, read article at original link."
             # Generate Summary
             summary = self.summarize(article)
             if not summary:

@@ -1,17 +1,18 @@
-import logger
 from pathlib import Path
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.orm import Session
+from sqlalchemy import text
+
+import utils.logger as logger
 from routers.auth import router as auth_router
 from routers.aggregator import router as feed_router
 from routers.summarizer import router as summarize_router
 from routers.userops import router as user_router
-from database.base import Base, engine  # Import Base and engine
-from contextlib import asynccontextmanager
-from initial_data import seed_data
-from sqlalchemy.orm import Session
-from sqlalchemy import text
-from database.base import Base, engine
+from src.database.base import Base, engine
+from utils.initial_data import seed_data
 
 
 @asynccontextmanager

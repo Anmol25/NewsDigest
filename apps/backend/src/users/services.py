@@ -3,14 +3,16 @@ services.py
 This module authenticates and authorizes the users.
 """
 
+from datetime import datetime, timedelta, timezone
+
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
-from datetime import datetime, timedelta, timezone
 from jose import JWTError, jwt
 from passlib.context import CryptContext
-from database.session import get_db
-from database.models import Users
 from sqlalchemy.orm import Session
+
+from src.database.session import get_db
+from src.database.models import Users
 
 
 SECRET_KEY = "2383706089348953fbf69e4439e2ae1829b27406d9cabf104591ff3ef923df8b"

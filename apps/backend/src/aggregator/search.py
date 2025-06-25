@@ -3,17 +3,18 @@ search.py
 This module contains the search functionality for the aggregator.
 """
 
-from sqlalchemy import or_, case
-import logging
-from database.models import Articles
-from sqlalchemy.orm import Session
-from sqlalchemy import func
-from database.queries import get_article_query, paginate_and_format
-from typing import List, Any
-from datetime import datetime
 import re
 import string
+import logging
+from datetime import datetime
+from typing import List, Any
 
+from sqlalchemy import or_, case
+from sqlalchemy.orm import Session
+from sqlalchemy import func
+
+from src.database.models import Articles
+from src.database.queries import get_article_query, paginate_and_format
 
 logger = logging.getLogger(__name__)
 

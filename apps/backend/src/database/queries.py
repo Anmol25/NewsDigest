@@ -1,8 +1,14 @@
+"""
+queries.py
+Stores specific format to retrieve articles from database and apply pagination
+"""
+
 from fastapi import Query
-from database.models import Articles, UserLikes, UserBookmarks
-from sqlalchemy import desc
+
 from sqlalchemy.orm import Session, aliased
 from sqlalchemy.sql import case, ColumnElement
+
+from src.database.models import Articles, UserLikes, UserBookmarks
 
 # Define aliases for user interactions
 like_alias = aliased(UserLikes)

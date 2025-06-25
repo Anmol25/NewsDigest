@@ -4,8 +4,9 @@ This module fetches and parses RSS feeds for the aggregator.
 """
 
 import asyncio
-from .feed_parser import FeedParser
 import logging
+
+from .feed_parser import FeedParser
 from .deduplicator import Deduplicator
 
 logger = logging.getLogger(__name__)
@@ -58,7 +59,8 @@ class Feeds:
             logger.debug(f"Fetched {len(articles)} Articles")
             # Deduplicate Articles
             logger.debug("Deduplicating Articles")
-            result = Deduplicator.deduplicate(articles, self.model, self.device)
+            result = Deduplicator.deduplicate(
+                articles, self.model, self.device)
             return result
         except Exception as e:
             logger.error(f"Error in Fetching Feeds: {e}")

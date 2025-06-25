@@ -4,14 +4,16 @@ This module contains the operations for the database.
 """
 
 import logging
+from datetime import datetime, timezone
+
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
+from tqdm import tqdm
+
 from .session import context_db
 from .models import Articles, Users, UserHistory
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy import desc
-from sqlalchemy.orm import Session
-from users.schemas import UserCreate
-from datetime import datetime, timezone
-from tqdm import tqdm
+from src.users.schemas import UserCreate
+
 
 logger = logging.getLogger(__name__)
 

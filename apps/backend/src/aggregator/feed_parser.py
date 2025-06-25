@@ -3,16 +3,17 @@ feed_parser.py
 This module contains the feed parser for the aggregator.
 """
 
-import aiohttp
 import asyncio
-import pytz
-import feedparser
 import re
 import logging
-from dateutil import parser
-from dateutil import tz
 from urllib.parse import urlparse
 from datetime import datetime
+
+import aiohttp
+import pytz
+import feedparser
+from dateutil import parser
+from dateutil import tz
 
 logger = logging.getLogger(__name__)
 

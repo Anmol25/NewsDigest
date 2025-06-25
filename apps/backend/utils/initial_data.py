@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from database.models import Sources  # Adjust the import if needed
+from src.database.models import Sources  # Adjust the import if needed
 
 
 def seed_data(session: Session):

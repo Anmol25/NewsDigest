@@ -5,6 +5,7 @@ This module contains the models for the database.
 
 from sqlalchemy import Column, Integer, String, DateTime, Text, Boolean, ForeignKey
 from pgvector.sqlalchemy import Vector
+
 from .base import Base
 
 

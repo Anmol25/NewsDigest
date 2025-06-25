@@ -4,6 +4,7 @@ This module contains the embedding model for the aggregator.
 """
 
 import logging
+
 import torch
 from sentence_transformers import SentenceTransformer
 

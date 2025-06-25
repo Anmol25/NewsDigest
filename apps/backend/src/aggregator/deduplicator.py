@@ -4,6 +4,7 @@ This module contains the deduplicator for the aggregator.
 """
 
 import logging
+
 from scipy.spatial.distance import pdist, squareform
 
 logger = logging.getLogger(__name__)
@@ -51,7 +52,8 @@ class Deduplicator:
                     to_remove = set()
 
                 # Filter out duplicates
-                input_deduplicated = [item for idx, item in enumerate(input) if idx not in to_remove]
+                input_deduplicated = [item for idx, item in enumerate(
+                    input) if idx not in to_remove]
                 len_after = len(input_deduplicated)
                 logger.info(f"Duplicates Removed: {(len_before - len_after)}")
                 return input_deduplicated
