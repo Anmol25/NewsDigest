@@ -6,7 +6,7 @@ import { debounce } from 'lodash';
 
 function NewsLoader(props){
     const axiosInstance = useAxios();
-    const {url, parameters, requestBody} = props;
+    const {url, parameters, requestBody, setHasArticles} = props;
     const [items, setItems] = useState([]);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
@@ -34,6 +34,9 @@ function NewsLoader(props){
                 });
             }
             const newData = response.data || [];
+            if (setHasArticles && newData.length > 0){
+                setHasArticles(true);
+            }
             const moreData = newData.length === 20;
             setItems(prev => currentPage === 1 ? newData : [...prev, ...newData]);
             setHasMore(moreData);
@@ -80,7 +83,8 @@ function NewsLoader(props){
 NewsLoader.propTypes = {
     url: PropTypes.string.isRequired,
     parameters: PropTypes.object,
-    requestBody: PropTypes.object
+    requestBody: PropTypes.object,
+    setHasArticles: PropTypes.func
 };
 
 export default NewsLoader;

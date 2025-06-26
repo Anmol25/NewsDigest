@@ -181,8 +181,7 @@ async def search_article(query: str, page: int = Query(1, description="Page numb
         search_results = search(
             current_user.id, query, sbert_search.model, sbert_search.get_device(), db, skip, limit)
         if not search_results:
-            raise HTTPException(
-                status_code=404, detail="Relevant Results not found")
+            return []
         return search_results
     except Exception as e:
         logger.error(f"Error in searching articles: {e}")

@@ -1,11 +1,22 @@
 import "./Search.css";
 import { useLocation } from 'react-router-dom';
 import NewsLoader from '../../components/NewsLoader/NewsLoader';
+import { useEffect, useState } from "react";
 
 function Search() {
     const location = useLocation();
     const searchParams = new URLSearchParams(location.search);
     const query = searchParams.get('query') || '';
+    const [hasArticles, setHasArticles] = useState(false);
+    const [highlights, setHighlights] = useState(false)
+
+    useEffect(() =>{
+        if (hasArticles == true){
+        setHighlights(true);
+        console.log("Highlights set to true");
+        }
+        console.log(highlights);
+    }, [hasArticles]);
 
     return (
         <div className="SearchContainer">
@@ -26,7 +37,10 @@ function Search() {
                 parameters={{
                     query: query
                 }} 
+                setHasArticles={setHasArticles}
             />
+            {highlights ? console.log("Loading key highlights") : console.log("no highlights")}
+            
         </div>
     );
 }

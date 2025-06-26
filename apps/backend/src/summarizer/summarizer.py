@@ -7,7 +7,8 @@ import logging
 
 import torch
 from transformers import BartTokenizer, BartForConditionalGeneration
-from goose3 import Goose
+
+from src.articles.scraper import get_article
 
 logger = logging.getLogger(__name__)
 # Disable debug warning of urlib3
@@ -32,33 +33,6 @@ class Summarizer:
             logger.info("DistilBART is Using GPU")
         else:
             logger.info("DistilBART is Using CPU")
-
-    @staticmethod
-    def get_article(url: str):
-        """
-        Fetch and Parse Article
-        Args:
-            url: URL of article
-        Returns:
-            text: Text content of Article
-        Raises:
-            Exception: If article cannot be fetched or parsed
-        """
-        try:
-            # Fetch Article
-            g = Goose()
-            article = g.extract(url=url)
-
-            text = article.cleaned_text
-
-            if not text:
-                logger.warning("No text content found in article")
-                return None
-
-            return text
-        except Exception as e:
-            logger.error(f"Error in Parsing Article: {e}")
-            raise Exception(f"Failed to fetch or parse article: {str(e)}")
 
     def summarize(self, article):
         """
@@ -105,7 +79,7 @@ class Summarizer:
         """
         try:
             # Fetch Article
-            article = Summarizer.get_article(url)
+            article = get_article(url)
             if not article:
                 return "Summary unavailable, read article at original link."
             # Generate Summary

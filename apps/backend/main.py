@@ -11,6 +11,7 @@ from routers.auth import router as auth_router
 from routers.aggregator import router as feed_router
 from routers.summarizer import router as summarize_router
 from routers.userops import router as user_router
+from routers.ai import router as ai_router
 from src.database.base import Base, engine
 from utils.initial_data import seed_data
 
@@ -33,6 +34,7 @@ app.include_router(auth_router)
 app.include_router(feed_router)
 app.include_router(summarize_router)
 app.include_router(user_router)
+app.include_router(ai_router)
 
 origins = ["http://localhost:5173", "http://localhost:3000"]
 
