@@ -22,13 +22,7 @@ class FeedParser:
 
     @staticmethod
     async def fetch_xml(url: str) -> str:
-        """
-        Function to fetch xml data from the given url
-        Args:
-            url: str: url of the xml data
-        Returns:
-            str: xml data
-        """
+        """Function to fetch xml data from the given url."""
         try:
             async with aiohttp.ClientSession(headers={"User-Agent": "Mozilla/5.0"}) as session:
                 async with session.get(url) as response:
@@ -38,13 +32,7 @@ class FeedParser:
 
     @staticmethod
     async def fetch_topics_feed(topic: dict) -> dict:
-        """
-        Function to fetch xml feeds for given topic
-        Args:
-            topic: Topic of News on which feed to be retrieved
-        Return:
-            data: XML data with respect to its publisher
-        """
+        """Function to fetch xml feeds for given topic."""
         try:
             tasks = []
             for publisher, url in topic.items():
@@ -65,14 +53,7 @@ class FeedParser:
 
     @staticmethod
     def extract_image_link(entry: str) -> str:
-        """
-        Extract the image URL found in enclosure, media:content tags, or description img tags.
-
-        Args:
-            entry: xml data of rss feed
-        Returns:
-            str or None: url of image or None
-        """
+        """Extract the image URL found in enclosure, media:content tags, or description img tags."""
         try:
             # Check enclosure tags first (common in RSS)
             for enclosure in entry.get('enclosures', []):
@@ -173,6 +154,16 @@ class FeedParser:
             return None
 
     @staticmethod
+    def filter_video_links(url: str) -> str | None:
+        """Filter out URLs that point to video content."""
+        # Pattern to match `.com/videos` or `.com/short-videos` right after the domain
+        pattern = r'\.com/(videos|short-videos)(/|$)'
+
+        if re.search(pattern, url):
+            return None
+        return url
+
+    @staticmethod
     def parse_feed(topic: str, pub_xml: dict) -> list:
         """
         Parse and Extract metadata from feed.
@@ -230,6 +221,11 @@ class FeedParser:
                             continue
 
                         url = FeedParser.normalize_url(url)
+                        url = FeedParser.filter_video_links(url)
+                        if not url:
+                            logger.debug(
+                                f"Skipping entry from {publisher} - filtered video link")
+                            continue
 
                         # Check if URL is valid
                         if not url:

@@ -9,39 +9,25 @@ import logging
 from datetime import datetime
 from typing import List, Any
 
-from sqlalchemy import or_, case
+from sqlalchemy import or_, case, text
+from sqlalchemy import select, func, cast, desc
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 
 from src.database.models import Articles
-from src.database.queries import get_article_query, paginate_and_format
+from src.database.queries import format_article_results, get_article_query, paginate_and_format
 
 logger = logging.getLogger(__name__)
 
-
-def count_words(text: str) -> int:
-    # Remove punctuation
-    text = text.translate(str.maketrans('', '', string.punctuation))
-
-    # Remove extra spaces (including tabs/newlines) and strip leading/trailing spaces
-    text = re.sub(r'\s+', ' ', text).strip()
-
-    # Split by space and count words
-    words = text.split()
-    return len(words)
+# Define weights
+BM25_WEIGHT = 0.6
+VECTOR_WEIGHT = 0.4
+HYBRID_WEIGHT = 0.35
+RECENCY_WEIGHT = 0.65
 
 
-def determine_factors(query):
-    words = count_words(query)
-    if words <= 3:
-        return 0.7, 0.3, 0.5
-        # return 1, 0, 0.9
-    else:
-        return 0.3, 0.7, 0.5
-
-
-def search(current_user_id: int, query: str, model: Any, device: str, db: Session, skip: int, limit: int) -> List[dict]:
-    """Perform Cosine Similarity Search and find the most relevant articles with pagination.
+def search(current_user_id: int, query: str, model: Any, device: str, db: Session, skip: int, limit: int, min_score: float = 0.18) -> List[dict]:
+    """Perform hybrid search combining BM25 and vector similarity with pagination.
 
     Args:
         current_user_id (int): ID of the current user.
@@ -51,87 +37,136 @@ def search(current_user_id: int, query: str, model: Any, device: str, db: Sessio
         db (Session): SQLAlchemy database session.
         skip (int): Number of records to skip for pagination.
         limit (int): Maximum number of records to return.
+        min_score (float): Minimum hybrid score threshold.
 
     Returns:
-        List[dict]: A list of dictionaries representing similar articles."""
-    try:
-        # To perform OR keyword search
-        words = query.strip().split()
-        or_query = " OR ".join(words)
-        ts_vector = func.to_tsvector('english', Articles.title)
-        ts_query = func.websearch_to_tsquery('english', or_query)
-        ts_rank = func.coalesce(
-            func.ts_rank(ts_vector, ts_query, 32),
-            0.0  # Ensure non-null values
-        ).label("ts_rank")
+        List[dict]: A list of dictionaries representing similar articles.
+    """
 
-        # Add explicit word match counting
-        word_match_count = 0
-        for word in words:
-            word_match_count += case(
-                (func.lower(Articles.title).ilike(f'%{word.lower()}%'), 1),
-                else_=0
-            )
+    # Generate query embedding
+    query_embedding = model.encode(
+        [query], convert_to_tensor=True, device=device)
+    query_embedding = query_embedding.cpu().numpy().flatten().tolist()
 
-        # Normalize word matches
-        word_match_ratio = (word_match_count / len(words)
-                            ).label("word_match_ratio")
+    # BM25 full-text search score (0 if no match)
+    bm25_score = func.coalesce(
+        func.ts_rank_cd(Articles.tsv, func.plainto_tsquery('english', query)),
+        0
+    )
 
-        # Enhanced keyword score combining both approaches
-        enhanced_ts_rank = (
-            (ts_rank * 0.4) + (word_match_ratio * 0.6)
-        ).label("enhanced_ts_rank")
+    # Vector similarity score
+    vector_score = 1 - Articles.embeddings.cosine_distance(query_embedding)
 
-        embedding = model.encode(query, device=device)
-        current_time = datetime.now()
+    # Hybrid score (BM25 + Vector only) - used for elimination
+    hybrid_score = (bm25_score * BM25_WEIGHT) + (vector_score * VECTOR_WEIGHT)
 
-        recency_factor = 0.35
-        kw_factor, cos_factor, eliminate_factor = determine_factors(query)
+    # Recency score (boost for newer articles)
+    days_since_published = func.extract(
+        'epoch', func.now() - Articles.published_date) / 86400.0
+    recency_score = func.greatest(
+        0.0,
+        func.exp(-days_since_published / 30.0)
+    )
 
-        # Keyword Rank
-        inverted_kw_rank = (1 - enhanced_ts_rank).label("inverted_kw_rank")
-        # Semantic Rank
-        cos_dist = Articles.embeddings.cosine_distance(
-            embedding).label("distance")
-        normalized_cos_dist = (cos_dist / 2.0).label("normalized_cos_dist")
-        # Recency Factor
-        RECENCY_DECAY_DAYS = 30
-        # Calculate age in days
-        article_age_days = (func.extract(
-            'epoch', current_time - Articles.published_date) / 86400.0)
-        normalized_recency = (
-            func.least(
-                article_age_days / RECENCY_DECAY_DAYS,  # Scales from 0 to 1 within the window
-                1.0  # Caps at 1 for anything older than RECENCY_DECAY_DAYS
-            )
-        ).label("normalized_recency")
+    # Combined score (Hybrid + Recency) - used for ordering
+    combined_score = (hybrid_score * HYBRID_WEIGHT) + \
+        (recency_score * RECENCY_WEIGHT)
 
-        combined_score = (
-            (((inverted_kw_rank * kw_factor) +
-              (normalized_cos_dist * cos_factor)) * (1 - recency_factor)) +
-            (normalized_recency * recency_factor)
-        ).label("combined_score")
+    # Build query using the existing query structure
+    base_query = get_article_query(
+        db,
+        current_user_id,
+        bm25_score.label('bm25_score'),
+        vector_score.label('vector_score'),
+        hybrid_score.label('hybrid_score'),
+        recency_score.label('recency_score'),
+        combined_score.label('combined_score')
+    )
 
-        main_score = ((inverted_kw_rank * kw_factor) +
-                      (normalized_cos_dist * cos_factor)).label("main_score")
+    # Apply hybrid score filter (elimination) and combined score ordering
+    filtered_query = base_query.filter(
+        hybrid_score >= min_score  # Eliminate based on relevance only
+    ).order_by(
+        combined_score.desc()      # Order by relevance + recency
+    )
 
-        or_conditions = []
-        for word in words:
-            word_lower = word.lower()
-            or_conditions.extend([
-                # Simple text matching
-                func.lower(Articles.title).ilike(f'%{word_lower}%'),
-                # Full-text search matching
-                func.to_tsvector('english', Articles.title).op('@@')(
-                    func.websearch_to_tsquery('english', word)
-                )
-            ])
+    # Apply pagination and format results
+    return paginate_and_format(filtered_query, skip, limit)
 
-        results = get_article_query(
-            db, current_user_id, main_score, combined_score).filter(or_(*or_conditions), main_score <= eliminate_factor).order_by(combined_score)
-        results = paginate_and_format(results, skip, limit)
-        return results
 
-    except Exception as e:
-        logger.error(f"Error in performing similarity search: {e}")
+def search_with_scores(current_user_id: int, query: str, model: Any, device: str,
+                       db: Session, skip: int, limit: int, min_score: float = 0.1) -> List[dict]:
+    """Perform hybrid search and include relevance scores in response."""
+
+    # Generate query embedding
+    query_embedding = model.encode(
+        [query], convert_to_tensor=True, device=device)
+    query_embedding = query_embedding.cpu().numpy().flatten().tolist()
+
+    # Define weights
+    BM25_WEIGHT = 0.6
+    VECTOR_WEIGHT = 0.4
+    HYBRID_WEIGHT = 0.8
+    RECENCY_WEIGHT = 0.2
+
+    # Score calculations
+    bm25_score = func.coalesce(
+        func.ts_rank_cd(Articles.tsv, func.plainto_tsquery('english', query)),
+        0
+    )
+    vector_score = 1 - Articles.embeddings.cosine_distance(query_embedding)
+
+    # Hybrid score (BM25 + Vector only) - for elimination
+    hybrid_score = (bm25_score * BM25_WEIGHT) + (vector_score * VECTOR_WEIGHT)
+
+    # Recency score
+    days_since_published = func.extract(
+        'epoch', func.now() - Articles.published_date) / 86400.0
+    recency_score = func.greatest(
+        0.0,
+        func.exp(-days_since_published / 30.0)
+    )
+
+    # Combined score (Hybrid + Recency) - for ordering
+    combined_score = (hybrid_score * HYBRID_WEIGHT) + \
+        (recency_score * RECENCY_WEIGHT)
+
+    # Build and execute query
+    base_query = get_article_query(
+        db,
+        current_user_id,
+        bm25_score.label('bm25_score'),
+        vector_score.label('vector_score'),
+        hybrid_score.label('hybrid_score'),
+        recency_score.label('recency_score'),
+        combined_score.label('combined_score')
+    )
+
+    results = base_query.filter(
+        hybrid_score >= min_score      # Eliminate based on relevance only
+    ).order_by(
+        combined_score.desc()          # Order by relevance + recency
+    ).offset(skip).limit(limit).all()
+
+    # Format results with scores
+    if not results:
         return []
+
+    return [
+        {
+            'id': item.id,
+            'title': item.title,
+            'link': item.link,
+            'published_date': item.published_date,
+            'image': item.image,
+            'source': item.source,
+            'topic': item.topic,
+            'liked': item.liked,
+            'bookmarked': item.bookmarked,
+            'bm25_score': float(item.bm25_score),
+            'hybrid_score': float(item.hybrid_score),
+            'recency_score': float(item.recency_score),
+            'combined_score': float(item.combined_score)
+        }
+        for item in results
+    ]

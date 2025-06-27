@@ -19,19 +19,9 @@ class Feeds:
         self.device = sbert.device
 
     def get_articles(self):
-        """
-        Get Articles
-        Returns:
-            articles: articles stored in current object
-        """
         return self._articles
 
     def set_articles(self, articles: dict):
-        """
-        Update Articles
-        Args:
-            articles: dict of articles topic wise
-        """
         self._articles = articles
 
     async def fetch_articles(self, feeds: dict) -> dict:
@@ -75,7 +65,7 @@ class Feeds:
         """
         try:
             articles = await self.fetch_articles(feeds)
-            self._articles = articles
+            self.set_articles(articles)
             logger.debug("Saved New Articles")
         except Exception as e:
             logger.error(f"Error in Refreshing Articles: {e}")

@@ -17,6 +17,9 @@ function News(props) {
   const [isLoading, setIsLoading] = useState(false);
   const [isLiked, setIsLiked] = useState(props.liked);
   const [isBookmarked, setIsBookmarked] = useState(props.bookmarked);
+  const [showSummary, setShowSummary] = useState(false);
+  const [imageHiding, setImageHiding] = useState(false);
+  const [buttonHiding, setButtonHiding] = useState(false);
   
   const fallbackImage = handleFallbackImage(source);
 
@@ -24,6 +27,22 @@ function News(props) {
     if (!summary || props.summary) return;
     return handleTypingEffect(summary, setDisplayText, setIsTyping);
   }, [summary, props.summary]);
+
+  // Handle the transition sequence when summary is generated
+  useEffect(() => {
+    if (summary && !showSummary) {
+      // Start hiding image and button
+      setImageHiding(true);
+      setButtonHiding(true);
+      
+      // Show summary container after a delay to allow image/button to fade
+      const timer = setTimeout(() => {
+        setShowSummary(true);
+      }, 300); // Half of the transition duration
+      
+      return () => clearTimeout(timer);
+    }
+  }, [summary, showSummary]);
 
   const onSummarize = () => {
     handleSummarize(axiosInstance, id, true, setIsLoading, setDisplayText, setSummary);
@@ -41,7 +60,14 @@ function News(props) {
 
   return (
     <div className="NewsBlock">
-      {!summary && <img className="NewsImage" src={image || fallbackImage} alt={title} onError={(e) => e.target.src = fallbackImage}/>}
+      {!showSummary && (
+        <img 
+          className={`NewsImage ${imageHiding ? 'hide' : ''}`}
+          src={image || fallbackImage} 
+          alt={title} 
+          onError={(e) => e.target.src = fallbackImage}
+        />
+      )}
       
       <div className="NewsContent">
         <a className="NewsTitle" href={link} target="_blank" rel="noopener noreferrer">
@@ -66,7 +92,7 @@ function News(props) {
           </div>
         </div>
         
-        {summary && (
+        {showSummary && (
           <div className="NewsSummaryContainer">
             <p className={`NewsSummary ${isTyping ? 'typing' : ''}`}>
               {displayText}
@@ -75,9 +101,9 @@ function News(props) {
         )}
       </div>
       
-      {!summary && (
+      {!showSummary && (
         <button 
-          className={`SummarizeButton ${isLoading ? 'loading' : ''}`}
+          className={`SummarizeButton ${isLoading ? 'loading' : ''} ${buttonHiding ? 'hide' : ''}`}
           onClick={onSummarize}
           disabled={isLoading}
         >

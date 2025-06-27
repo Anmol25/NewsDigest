@@ -24,6 +24,15 @@ async def lifespan(app: FastAPI):
         conn.commit()
     # Create tables if they dont exist
     Base.metadata.create_all(bind=engine)
+
+    # Execute the SQL file with trigger + function
+    with engine.connect() as conn:
+        with open("utils/init_triggers.sql", "r") as file:
+            sql_script = file.read()
+            conn.execute(text(sql_script))
+            conn.commit()
+
+    # Seed initial data
     session = Session(bind=engine)
     seed_data(session)
     session.commit()

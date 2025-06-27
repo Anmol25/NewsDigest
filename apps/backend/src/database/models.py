@@ -4,6 +4,7 @@ This module contains the models for the database.
 """
 
 from sqlalchemy import Column, Integer, String, DateTime, Text, Boolean, ForeignKey
+from sqlalchemy.dialects.postgresql import TSVECTOR
 from pgvector.sqlalchemy import Vector
 
 from .base import Base
@@ -21,6 +22,7 @@ class Articles(Base):
     topic = Column(String(50), nullable=False)
     embeddings = Column(Vector(384), nullable=False)
     summary = Column(Text, nullable=True)
+    tsv = Column(TSVECTOR)
 
 
 class Users(Base):

@@ -24,8 +24,20 @@
     margin: 0;
     object-fit: cover;
     position: relative;
-    transition: transform 0.3s ease;
     flex-shrink: 0;
+    /* Transition properties for smooth disappearing */
+    transition: height 0.6s cubic-bezier(0.4, 0, 0.2, 1), 
+                opacity 0.4s ease-out,
+                transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: top;
+    overflow: hidden;
+}
+
+/* Class to apply when image should disappear */
+.NewsImage.hide {
+    height: 0;
+    opacity: 0;
+    transform: translateY(-20px);
 }
 
 .NewsContent {
@@ -34,6 +46,8 @@
     justify-content: space-between;
     flex: 1;
     min-height: 0;
+    /* Add transition for smooth content expansion */
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .NewsTitle {
@@ -113,11 +127,9 @@
     transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
-
 .news-buttons:hover {
     opacity: 1;
     transform: scale(1.1);
-    
 }
 
 .black-filter{
@@ -135,7 +147,9 @@
     font-weight: 700;
     letter-spacing: 0.5px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Position transition for smooth movement */
+    transform: translateY(0);
 }
 
 .SummarizeButton:hover {
@@ -145,6 +159,13 @@
 .SummarizeButton.loading {
     background-color: #2C3930;
     cursor: not-allowed;
+}
+
+/* Class to apply when button should disappear */
+.SummarizeButton.hide {
+    opacity: 0;
+    transform: translateY(20px);
+    pointer-events: none;
 }
 
 .spinner {
@@ -175,6 +196,16 @@
     max-height: calc(100% - 100px);
     scrollbar-width: thin;
     scrollbar-color: #000000 #e0e0e0;
+    /* Smooth appearance transition */
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateY(0);
+    opacity: 1;
+}
+
+/* Initial state for summary container (before it appears) */
+.NewsSummaryContainer.entering {
+    transform: translateY(20px);
+    opacity: 0;
 }
 
 .NewsSummaryContainer::-webkit-scrollbar {
