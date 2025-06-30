@@ -182,6 +182,39 @@
     cursor: pointer;
 }
 
+.context-button-container {
+    height: 36px;
+    padding: 0 10px;
+    border: 2px solid black;
+    border-right: none;
+    border-left: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.context-button {
+    height: 25px;
+    padding: 0 15px;
+    border: 2px solid #666;
+    border-radius: 20px;
+    background-color: white;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 700;
+    transition: all 0.2s ease;
+}
+
+.context-button:hover {
+    border-color: #000;
+    background-color: #f0f0f0;
+}
+
+.context-button.context-active {
+    background-color: #000;
+    color: white;
+    border-color: #000;
+}
 
 /* Prevent browser autofill styling */
 input:-webkit-autofill,

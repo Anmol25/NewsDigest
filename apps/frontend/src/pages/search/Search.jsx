@@ -8,14 +8,15 @@ function Search() {
     const searchParams = new URLSearchParams(location.search);
     const query = searchParams.get('query') || '';
     const [hasArticles, setHasArticles] = useState(false);
-    const [highlights, setHighlights] = useState(false)
+    const [highlights, setHighlights] = useState(false);
+    const ai = searchParams.get('ai') === 'true';
 
     useEffect(() =>{
-        if (hasArticles == true){
+        if (hasArticles == true  && ai) {
         setHighlights(true);
         console.log("Highlights set to true");
-        }
         console.log(highlights);
+        }
     }, [hasArticles]);
 
     return (

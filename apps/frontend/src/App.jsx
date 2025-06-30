@@ -14,6 +14,7 @@ import Likes from "./pages/likes/Likes";
 import Source from "./pages/source/Source";
 import UserHistory from "./pages/user-history/UserHistory";
 import ForYou from "./pages/foryou/ForYou";
+import Test from "./components/test";
 
 function App() {
   return (
@@ -35,6 +36,7 @@ function App() {
       </Route>
       <Route path="/login" element={<LoginForm />} />
       <Route path="/register" element={<RegisterUserForm />} />
+      <Route path="/test" element={<Test />} />
     </Routes>
   )
 }

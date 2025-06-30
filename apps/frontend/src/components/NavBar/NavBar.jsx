@@ -27,6 +27,7 @@ function NavBar(){
     const [isPageHovered, setIsPageHovered] = useState(false);
     const searchInputRef = useRef(null);
     const matchSearch = useMatch('/search/*');
+    const [useAI, setAI] = useState(false);
 
     const matchSource = useMatch('/source/*');
     const matchSubscriptions = useMatch('/subscriptions/*');
@@ -64,7 +65,7 @@ function NavBar(){
             }
             return;
         }
-        navigate(`/search?query=${searchQuery}`);
+        navigate(`/search?query=${searchQuery}${useAI ? '&ai=true' : ''}`);
     }
 
     const handleProfileClick = () => {
@@ -112,7 +113,15 @@ function NavBar(){
                         name="search"
                         ref={searchInputRef}
                     />
-                    
+                    <div className='context-button-container'>
+                    <button 
+                        type="button" 
+                        className={`context-button ${useAI ? 'context-active' : ''}`}
+                        onClick={() => setAI(!useAI)}
+                    >
+                        AI
+                    </button>
+                    </div>
                     
                     <button className='searchbutton' type="submit">
                         <img className='searchicon' src={search} alt="Search" />
