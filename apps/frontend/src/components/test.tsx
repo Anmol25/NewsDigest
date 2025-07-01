@@ -1,14 +1,10 @@
-import Navbar2 from './Navbar2/Navbar2';
-import SideBar2 from './Sidebar2/Sidebar2';
+import News2 from "./News2/News2"
 
 export default function Test() {
   return (
     <>
-      <Navbar2 />
-      <SideBar2 />
+      <News2 />
     </>
-    
-
   )
 }
 

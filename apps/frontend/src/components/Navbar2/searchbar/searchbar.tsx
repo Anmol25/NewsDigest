@@ -8,7 +8,7 @@ function SearchBar() {
                 className="flex grow focus:outline-none focus:ring-0"
                 />
             <button
-                className="border border-borderPrimary text-borderPrimary bg-transparent font-bold px-4 py-0.5 
+                className="border border-borderPrimary text-borderPrimary bg-transparent px-4 py-0.5 
                 rounded-3xl shadow-md hover:border-black hover:bg-black hover:text-white
                 transition duration-300 ease-in-out">
                 <p className="">AI</p>

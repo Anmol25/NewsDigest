@@ -26,12 +26,12 @@ function App() {
           <Route path="/search" element={<Search />} />
           <Route path="/for-you" element={<ForYou />} />
           <Route path="/:topic" element={<Feed />} />
-          <Route path="/bookmarks" element={<Bookmarks />} />
+          <Route path="/saved" element={<Bookmarks />} />
           <Route path="/likes" element={<Likes />} />
           <Route path="/subscriptions" element={<Subscriptions />} />
           <Route path="/source/:source" element={<Source />} />
-          <Route path="/profile/details" element={<Profile />} />
-          <Route path="/profile/history" element={<UserHistory />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/history" element={<UserHistory />} />
         </Route>
       </Route>
       <Route path="/login" element={<LoginForm />} />

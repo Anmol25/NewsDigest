@@ -20,10 +20,10 @@ function NavBar2() {
             <SearchBar />
         </div>
         <div className='flex flex-row gap-10 px-6'>
-            <NavLink className= 'text-textPrimary border border-textPrimary shadow-md px-5 py-2 rounded-3xl hover:animate-hoverShadowEffect'>
+            <NavLink className= 'text-textPrimary border border-textPrimary shadow-md px-5 py-2 rounded-3xl hover:animate-hoverShadowEffect' to='/chat'>
                 Chat
             </NavLink>
-            <NavLink className='flex items-center'>
+            <NavLink className='flex items-center' to='/profile'>
                 Profile
             </NavLink>
         </div>
