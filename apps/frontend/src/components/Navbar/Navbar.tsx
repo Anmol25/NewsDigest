@@ -4,7 +4,7 @@ import { NavLink } from "react-router-dom";
 
 function NavBar2() {
     return (
-    <div className="flex flex-row fixed bg-basePrimary items-center justify-between w-full h-16 px-7 py-2.5 z-900">
+    <div className="flex flex-row fixed bg-basePrimary items-center justify-between w-full h-16 pl-7 py-2.5 z-900">
         <div className="flex flex-row items-center gap-4">
             <div style={{ fontSize: '30px' }}>
                 <i className="ri-menu-line"></i>
@@ -22,9 +22,6 @@ function NavBar2() {
         <div className='flex flex-row gap-10 px-6'>
             <NavLink className= 'text-textPrimary border border-textPrimary shadow-md px-5 py-2 rounded-3xl hover:animate-hoverShadowEffect' to='/chat'>
                 Chat
-            </NavLink>
-            <NavLink className='flex items-center' to='/profile'>
-                Profile
             </NavLink>
         </div>
     </div>);

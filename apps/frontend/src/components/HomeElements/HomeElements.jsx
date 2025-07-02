@@ -78,17 +78,14 @@ function HomeElements({ name, icon }) {
     }, [checkAndLoadMore]);
 
     return (
-        <div className="HomeElement">
-            <div className="HomeHeader">
-                <div className="Homediv">
-                    <img className="HomeTitleImg" src={icon} alt={name} />
-                    <p className="HomeTitle">{name}</p>
-                </div>
-                <NavLink className="HomeSeeMore" to={`/${name.toLowerCase().replace(/\s+/g, "-")}`}>
+        <div>
+            <div className="flex flex-row items-center justify-between px-5">
+                <p className="text-3xl font-semibold text-textPrimary">{name}</p>
+                <NavLink className="text-2xl font-semibold text-textPrimary" to={`/${name.toLowerCase().replace(/\s+/g, "-")}`}>
                     See more &gt;
                 </NavLink>
             </div>
-            <div className="ScrollContainer">
+            <div className="flex relative w-full items-center">
                 <button 
                     className="ScrollButton ScrollButtonLeft" 
                     onClick={() => handleScroll('left')}
@@ -96,9 +93,9 @@ function HomeElements({ name, icon }) {
                 >
                     &#8249;
                 </button>
-                <div className="NewsScrollContainer" ref={scrollContainerRef}>
+                <div className="flex flex-row overflow-x-auto scrollbar-none gap-5 my-2.5 p-5" ref={scrollContainerRef}>
                     {feed.map((item) => (
-                        <div key={item.id} className="NewsItemContainer">
+                        <div key={item.id} className="flex-grow-0 flex-shrink-0 basis-auto w-[350px]">
                             <News {...item} />
                         </div>
                     ))}

@@ -27,9 +27,8 @@ function ForYou() {
 
     return (
         <div className="MainPageContainer">
-            <div className="MainHeadings">
-                <img src={heart} alt={title} className="MainHeadingIcon filter-black"/>
-                <h1 className="MainHeadingTitle">{title}</h1>
+            <div className="text-3xl font-semibold text-textPrimary pt-1 pb-2.5">
+                {title}
             </div>
             {isLoading ? (
                 <div className="big-spinner-container">

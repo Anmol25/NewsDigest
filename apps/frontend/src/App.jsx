@@ -10,7 +10,6 @@ import Home from "./pages/home/Home";
 import Subscriptions from "./pages/subscriptions/Subscriptions";
 import Profile from "./pages/profile/Profile";
 import Bookmarks from "./pages/bookmarks/Bookmarks";
-import Likes from "./pages/likes/Likes";
 import Source from "./pages/source/Source";
 import UserHistory from "./pages/user-history/UserHistory";
 import ForYou from "./pages/foryou/ForYou";
@@ -27,7 +26,6 @@ function App() {
           <Route path="/for-you" element={<ForYou />} />
           <Route path="/:topic" element={<Feed />} />
           <Route path="/saved" element={<Bookmarks />} />
-          <Route path="/likes" element={<Likes />} />
           <Route path="/subscriptions" element={<Subscriptions />} />
           <Route path="/source/:source" element={<Source />} />
           <Route path="/profile" element={<Profile />} />

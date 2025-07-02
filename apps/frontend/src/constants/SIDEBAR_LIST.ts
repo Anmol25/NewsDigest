@@ -16,6 +16,6 @@ export const SIDEBAR_TOP_LIST: SidebarItem[] = [
 ]
 
 export const SIDEBAR_BOTTOM_LIST: SidebarItem[] = [
-    {name:'Settings',to:'/settings', image:'ri-settings-4-line', image_fill: 'ri-settings-4-fill'},
+    {name:'Settings',to:'/profile', image:'ri-settings-4-line', image_fill: 'ri-settings-4-fill'},
     {name:'Log Out',to:'/logout', image:'ri-logout-box-line', image_fill: 'ri-logout-box-fill'}
 ]
