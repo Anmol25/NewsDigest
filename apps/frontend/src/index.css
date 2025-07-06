@@ -24,6 +24,7 @@
     /*Shadow Themes*/ 
     --shadow-neonShadow: 8px -8px 16px 0px #8338EC, -8px -8px 16px 0px #00D1FF, -8px 8px 16px 0px #FB5607, 8px 8px 16px 0px #FFBE0B;
     --shadow-neonShadowActive: -12px -12px 32px 0px #8338EC, -12px 12px 32px 0px #00D1FF, 12px 12px 32px 0px #FB5607, 12px -12px 32px 0px #FFBE0B;
+    --shadow-chatActive: -12px -12px 32px 0px #8338EC, -12px 12px 32px 0px #00D1FF, 12px 12px 32px 0px #FB5607, 12px -12px 32px 0px #FFBE0B;
 
     /* Animation Themes */
     --animate-hoverShadowEffect: shadow-cycle 2s infinite ease-out;

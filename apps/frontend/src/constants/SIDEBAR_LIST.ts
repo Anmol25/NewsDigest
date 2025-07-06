@@ -8,7 +8,7 @@ type SidebarItem = {
 export const SIDEBAR_TOP_LIST: SidebarItem[] = [
     {name:'Home',to:'/home', image:'ri-home-2-line', image_fill: 'ri-home-2-fill'},
     {name:'For You',to:'/for-you', image:'ri-heart-line', image_fill: 'ri-heart-fill'},
-    {name:'News', to:'/top-stories', image:'ri-article-line', image_fill: 'ri-article-fill'},
+    {name:'News', to:'/news', image:'ri-article-line', image_fill: 'ri-article-fill'},
     {name:'Channels',to:'/channels', image:'ri-megaphone-line', image_fill: 'ri-megaphone-fill'},
     {name:'Subscriptions',to:'/subscriptions', image:'ri-star-line', image_fill: 'ri-star-fill'},
     {name:'Saved',to:'/saved', image:'ri-bookmark-line', image_fill: 'ri-bookmark-fill'},

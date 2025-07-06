@@ -5,7 +5,7 @@ import TopicButton from "./TopicButton";
 
 const formatTitle = (str) => str.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
-function Feed() {
+function News() {
     const { topic } = useParams();
     const title = formatTitle(topic);
 
@@ -48,4 +48,4 @@ function Feed() {
     );
 }
 
-export default Feed;
+export default News;
