@@ -6,7 +6,7 @@ import { debounce } from 'lodash';
 
 function NewsLoader(props){
     const axiosInstance = useAxios();
-    const {url, parameters, requestBody} = props;
+    const {url, parameters, requestBody, setHasArticles} = props;
     const [items, setItems] = useState([]);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
@@ -34,6 +34,9 @@ function NewsLoader(props){
                 });
             }
             const newData = response.data || [];
+            if (setHasArticles && newData.length > 0){
+                setHasArticles(true);
+            }
             const moreData = newData.length === 20;
             setItems(prev => currentPage === 1 ? newData : [...prev, ...newData]);
             setHasMore(moreData);
@@ -66,21 +69,30 @@ function NewsLoader(props){
     }, [handleScroll]);
 
     return(
-        <div className="GridContainer">
-            {items.map((item) => <News key={item.id} {...item} />)}
-            {hasMore ? (
-                <div className="big-spinner-container">
-                    <div className="big-spinner"></div>
-                </div>
-            ) : items.length ? "" : <p>No Articles found</p>}
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-6">
+    {items.map((item) => (
+        <div key={item.id} className="aspect-square">
+            <News {...item} />
         </div>
+    ))}
+    {hasMore ? (
+        <div className="flex items-center justify-center h-16 col-span-full">
+            <div className="w-6 h-6 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
+        </div>
+    ) : items.length ? "" : (
+        <div className="col-span-full flex items-center justify-center h-24">
+            <p className="text-gray-500 text-lg">No Articles found</p>
+        </div>
+    )}
+</div>
     )
 }
 
 NewsLoader.propTypes = {
     url: PropTypes.string.isRequired,
     parameters: PropTypes.object,
-    requestBody: PropTypes.object
+    requestBody: PropTypes.object,
+    setHasArticles: PropTypes.func
 };
 
 export default NewsLoader;

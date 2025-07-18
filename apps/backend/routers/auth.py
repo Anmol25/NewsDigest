@@ -4,15 +4,22 @@ This module contains the authentication routes for user registration, login, tok
 """
 
 import logging
+from datetime import timedelta
+
 from fastapi import APIRouter, Depends, HTTPException, status, Response, Request
 from fastapi.security import OAuth2PasswordRequestForm
-from datetime import timedelta
-from database.session import get_db
-from database.operations import create_user_in_db, check_user_in_db
 from sqlalchemy.orm import Session
-from users.schemas import Token, UserCreate
-from users.services import (authenticate_user, create_access_token, get_password_hash,
-                            create_refresh_token, decode_refresh_token)
+
+from src.database.session import get_db
+from src.database.operations import create_user_in_db, check_user_in_db
+from src.users.schemas import Token, UserCreate
+from src.users.services import (
+    authenticate_user,
+    create_access_token,
+    get_password_hash,
+    create_refresh_token,
+    decode_refresh_token,
+)
 
 logger = logging.getLogger(__name__)
 

@@ -68,7 +68,7 @@ function SourceComponent(props) {
                     {isSubscribed ? <div>Unsubscribe<img src={cross} alt="Unsubscribe" /></div> : <div>Subscribe<img src={plus} alt="Subscribe" /></div>}
                 </button>
             </div>
-            <p className="SubHeading">{`Latest News from ${formattedTitle}:`}</p>
+            <p className="text-[22px] font-semibold text-textPrimary mb-5 pl-2 border-l-4 border-brandColor">{`Latest News from ${formattedTitle}:`}</p>
             <NewsLoader key={props.source} url={`/articles`} requestBody= {{type:"source", source:formattedTitle}} />
         </div>
     );

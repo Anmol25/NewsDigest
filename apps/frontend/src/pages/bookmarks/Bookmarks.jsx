@@ -1,16 +1,10 @@
-import bookmark from '../../assets/Icons/bookmarked.svg';
 import NewsLoader from "../../components/NewsLoader/NewsLoader";
 
 function Bookmarks(){
     return (
         <div className="MainPageContainer">
-            <div className="MainHeadings">
-                <img 
-                    src={bookmark} 
-                    alt='Booksmark'
-                    className="MainHeadingIcon filter-black"
-                />
-                <h1 className="MainHeadingTitle">Bookmarked Articles</h1>
+            <div className="text-3xl font-semibold text-textPrimary pt-1 pb-2.5">
+                Saved Articles
             </div>
             <div>
                 <NewsLoader url="/articles" requestBody={{type: "bookmarked"}} />

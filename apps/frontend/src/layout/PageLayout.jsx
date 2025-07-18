@@ -1,35 +1,15 @@
-import NavBar from "../components/NavBar/NavBar";
-import SideBar from "../components/SideBar/SideBar";
+import NavBar from "../components/Navbar/Navbar";
+import SideBar from "../components/Sidebar/Sidebar";
 import Notification from "../components/Notification/Notification";
 import { Outlet } from "react-router-dom";
-import { useState, useEffect } from "react";
-import "./PageLayout.css";
 
 const FeedLayout = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  useEffect(() => {
-    const handleSidebarToggle = (event) => {
-      setSidebarOpen(event.detail.isOpen);
-    };
-
-    document.addEventListener('sidebarToggle', handleSidebarToggle);
-    
-    return () => {
-      document.removeEventListener('sidebarToggle', handleSidebarToggle);
-    };
-  }, []);
-
   return (
-    <div className="page-layout">
+    <div className="flex ">
       <NavBar />
-      <div className="content-container">
-        <div className={`sidebar ${sidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
-          <SideBar />
-        </div>
-        <main className={`main-content ${sidebarOpen ? 'content-shifted' : ''}`}>
-          <Outlet />
-        </main>
+      <SideBar />
+      <div className="mt-16 ml-22 h-[calc(100vh-4rem)] w-[calc(100%-5.5rem)]">
+        <Outlet />
       </div>
       <Notification />
     </div>

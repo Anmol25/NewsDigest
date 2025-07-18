@@ -19,20 +19,20 @@ from sqlalchemy import desc
 from sqlalchemy.sql import ColumnElement
 from typing import Optional
 
-from aggregator.feeds import Feeds
-from aggregator.model import SBERT
-from aggregator.search import search
-from database.session import get_db
-from database.operations import insert_to_db
-from database.models import Articles, Users, Sources, UserSubscriptions, UserHistory
-from database.queries import (
+from src.aggregator.feeds import Feeds
+from src.aggregator.model import SBERT
+from src.aggregator.search import search
+from src.database.session import get_db
+from src.database.operations import insert_to_db
+from src.database.models import Articles, Users, Sources, UserSubscriptions, UserHistory
+from src.database.queries import (
     like_alias,
     bookmark_alias,
     get_article_query,
     paginate_and_format,
 )
-from users.services import get_current_active_user
-from users.recommendation import Recommender
+from src.users.services import get_current_active_user
+from src.users.recommendation import Recommender
 
 logger = logging.getLogger(__name__)
 
@@ -58,7 +58,7 @@ async def lifespan(app: FastAPI):
         while True:
             try:
                 logger.info("Refreshing Feeds")
-                with open("feeds.yaml", 'r') as file:
+                with open("utils/feeds.yaml", 'r') as file:
                     rss_feeds = yaml.safe_load(file)
                 # Run the async code in a separate event loop in this thread
                 loop = asyncio.new_event_loop()
@@ -181,8 +181,7 @@ async def search_article(query: str, page: int = Query(1, description="Page numb
         search_results = search(
             current_user.id, query, sbert_search.model, sbert_search.get_device(), db, skip, limit)
         if not search_results:
-            raise HTTPException(
-                status_code=404, detail="Relevant Results not found")
+            return []
         return search_results
     except Exception as e:
         logger.error(f"Error in searching articles: {e}")
