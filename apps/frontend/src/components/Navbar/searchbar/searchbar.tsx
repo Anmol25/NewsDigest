@@ -32,13 +32,13 @@ function SearchBar() {
                 className={`px-4 py-0.5 rounded-3xl shadow-md transition duration-300 ease-in-out ${
                     ai
                         ? 'border border-brandColor text-basePrimary hover:border-borderPrimary bg-brandColor'
-                        : 'border border-borderPrimary text-borderPrimary hover:border-black bg-basePrimary'
+                        : 'border border-borderPrimary text-borderPrimary hover:bg-brandColor hover:text-basePrimary hover:border-black bg-basePrimary'
                 }`}
                 onClick={() => setAi(!ai)}
                 type="button">
                 <p className="">AI</p>
             </button>
-            <button className="text-2xl" type="submit">
+            <button className="text-2xl hover:cursor-pointer" type="submit">
                 <i className="ri-search-line"></i>
             </button>
         </form>

@@ -9,15 +9,20 @@ import dnaindia from "../assets/news_source/DNA India.png";
 import news18 from "../assets/news_source/News18.png";
 import cnbctv18 from "../assets/news_source/Icons/CNBCTV18.png";
 
-export const SOURCE_LIST = [
-    {name: "Times of India", icon: toi},
-    {name: "NDTV", icon: ndtv},
-    {name: "Firstpost", icon: firstpost},
-    {name: "India Today", icon: indiatoday},
-    {name: "Hindustan Times", icon: hindustantimes},
-    {name: "India TV", icon: indiatv},
-    {name: "Zee News", icon: zeenews},
-    {name: "DNA India", icon: dnaindia},
-    {name: "News18", icon: news18},
-    {name: "CNBCTV18", icon: cnbctv18}
+interface SourceItem {
+    name: string;
+    icon: string;
+}
+
+export const SOURCE_LIST: SourceItem[] = [
+    { name: "Times of India", icon: toi },
+    { name: "NDTV", icon: ndtv },
+    { name: "Firstpost", icon: firstpost },
+    { name: "India Today", icon: indiatoday },
+    { name: "Hindustan Times", icon: hindustantimes },
+    { name: "India TV", icon: indiatv },
+    { name: "Zee News", icon: zeenews },
+    { name: "DNA India", icon: dnaindia },
+    { name: "News18", icon: news18 },
+    { name: "CNBCTV18", icon: cnbctv18 }
 ];

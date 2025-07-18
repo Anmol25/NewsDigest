@@ -22,7 +22,7 @@ function NavBar2() {
             <div className='flex flex-row gap-10 px-6'>
                 <NavLink
                     className={({ isActive }) =>
-                        `text-basePrimary  font-semibold bg-gradient-to-r from-indigo-800 via-violet-600 to-pink-800 px-5 py-2 rounded-3xl ${isActive ? 'shadow-chatActive' : ' hover:animate-hoverShadowEffect'
+                        `text-basePrimary  font-semibold bg-brandColor px-5 py-2 rounded-3xl ${isActive ? 'shadow-chatActive' : 'shadow-md hover:animate-hoverShadowEffect'
                         }`
                     }
                     to='/chat'>

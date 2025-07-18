@@ -1,6 +1,4 @@
-
 import logging
-
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -10,6 +8,7 @@ from src.database.models import Articles, Users
 from src.users.services import get_current_active_user
 from routers.aggregator import search_article
 from src.ai.highlights import SearchHighlights
+from fastapi.responses import StreamingResponse
 
 logger = logging.getLogger(__name__)
 
@@ -31,5 +30,5 @@ async def get_hightlights(query: str, db: Session = Depends(get_db), current_use
         for item in res
     ]
     s_high = SearchHighlights()
-    highlights = s_high.get_highlights(query, articles)
-    return highlights
+    highlights = await s_high.get_highlights(query, articles)
+    return StreamingResponse(highlights, media_type="text/plain")
