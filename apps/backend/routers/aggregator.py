@@ -23,7 +23,7 @@ from src.aggregator.feeds import Feeds
 from src.aggregator.model import SBERT
 from src.aggregator.search import search
 from src.database.session import get_db
-from src.database.operations import insert_to_db
+from src.database.operations import insert_articles
 from src.database.models import Articles, Users, Sources, UserSubscriptions, UserHistory
 from src.database.queries import (
     like_alias,
@@ -68,7 +68,7 @@ async def lifespan(app: FastAPI):
                 articles_list = articles.get_articles()
                 logger.info(f"Fetched {len(articles_list)} articles")
                 if articles_list:
-                    insert_to_db(articles_list)
+                    insert_articles(articles_list)
                 logger.info(
                     f"Refreshed Feeds Successfully, Next Refresh in {REFRESH_INTERVAL//60} minutes")
             except Exception as e:

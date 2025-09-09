@@ -1,6 +1,7 @@
 import logging
-
+import requests
 from goose3 import Goose
+from newspaper import Article
 
 logger = logging.getLogger(__name__)
 
@@ -8,25 +9,31 @@ logger = logging.getLogger(__name__)
 def get_article(url: str):
     """
     Fetch and Parse Article
-    Args:
-        url: URL of article
-    Returns:
-        text: Text content of Article
-    Raises:
-        Exception: If article cannot be fetched or parsed
+    Tries Goose first, falls back to newspaper3k if Goose fails.
     """
+
     try:
+        # --- Try with requests + Goose ---
         # Fetch Article
         g = Goose()
         article = g.extract(url=url)
 
         text = article.cleaned_text
+        if text:
+            return text
 
-        if not text:
-            logger.warning("No text content found in article")
-            return None
+        logger.warning("Goose returned no text — falling back to newspaper3k")
 
-        return text
     except Exception as e:
-        logger.error(f"Error in Parsing Article: {e}")
-        raise Exception(f"Failed to fetch or parse article: {str(e)}")
+        logger.warning(f"Goose failed: {e} — using newspaper3k instead")
+
+    # --- Fallback: newspaper3k ---
+    try:
+        article = Article(url)
+        article.download()
+        article.parse()
+        return article.text if article.text else None
+    except Exception as e:
+        logger.error(f"newspaper3k also failed: {e}")
+        raise Exception(
+            f"Failed to fetch or parse article with both Goose and newspaper3k: {str(e)}")

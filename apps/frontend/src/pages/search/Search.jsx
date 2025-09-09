@@ -110,3 +110,61 @@ function Search() {
 }
 
 export default Search;
+
+// const fetchHighlights = async () => {
+//       try {
+//         const response = await fetch(`${api_url}/highlights?query=${query}`, {
+//           method: "GET",
+//           headers: {
+//             Authorization: `Bearer ${accessToken}`,
+//           },
+//           // Link the fetch to the AbortController
+//           signal: abortController.signal,
+//         });
+
+//         const reader = response.body.getReader();
+//         const decoder = new TextDecoder();
+
+//         while (true) {
+//           const { done, value } = await reader.read();
+//           if (done) {
+//             break;
+//           }
+//           const chunk = decoder.decode(value);
+//           setHighlightsContent((prevContent) => prevContent + chunk);
+//         }
+//       } catch (error) {
+//         // Don't log an error if it's from our own cancellation
+//         if (error.name === "AbortError") {
+//           console.log("Fetch aborted");
+//         } else {
+//           console.error("Error fetching stream:", error);
+//         }
+//       }
+//     };
+
+
+
+
+// const fetchHighlights = async () => {
+//       try {
+//         await fetchEventSource(`${api_url}/highlights?query=${query}`, {
+//           method: "GET",
+//           headers: {
+//             Authorization: `Bearer ${accessToken}`,
+//           },
+//           signal: abortController.signal,
+//           onmessage(event) {
+//             setHighlightsContent((prevContent) => prevContent + event.data);
+//           },
+//           onerror(err) {
+//             abortController.abort();
+//             throw err;
+//           },
+//         });
+//       } catch (error) {
+//         if (error.name !== "AbortError") {
+//           console.error("Fetch event source failed:", error);
+//         }
+//       }
+//     };

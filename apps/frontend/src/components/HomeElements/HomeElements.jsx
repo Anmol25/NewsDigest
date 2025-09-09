@@ -6,7 +6,7 @@ import { useAxios } from "../../services/AxiosConfig";
 import PropTypes from 'prop-types';
 import { debounce } from 'lodash';
 
-function HomeElements({ name, icon }) {
+function HomeElements({ name, to }) {
     const [feed, setFeed] = useState([]);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
@@ -81,7 +81,7 @@ function HomeElements({ name, icon }) {
         <div>
             <div className="flex flex-row items-center justify-between px-5">
                 <p className="text-3xl font-semibold text-textPrimary">{name}</p>
-                <NavLink className="text-2xl font-semibold text-textPrimary" to={`/${name.toLowerCase().replace(/\s+/g, "-")}`}>
+                <NavLink className="text-2xl font-semibold text-textPrimary" to={to}>
                     See more &gt;
                 </NavLink>
             </div>

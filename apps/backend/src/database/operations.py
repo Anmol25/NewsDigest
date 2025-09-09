@@ -6,9 +6,8 @@ This module contains the operations for the database.
 import logging
 from datetime import datetime, timezone
 
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
-from tqdm import tqdm
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 
 from .session import context_db
 from .models import Articles, Users, UserHistory
@@ -18,104 +17,65 @@ from src.users.schemas import UserCreate
 logger = logging.getLogger(__name__)
 
 
-def update_entry(existing_article, new_article_data, db):
-    """Updates an existing article entry in the database.
-    Args:
-        existing_article: The existing article object to update.
-        new_article_data: The new article data to update the existing article with.
-        db: The database session to use for the update.
-    Returns:
-        bool: True if the update was successful, False otherwise."""
-    try:
-        existing_article.title = new_article_data["title"]
-        existing_article.link = new_article_data["link"]
-        existing_article.published_date = new_article_data["published"]
-        existing_article.image = new_article_data["image"]
-        existing_article.source = new_article_data["source"]
-        existing_article.topic = new_article_data["topic"]
-        existing_article.embeddings = new_article_data["embeddings"]
-        existing_article.summary = None  # Reset summary
+def insert_articles(articles: list[dict]):
+    """Efficiently performs a bulk "upsert" of articles into the database.
 
-        db.commit()
-        return True  # Indicates an update occurred
-    except Exception as e:
-        db.rollback()
-        logger.exception(f"Error updating article in database: {e}")
-        return False
+    Inserts all articles in a single statement using Postgres ON CONFLICT.
+    Updates existing rows only if the incoming article has a more recent
+    published_date.
+    """
+    if not articles:
+        logger.info("No articles to insert or update.")
+        return
 
+    # Remove duplicates within the batch (keep first occurrence)
+    seen = set()
+    unique_articles = []
+    for article in articles:
+        key = (article["title"], article["source"])
+        if key not in seen:
+            seen.add(key)
+            unique_articles.append(article)
 
-def handle_update(existing_article, new_article_data, db):
-    """Handles updates if an article is already in the database.
-    Args:
-        existing_article: The existing article object to update.
-        new_article_data: The new article data to update the existing article with.
-        db: The database session to use for the update.
-    Returns:
-        bool: True if an update occurred, False otherwise."""
-    try:
-        time_in_db = existing_article.published_date
-        time_in_article = new_article_data["published"]
-
-        # Only update if the new article is newer
-        if time_in_article > time_in_db:
-            return update_entry(existing_article, new_article_data, db)
-        return False
-    except Exception as e:
-        logger.exception(f"Error handling article update: {e}")
-        return False
-
-
-def check_in_db(article: dict, db: Session):
-    """Checks if an article exists in the database and returns the ORM object.
-    Args:
-        article: The article data to check in the database.
-        db: The database session to use for the query.
-    Returns:
-        Articles: The ORM object if the article exists, None otherwise."""
-    return db.query(Articles).filter(Articles.link == article["link"]).first()
-
-
-def insert_to_db(articles: list):
-    """Inserts a list of new articles into the database and logs counts of added and updated articles.
-    Args:
-        articles: A list of dictionaries containing article data.
-    Returns:
-        None"""
-    added_count = 0
-    updated_count = 0
+    # Map articles into list of dicts ready for insert
+    mapped_articles = [
+        {
+            "title": a["title"],
+            "link": a["link"],
+            "published_date": a["published"],
+            "image": a["image"],
+            "source": a["source"],
+            "topic": a["topic"],
+            "embeddings": a["embeddings"],
+            "summary": None,
+        }
+        for a in unique_articles
+    ]
 
     try:
         with context_db() as db:
-            for item in tqdm(articles, desc="Inserting articles in DB", unit="article"):
-                existing_article = check_in_db(item, db)
+            stmt = pg_insert(Articles).values(mapped_articles)
 
-                if existing_article:
-                    if handle_update(existing_article, item, db):
-                        updated_count += 1
-                else:
-                    new_article = Articles(
-                        title=item["title"],
-                        link=item["link"],
-                        published_date=item["published"],
-                        image=item["image"],
-                        source=item["source"],
-                        topic=item["topic"],
-                        embeddings=item["embeddings"]
-                    )
-                    try:
-                        db.add(new_article)
-                        db.commit()
-                        added_count += 1
-                    except IntegrityError:
-                        db.rollback()
-                        logger.debug(
-                            f"Integrity error while adding to DB: {item}")
+            update_stmt = stmt.on_conflict_do_update(
+                constraint="uq_title_source",
+                set_={
+                    "link": stmt.excluded.link,
+                    "published_date": stmt.excluded.published_date,
+                    "image": stmt.excluded.image,
+                    "embeddings": stmt.excluded.embeddings,
+                    "summary": stmt.excluded.summary,
+                },
+                where=(Articles.published_date < stmt.excluded.published_date),
+            )
+
+            db.execute(update_stmt)
+            db.commit()
 
         logger.info(
-            f"Database update summary: {added_count} new articles added, {updated_count} articles updated.")
+            f"Database upserted successfully")
+
     except Exception as e:
-        logger.exception(
-            f"Unexpected error inserting articles into database: {e}")
+        logger.exception(f"Error during bulk insert/upsert: {e}")
 
 
 def check_user_in_db(user: UserCreate, db: Session):

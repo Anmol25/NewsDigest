@@ -9,7 +9,7 @@ function Home(){
             <FeaturedLoader />
             <div>
                 {topicsWithIcons.map((topic, index) => (
-                    <HomeElements key={index} icon={topic.icon} name={topic.name} />
+                    <HomeElements key={index} to={topic.to} name={topic.name} />
                 ))}
             </div>
         </div>

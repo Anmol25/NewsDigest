@@ -9,12 +9,14 @@ function NavBar2() {
                 <div style={{ fontSize: '30px' }}>
                     <i className="ri-menu-line"></i>
                 </div>
-                <img
+                <NavLink to={"/home"}>
+                    <img
                     className='h-10'
                     src={logo}
                     alt="News Digest"
                     style={{ cursor: 'pointer' }}
                 />
+                </NavLink>
             </div>
             <div className='absolute left-1/2 transform -translate-x-1/2'>
                 <SearchBar />

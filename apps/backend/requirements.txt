@@ -28,3 +28,4 @@ langchain
 langchain-core
 langchain-google-genai
 google-generativeai
+newspaper3k

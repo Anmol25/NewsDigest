@@ -3,7 +3,7 @@ models.py
 This module contains the models for the database.
 """
 
-from sqlalchemy import Column, Integer, String, DateTime, Text, Boolean, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, Text, Boolean, ForeignKey, UniqueConstraint
 from sqlalchemy.dialects.postgresql import TSVECTOR
 from pgvector.sqlalchemy import Vector
 
@@ -15,7 +15,7 @@ class Articles(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     title = Column(String(255), nullable=False)
-    link = Column(String(512), nullable=False, unique=True)
+    link = Column(String(512), nullable=False)
     published_date = Column(DateTime(timezone=True), nullable=False)
     image = Column(String(512), nullable=True)
     source = Column(String(50), nullable=False)
@@ -23,6 +23,10 @@ class Articles(Base):
     embeddings = Column(Vector(384), nullable=False)
     summary = Column(Text, nullable=True)
     tsv = Column(TSVECTOR)
+
+    __table_args__ = (
+        UniqueConstraint('title', 'source', name='uq_title_source'),
+    )
 
 
 class Users(Base):
