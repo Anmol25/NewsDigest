@@ -81,7 +81,7 @@ class Summarizer:
             # Fetch Article
             article = get_article(url)
             if not article:
-                return "Summary unavailable, read article at original link."
+                return "Summary unavailable. Please read the article at the original link."
             # Generate Summary
             summary = self.summarize(article)
             if not summary:

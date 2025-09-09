@@ -1,8 +1,6 @@
-import "./UserHistory.css"
-import trash from "../../assets/Icons/trash.svg"
 import { useAxios } from "../../services/AxiosConfig";
 import { useEffect, useState, useRef, useCallback } from "react";
-import HistoryComponent from "../../components/HistoryComponent/HistoryComponent"
+import HistoryComponent from "../../components/HistoryComponent/HistoryComponent";
 
 
 function UserHistory(){
@@ -76,16 +74,16 @@ function UserHistory(){
 
 
     return(
-        <div className="UserHistoryPageContainer">
-            <div className="HistoryHeader">
-                <div className="HeadingWrapper">
-                    <h1 className="PageTitle" id="HistoryTitle">History</h1>
+        <div className="px-6 py-5">
+            <div className="flex justify-between items-center mb-2.5">
+                <div className="">
+                    <h1 className="text-3xl font-bold text-textPrimary pt-1 pb-2.5 m-0">History</h1>
                 </div>
-                <button className="HistoryClearButton" onClick={clearHistory}>
-                    <img src={trash} alt="clear" />Clear History
+                <button className="flex flex-row text-xl font-medium gap-2.5 border border-black rounded-2xl p-2 bg-white shadow-md hover:invert transition duration-300 ease-in-out cursor-pointer" onClick={clearHistory}>
+                    <i className="ri-delete-bin-line text-xl"></i>Clear History
                 </button>
             </div>
-            <div className="HistoryList">
+            <div className="w-full grid gap-5 [grid-template-rows:repeat(auto-fill,minmax(2px,1fr))]">
                 {history.map((item) => <HistoryComponent key={item.id} {...item} handleDelete={handleDelete} />)}
                 {hasMore ? (
                     <div className="big-spinner-container">

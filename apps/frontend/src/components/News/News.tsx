@@ -12,15 +12,15 @@ interface News2Props {
     published_date: string;
     image: string;
     source: string;
-    bookmaked?: boolean;
+    bookmarked?: boolean;
 }
 
 function News(props: News2Props) {
-    const { id, title, link, published_date, image, source, bookmaked } = props;
+    const { id, title, link, published_date, image, source, bookmarked } = props;
     const axiosInstance = useAxios();
     const [summary, setSummary] = useState<string | null>(null);
     const [isSummarizing, setIsSummarizing] = useState<boolean>(false);
-    const [isBookmarked, setIsBookmarked] = useState<boolean>(bookmaked || false);
+    const [isBookmarked, setIsBookmarked] = useState<boolean>(bookmarked || false);
 
     const [displayText, setDisplayText] = useState('');
 
