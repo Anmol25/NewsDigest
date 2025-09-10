@@ -112,3 +112,22 @@ export const handleBookmark = async (axiosInstance, id, setIsBookmarked) => {
     window.dispatchEvent(errorEvent);
   }
 }; 
+
+export const formatDate = (time:string) => {
+  const date = new Date(time);
+
+  const formattedDate = date.toLocaleString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+
+  const formattedTime = date.toLocaleString("en-IN", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+    timeZone: "Asia/Kolkata"
+  }).replace(",", "");
+
+  return [formattedDate, `${formattedTime} IST`];
+};

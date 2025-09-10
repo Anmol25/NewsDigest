@@ -14,7 +14,7 @@ load_dotenv()
 
 class SearchHighlights:
     def __init__(self):
-        self.model = ChatGoogleGenerativeAI(model='gemini-2.0-flash')
+        self.model = ChatGoogleGenerativeAI(model='gemini-2.5-flash')
         self.prompt = PromptTemplate.from_template("""
 ### System Prompt: News Digest AI ###
 

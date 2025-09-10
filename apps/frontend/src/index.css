@@ -45,6 +45,15 @@
             box-shadow: 8px -8px 16px 0px #8338EC, -8px -8px 16px 0px #00D1FF, -8px 8px 16px 0px #FB5607, 8px 8px 16px 0px #FFBE0B;
         }
     }
+    --animate-loading: loading 1.5s infinite;
+    @keyframes loading {
+        0% {
+            background-position: 200% 0;
+        }
+        100% {
+            background-position: -200% 0;
+        }
+    }
 }
 
 

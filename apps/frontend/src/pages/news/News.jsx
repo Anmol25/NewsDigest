@@ -27,8 +27,8 @@ function News() {
     }
 
     return (
-        <div >
-            <div className="sticky top-16 z-10 bg-white flex flex-row justify-between gap-5 px-4 py-2.5 overflow-x-auto">
+        <div className="flex flex-col h-full"> 
+            <div className="sticky top-16 z-10 bg-white flex flex-row justify-between gap-3.5 px-4 py-2.5 overflow-x-auto">
                 {TOPICS_LIST.map((item, index)=> 
                     <TopicButton
                         key={index}
