@@ -21,16 +21,24 @@ function News(props: News2Props) {
     const [summary, setSummary] = useState<string | null>(null);
     const [isSummarizing, setIsSummarizing] = useState<boolean>(false);
     const [isBookmarked, setIsBookmarked] = useState<boolean>(bookmarked || false);
+    const [isImageHiding, setIsImageHiding] = useState<boolean>(false);
 
     const [displayText, setDisplayText] = useState('');
 
     useEffect(() => {
         if (!summary) return;
         return handleTypingEffect(summary, setDisplayText);
-      }, [summary]);
+    }, [summary]);
+
+    // Handle image animation when summary changes
+    useEffect(() => {
+        if (summary && !isImageHiding) {
+            setIsImageHiding(true);
+        }
+    }, [summary, isImageHiding]);
 
     const onSummarize = () => {
-        handleSummarize(axiosInstance, id, true,setSummary, setIsSummarizing);
+        handleSummarize(axiosInstance, id, true, setSummary, setIsSummarizing);
     };
 
     const onBookmark = () => {
@@ -38,9 +46,28 @@ function News(props: News2Props) {
     };
 
     return (
-        <div className="flex flex-col aspect-square min-h-[315px] min-w-[315px] shadow-md rounded-3xl hover:scale-105 transition duration-300 ease-in-out hover:shadow-lg">
-            {!summary && <img src={image || placeholderImage} className="h-[60%] object-cover mask-gradient rounded-t-3xl" />}
-            <div className="flex flex-col justify-between flex-1 px-2.5 pt-1.25 pb-2.5">
+        <div className="flex flex-col aspect-square min-h-[315px] min-w-[315px] shadow-md rounded-3xl hover:scale-105 transition duration-300 ease-in-out hover:shadow-lg overflow-hidden">
+            {/* Image container with animation */}
+            <div 
+                className={`relative transition-all duration-700 ease-in-out ${
+                    isImageHiding ? 'h-0 opacity-0' : 'h-[60%] opacity-100'
+                }`}
+                style={{
+                    transform: isImageHiding ? 'translateY(100%)' : 'translateY(0)',
+                }}
+            >
+                <img 
+                    src={image || placeholderImage} 
+                    className="w-full h-full object-cover mask-gradient rounded-t-3xl transition-transform duration-700 ease-in-out"
+                    style={{
+                        transform: isImageHiding ? 'translateY(-100%)' : 'translateY(0)',
+                    }}
+                />
+            </div>
+
+            <div className={`flex flex-col justify-between flex-1 px-2.5 pt-1.25 pb-2.5 transition-all duration-700 ease-in-out ${
+                isImageHiding ? 'flex-grow' : ''
+            }`}>
                 <a href={link} className="text-textMedium line-clamp-2  font-semibold hover:text-textSecondary transition duration-300 ease-in-out" target="_blank" rel="noopener noreferrer">
                     {title}
                 </a>
@@ -54,7 +81,7 @@ function News(props: News2Props) {
                     </div>
                 </div>
                 {summary &&
-                    <div className="flex flex-grow bg-baseSecondary my-1 px-2 py-1 rounded-xl text-textMediumSmall overflow-y-auto h-40 scrollbar scrollbar-track-transparent scrollbar-thumb-borderPrimary">
+                    <div className="flex flex-grow bg-baseSecondary my-1 px-2 py-1 rounded-xl text-textMediumSmall overflow-y-auto h-40 scrollbar scrollbar-track-transparent scrollbar-thumb-borderPrimary animate-fade-in">
                         {displayText}
                     </div>}
                 <div className={!summary ? "flex flex-row justify-between items-center h-[40px]" : "flex flex-row justify-end gap-5 items-center h-[40px]"}>

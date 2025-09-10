@@ -79,7 +79,7 @@ function UserHistory(){
                 <div className="">
                     <h1 className="text-3xl font-bold text-textPrimary pt-1 pb-2.5 m-0">History</h1>
                 </div>
-                <button className="flex flex-row text-xl font-medium gap-2.5 border border-black rounded-2xl p-2 bg-white shadow-md hover:invert transition duration-300 ease-in-out cursor-pointer" onClick={clearHistory}>
+                <button className="flex flex-row text-xl font-medium gap-2.5 border border-black rounded-2xl p-2 bg-white shadow-md hover:invert hover:border-white transition duration-300 ease-in-out cursor-pointer" onClick={clearHistory}>
                     <i className="ri-delete-bin-line text-xl"></i>Clear History
                 </button>
             </div>

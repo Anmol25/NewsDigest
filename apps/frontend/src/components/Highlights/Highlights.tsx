@@ -1,48 +1,130 @@
+import React from "react";
 import ReactMarkdown from "react-markdown";
-import remarkGfm from 'remark-gfm';
+import remarkGfm from "remark-gfm";
 
-function Highlights({HighlightsContent, query}) {
- const test = `Here are the key highlights from the provided news articles about India:
+type Props = {
+  HighlightsContent: string;
+  query: string;
+  isLoading?: boolean;
+  isStreaming?: boolean;
+  isComplete?: boolean;
+};
 
-*   **India-US Trade Relations:**
-    *   The United States is a leading destination for India's exports in electronics, marine goods, and readymade garments.
-    *   The US accounted for 60.17% of India’s electronics exports, 37.63% of marine goods shipments, and 34.11% of readymade garment exports between April and June.
-    *   India’s goods exports to the US surged by 23.5% year-on-year in June and grew by 22% over the April-June quarter.
-    *   India and the US are negotiating a bilateral trade agreement, with the first part expected to be finalized by September.
-    *   India seeks better market access for labor-intensive sectors like textiles and electronics, while the US is pushing for tariff cuts across multiple sectors.
+function Highlights({
+  HighlightsContent,
+  query,
+  isLoading = false,
+}: Props) {
+  // split into paragraphs (double-newline separated) so we can animate each chunk
+  const paragraphs = HighlightsContent
+    ? HighlightsContent.split(/\n{2,}/).filter((p) => p.trim() !== "")
+    : [];
 
-*   **Team India Morale Boost:**
-    *   Team India prepared for the fourth Test against England with a spirited training session, incorporating music like Hanuman Chalisa, English pop, and Punjabi songs to boost morale.
-    *   Arshdeep Singh suffered a hand injury during practice, casting doubt on his availability for the fourth Test.
+  // timing config (ms)
+  const stagger = 40; // ms between paragraph starts
 
-*   **Emerging Destinations in India:**
-    *   India offers a variety of unique destinations, including Dawki in Meghalaya, known for its clear river, and Dudhsagar Falls on the Goa-Karnataka border.
-    *   Other notable places include Spiti Valley in Himachal Pradesh, the Rann of Kutch in Gujarat, and Puga Valley in Ladakh, each offering distinct natural and cultural experiences.
+  return (
+    <div className="rounded-3xl border border-gray-200 bg-white shadow-md overflow-hidden">
+      {/* Inline micro styles for animations and skeleton shimmer */}
+      <style>{`
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(6px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
 
-*   **Badminton Asia Junior Mixed Team Championships:**
-    *   India started their campaign with a 110-69 victory over Sri Lanka in the Badminton Asia Junior Mixed Team Championships in Indonesia.
-    *   The mixed doubles team of Vishnu Kode and Reshika U secured the initial lead, with Tanvi Sharma contributing significantly to India’s score.
+        /* skeleton shimmer */
+        .skeleton {
+          position: relative;
+          overflow: hidden;
+          background: linear-gradient(90deg, rgba(230,230,230,1) 0%, rgba(245,245,245,1) 50%, rgba(230,230,230,1) 100%);
+          background-size: 200% 100%;
+          animation: skeletonShimmer 1.2s linear infinite;
+        }
+        @keyframes skeletonShimmer {
+          0% { background-position: -100% 0; }
+          100% { background-position: 100% 0; }
+        }
 
-*   **Critical Mineral Security in Northeast India:**
-    *   Northeast India is identified as a potential hub for critical minerals like lithium, cobalt, rare earths, graphite, and vanadium.
-    *   The government has identified 38 blocks in the region, with seven cleared for auction.
-    *   Improved connectivity through projects like the East-West Corridor and investments in local value addition and R&D are crucial for transforming the region's mineral wealth into economic growth.
-    *   The development of the Northeast is essential for India's national growth, strategic readiness, and role in the global supply chain.`
-  
- 
- return (
-    <div className="sticky top-[74px] w-[30%] h-[calc(100vh-80px)] rounded-3xl border border-gray-200 bg-white shadow-md">
-      <div className="h-[46px] text-textBig text-textPrimary rounded-t-3xl p-2.5 font-semibold border-b-">
+        /* subtle card look for skeleton */
+        .skeleton-card {
+          border-radius: 12px;
+          box-shadow: 0 6px 18px rgba(18,24,38,0.06), inset 0 -1px 0 rgba(255,255,255,0.02);
+        }
+      `}</style>
 
-        AI Highlights
-      </div>
-      <div className="scrollbar-thin h-[calc(100vh-126px)] p-2.5 overflow-y-auto">
-        <div className="">
-        <ReactMarkdown components={{
-    ul: ({ node, ...props }) => <ul className="list-disc ml-4" {...props} />,
-    ol: ({ node, ...props }) => <ol className="list-decimal ml-4" {...props} />
-  }} remarkPlugins={[remarkGfm]}>{HighlightsContent}</ReactMarkdown>
-      </div>
+      <div className="w-full h-full scrollbar-thin overflow-y-auto p-2.5">
+        <div className="text-textBig text-textPrimary rounded-t-3xl px-2.5 py-1.25 font-semibold">
+          AI Highlights
+        </div>
+
+        <div className="px-2.5 py-3">
+          {/* Fancier skeleton card while waiting for first chunk */}
+          {isLoading && !HighlightsContent ? (
+            <div className="space-y-4">
+              <div className="skeleton skeleton-card p-3">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-full bg-gray-200" />
+                  <div className="flex-1">
+                    <div className="h-3 rounded-full w-3/4 mb-3 bg-gray-200" />
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="h-3 rounded bg-gray-200" />
+                      <div className="h-3 rounded bg-gray-200" />
+                      <div className="h-3 rounded bg-gray-200" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="skeleton skeleton-card p-3">
+                <div className="h-3 rounded w-5/6 mb-3" />
+                <div className="h-3 rounded w-4/6 mb-3" />
+                <div className="h-3 rounded w-2/6" />
+              </div>
+
+              <div className="text-sm text-gray-600">Generating highlights…</div>
+            </div>
+          ) : (
+            <div>
+              {paragraphs.length === 0 && !isLoading ? (
+                <div className="text-sm text-gray-500">No highlights available.</div>
+              ) : (
+                <div className="space-y-3">
+                  {paragraphs.map((p, idx) => {
+                    // for each paragraph: only fadeInUp with a small stagger
+                    const startDelay = idx * stagger;
+                    const animation = `fadeInUp 220ms ease ${startDelay}ms both`;
+
+                    return (
+                      <div
+                        key={idx}
+                        style={{ animation }}
+                        aria-live="off"
+                        className="select-text"
+                      >
+                        <ReactMarkdown
+                          components={{
+                            ul: ({ node, ...props }) => (
+                              <ul className="list-disc ml-5" {...props} />
+                            ),
+                            ol: ({ node, ...props }) => (
+                              <ol className="list-decimal ml-5" {...props} />
+                            ),
+                            p: ({ node, ...props }) => (
+                              <p className="text-sm leading-6 text-textSecondary" {...props} />
+                            ),
+                          }}
+                          remarkPlugins={[remarkGfm]}
+                        >
+                          {p}
+                        </ReactMarkdown>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
