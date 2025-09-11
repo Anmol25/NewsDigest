@@ -56,11 +56,11 @@ The project uses a modern Python/TypeScript stack:
 
 <p align="center"><img src="images/for-you.png" width=50% alt="For You"><img src="images/News.png" width=50% alt="News"></p>
 
-<p align="center"><img src="images/subscriptions.png" width=50% alt="Subscriptions"><img src="images/Source.png" width=50% alt="Source"></p>
+<p align="center"><img src="images/subscriptions.png" width=50% alt="Subscriptions"><img src="images/Source.png" width=50% alt="source"></p>
 
 <p align="center"><img src="images/Channels.png" width=50% alt="Channels"><img src="images/Saved.png" width=50% alt="Saved"></p>
 
-<p align="center"><img src="images/profile.png" width=50% alt="Profile"><img src="images/History.png" width=50% alt="History"></p>
+<p align="center"><img src="images/profile.png" width=50% alt="Profile"><img src="images/history.png" width=50% alt="History"></p>
 
 <p><strong>Generating Summaries</strong></p>
 <p align="center"><img src="images/summary.gif" width=50% alt="Summary"></p>
