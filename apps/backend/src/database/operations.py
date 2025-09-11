@@ -28,15 +28,6 @@ def insert_articles(articles: list[dict]):
         logger.info("No articles to insert or update.")
         return
 
-    # Remove duplicates within the batch (keep first occurrence)
-    seen = set()
-    unique_articles = []
-    for article in articles:
-        key = (article["title"], article["source"])
-        if key not in seen:
-            seen.add(key)
-            unique_articles.append(article)
-
     # Map articles into list of dicts ready for insert
     mapped_articles = [
         {
@@ -49,7 +40,7 @@ def insert_articles(articles: list[dict]):
             "embeddings": a["embeddings"],
             "summary": None,
         }
-        for a in unique_articles
+        for a in articles
     ]
 
     try:

@@ -7,6 +7,7 @@ import asyncio
 import logging
 
 from .feed_parser import FeedParser
+from .deduplicator import Deduplicator
 
 logger = logging.getLogger(__name__)
 
@@ -22,19 +23,6 @@ class Feeds:
 
     def set_articles(self, articles: dict):
         self._articles = articles
-
-    @staticmethod
-    def add_embeddings(items: list, model, device: str):
-        if not items:
-            return items
-
-        titles = [item['title'] for item in items]
-        embeddings = model.encode(titles, device=device)
-
-        for i, item in enumerate(items):
-            # ensure correct dtype for pgvector
-            item['embeddings'] = embeddings[i]
-        return items
 
     async def fetch_articles(self, feeds: dict) -> dict:
         """
@@ -59,8 +47,9 @@ class Feeds:
                 articles.extend(FeedParser.parse_feed(
                     topic, xml_data))
             logger.debug(f"Fetched {len(articles)} Articles")
-            # Add Embeddings
-            result = Feeds.add_embeddings(
+            # Deduplicate Articles
+            logger.debug("Deduplicating Articles")
+            result = Deduplicator.deduplicate(
                 articles, self.model, self.device)
             return result
         except Exception as e:

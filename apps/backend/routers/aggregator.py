@@ -43,7 +43,7 @@ sbert_search = SBERT()
 logger.info("Initializing SBERT for fetching articles")
 sbert_feeds = SBERT()
 articles = Feeds(sbert_feeds)
-REFRESH_INTERVAL = 60 * 10  # 10 minutes
+REFRESH_INTERVAL = 60 * 5  # 10 minutes
 
 
 @asynccontextmanager

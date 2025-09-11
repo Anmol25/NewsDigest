@@ -1,130 +1,85 @@
-# NewsDigest: AI-Powered News Aggregator and Summarizer
+# NewsDigest
 
-## Description
-**NewsDigest** is an intelligent news aggregator that collects articles from multiple sources, eliminates duplicates using semantic similarity, summarizes content using AI, and personalizes user feeds based on preferences and interactions. Built with FastAPI and ReactJS, it provides a seamless and informative news consumption experience.
+NewsDigest is an AI-powered news aggregator designed to fix the modern news experience. It cleans up your feed by removing duplicates, uses AI to summarize articles for you, and helps you find exactly what you're looking for with a smart, context-aware search.
 
-## Table of Contents
-- [Features](#features)
-- [Project Snapshots](#project-snapshots)
-- [Tech Stack](#tech-stack)
-- [⚙️ Installation](#️installation)
-  - [Backend Setup](#backend-setup)
-  - [Frontend Setup](#frontend-setup)
-  - [Database Setup (Using Docker)](#database-setup-using-docker)
-- [🧩 Modules Overview](#-modules-overview)
-  - [1. Feed Aggregator](#1-feed-aggregator)
-  - [2. Deduplication Algorithm](#2-deduplication-algorithm)
-  - [3. Summarizer](#3-summarizer)
-  - [4. Recommendation System](#4-recommendation-system)
-  - [5. Search Engine](#5-search-engine)
-  - [6. Authentication System](#6-authentication-system)
-  - [7. User Operations Module](#7-user-operations-module)
-  - [8. User Management System](#8-user-management-system)
-- [Contributors](#contributors)
+<p align="center">
+  <img src="https://img.shields.io/badge/Backend-FastAPI-brightgreen?style=for-the-badge&logo=fastapi" alt="FastAPI">
+  <img src="https://img.shields.io/badge/Frontend-React-blue?style=for-the-badge&logo=react" alt="React">
+  <img src="https://img.shields.io/badge/Styling-TailwindCSS-cyan?style=for-the-badge&logo=tailwindcss" alt="TailwindCSS">
+  <img src="https://img.shields.io/badge/Database-PostgreSQL-blue?style=for-the-badge&logo=postgresql" alt="PostgreSQL">
+  <img src="https://img.shields.io/badge/AI-Gemini_&_HuggingFace-orange?style=for-the-badge&logo=google-gemini" alt="AI Models">
+</p>
 
 ---
 
+<p align="center">
+  <img src="images/home.gif" alt="NewsDigest Home Page" width="90%">
+</p>
+
+## The Problem
+
+Most news feeds are a mess. You're flooded with articles from countless sources, see the same story repeated with slightly different headlines, and spend more time scrolling than reading. I built NewsDigest to solve this. The goal was to create a single place to read the news that respects your time and learns what you're interested in.
+
 ## Features
-- 📰 Aggregates news from multiple RSS feeds
-- 🤖 AI-generated summaries using DistilBART
-- 🧠 Deduplication using SBERT embeddings + cosine similarity
-- 🔍 Contextual and keyword-based search
-- ❤️ User interactions: likes, bookmarks, history
-- 📌 Personalized feed based on user reading history
-- 🔐 JWT-based user authentication
+
+* **Aggregate Multiple Sources**: Pulls in articles from any RSS feed you want. All your news, one feed.
+* **No More Duplicates**: Instead of just looking at headlines, NewsDigest uses SBERT embeddings to understand the *semantic meaning* of articles. If two articles are about the same thing, you'll only see the first one.
+* **Quick AI Summaries**: Get the gist of any article without reading the whole thing. Summaries are generated on the fly using a fine-tuned DistilBART model.
+* **Smarter Search with AI Highlights**: Standard search is combined with the Gemini API to provide AI-generated highlights for your query, giving you immediate context and answers.
+* **Clean, Responsive UI**: The interface is built with React and Tailwind CSS for a simple, fast, and clutter-free reading experience on any device.
+* **A Feed That Learns**: The 'For You' page adapts to your reading history to show you more of what you care about.
+* **Standard User Features**: Includes secure JWT authentication, bookmarks, reading history, and source management.
+
+---
+
+## Tech Stack
+
+The project uses a modern Python/TypeScript stack:
+
+* **Backend**: FastAPI, SQLAlchemy
+* **Frontend**: ReactJS, Tailwind CSS
+* **Database**: PostgreSQL with the `pgvector` extension for vector similarity search.
+* **AI & ML**:
+    * **Google Gemini API** for search highlights.
+    * **SBERT** (`all-MiniLM-L6-v2`) for generating article embeddings.
+    * **DistilBART** (`sshleifer/distilbart-cnn-12-6`) for summarization.
+    * `Pytorch`, `Transformers (HuggingFace)`
+* **Tooling**: Docker, Git, `feedparser`, `newspaper3k`
+
+---
 
 ## Project Snapshots
 
-![Home](images/home.gif)
+![Home](images/home2.png)
 
-<p align="center"><img src="images/recommendation.png" width=50% alt="Home"><img src="images/search.png" width=50% alt="Home"></p>
+![Search](images/AI-Search-Highlights.png)
 
-<p align="center"><img src="images/subscriptions.png" width=50% alt="Home"><img src="images/source.png" width=50% alt="Home"></p>
+<p align="center"><img src="images/for-you.png" width=50% alt="For You"><img src="images/News.png" width=50% alt="News"></p>
 
-<p align="center"><img src="images/Liked.png" width=50% alt="Home"><img src="images/bookmarked.png" width=50% alt="Home"></p>
+<p align="center"><img src="images/subscriptions.png" width=50% alt="Subscriptions"><img src="images/Source.png" width=50% alt="Source"></p>
 
-<p align="center"><img src="images/profile.png" width=50% alt="Home"><img src="images/history.png" width=50% alt="Home"></p>
+<p align="center"><img src="images/Channels.png" width=50% alt="Channels"><img src="images/Saved.png" width=50% alt="Saved"></p>
+
+<p align="center"><img src="images/profile.png" width=50% alt="Profile"><img src="images/History.png" width=50% alt="History"></p>
 
 <p><strong>Generating Summaries</strong></p>
 <p align="center"><img src="images/summary.gif" width=50% alt="Summary"></p>
 
-## Tech Stack
-- **Frontend:** ReactJS
-- **Backend:** FastAPI, SQLAlchemy
-- **Database:** PostgreSQL + pgvector (To store embeddings)
-- **AI Models:** DistilBART (To generate summaries), SBERT (To generate contextual embeddings)
-- **Libraries:** Pytorch, Transformers (HuggingFace), Feedparser (To parse RSS Feeds), Newspaper3K (To extract Article Text)
-- **Other Tools:** Docker (For Database), Git etc. 
-
-## ⚙️ Installation
-
-### Backend Setup
-
-1. Navigate to the backend directory:
-    ```bash
-    cd apps/backend
-    ```
-2. Create and activate a virtual environment:
-    ```bash
-    python -m venv .venv
-    source .venv/bin/activate
-    ```
-3. Install the required Python dependencies:
-    ```bash
-    pip install -r requirements.txt
-    ```
-4. (Optional for Windows users) If you have a CUDA-enabled GPU, install the GPU version of PyTorch:  
-   Example for CUDA 12.6:
-    ```bash
-    pip install torch --index-url https://download.pytorch.org/whl/cu126
-    ```
-5. Run the backend server:
-    ```bash
-    uvicorn main:app
-    ```
-
 ---
 
-### Frontend Setup
+## Local Setup
 
-1. Navigate to the frontend directory:
-    ```bash
-    cd apps/frontend
-    ```
-2. Install the required Node.js dependencies:
-    ```bash
-    npm install
-    ```
-3. Start the development server (for local development):
-    ```bash
-    npm run dev
-    ```
+To get this running on your own machine, follow these steps.
 
-4. **Build the production-ready app:**
-    ```bash
-    npm run build
-    ```
+<details>
+<summary><strong>1. Start the Database (Docker)</strong></summary>
+<br>
 
-5. **Serve the production build locally:**
-    ```bash
-    serve -s dist
-    ```
+This is the easiest way to get a Postgres instance with the `pgvector` extension running.
 
----
-
-### Database Setup (Using Docker)
-
-> **Recommended especially for Windows users.**
-
-1. Pull the `pgvector` Docker image:
-    ```bash
-    docker pull pgvector/pgvector:pg17
-    ```
-2. Create a volume for persistent database storage:
-    ```bash
-    docker volume create pgvector-data
-    ```
-3. Run the PostgreSQL + pgvector Docker container:
+1.  Pull the image: `docker pull pgvector/pgvector:pg17`
+2.  Create a volume to save your data: `docker volume create pgvector-data`
+3.  Run the container:
     ```bash
     docker run --name pgvector-container \
         -e POSTGRES_PASSWORD=root \
@@ -134,242 +89,47 @@
         -d pgvector/pgvector:pg17
     ```
 
-✅ On running the backend server, all required tables will be automatically created and initial data will be inserted using SQLAlchemy ORM.
+</details>
+
+<details>
+<summary><strong>2. Set up the Backend</strong></summary>
+<br>
+
+1.  Navigate to the backend folder: `cd apps/backend`
+2.  Create and activate a Python virtual environment:
+    ```bash
+    python -m venv .venv
+    source .venv/bin/activate
+    # On Windows: .venv\Scripts\activate
+    ```
+3.  Install the dependencies: `pip install -r requirements.txt`
+4.  Run the server: `uvicorn main:app`
+    *The first time you run this, SQLAlchemy will automatically create all the tables in the database.*
+
+</details>
+
+<details>
+<summary><strong>3. Set up the Frontend</strong></summary>
+<br>
+
+1.  Navigate to the frontend folder: `cd apps/frontend`
+2.  Install dependencies: `npm install`
+3.  Start the development server: `npm run dev`
+4.  The app should now be running at `http://localhost:5173`.
+
+</details>
 
 ---
 
-## 🧩 Modules Overview
+## What's Next?
 
-This section provides a detailed overview of the main modules that power **NewsDigest: AI-Powered News Aggregator and Summarizer**.
+This project is still in active development. Here are a few things I'm planning to work on:
 
-## 1. Feed Aggregator
-
-**Purpose:**  
-To periodically fetch and process news articles from multiple RSS feeds, deduplicate them, and prepare structured entries for storage and personalization.
-
-**Inputs:**
-- `feeds.yaml`: A configuration file containing RSS feed URLs and associated metadata (e.g., source name and topic).
-- Aggregation interval (default: every 10 minutes).
-
-**Processing / Logic:**
-1. **Load Feed Sources:**  
-   Reads `feeds.yaml` to retrieve RSS URLs and metadata (source, topic).
-
-2. **Asynchronous Fetching:**  
-   Uses **aiohttp** for concurrent HTTP requests to efficiently fetch raw RSS XML data.
-
-3. **Parse Feed Items:**  
-   Uses **feedparser** to extract and standardize items into fields: `title`, `link`, `published`, `image`, `source`, `topic`.
-
-4. **Send to Deduplication Module:**  
-   - Generate SBERT embeddings for titles.
-   - Filter out semantically similar (duplicate) articles.
-
-5. **Database Insertion Logic:**  
-   - Insert if the article’s link does not exist.
-   - Update if the link exists but with a newer published timestamp.
-   - Ignore otherwise.
-
-6. **Scheduled Execution:**  
-   Runs on a separate thread and repeats at defined intervals.
-
-**Outputs:**
-- Structured articles ready for storage.
-- Database entries: newly inserted or selectively updated articles.
+-   [ ] **RAG-based Chatbot**: Integrate a conversational AI (using Gemini) that lets you "ask questions" about the news articles in the database.
+-   [ ] **Fact-Checking System**: Build a feature to automatically cross-reference claims in articles against verified sources.
 
 ---
 
-## 2. Deduplication Algorithm
+## Author
 
-**Purpose:**  
-To remove semantically similar articles based on the contextual similarity of their titles, ensuring a diverse news feed.
-
-**Inputs:**
-- A list of article dictionaries (each with a `title` field).
-- A Sentence-BERT (SBERT) model instance.
-- The target device for inference (`cpu` or `cuda`).
-
-**Processing / Logic:**
-- Extracts all titles from the input articles.
-- Generates contextual embeddings for these titles using the SBERT model.
-- Appends the generated embedding to each corresponding article dictionary.
-- Computes pairwise cosine similarity between the embeddings to measure semantic closeness. The cosine similarity between two embeddings **A** and **B** is given by:
-
-  $$ \mathrm{Cosine\ Similarity}\left(\vec{A},\vec{B}\right)=\frac{\vec{A}\cdot\vec{B}}{|\vec{A}|\cdot|\vec{B}|} $$
-
-- If the similarity score exceeds a threshold of **0.9**, one article is marked as a duplicate.
-- Filters out the duplicate articles, retaining only distinct ones.
-
-**Output:**
-- A list of unique articles with contextual embeddings attached.
-
----
-
-## 3. Summarizer
-
-**Purpose:**  
-The Summarizer module is responsible for generating concise AI summaries of full news articles using a transformer-based model.
-
-**Inputs:**
-- `article_id`: Unique identifier of the article to summarize.
-
-**Processing / Logic:**
-1. The system receives a request with an `article_id`.
-2. It checks if the summary already exists in the database:
-   - If found, the summary is retrieved directly and returned.
-   - If not, it fetches the full article URL, extracts content using **Newspaper3K**, and generates a summary with **DistilBART** (60-100 words).
-3. The system logs this interaction by updating the user’s read history.
-4. The final summary is returned to the user interface.
-
-**Outputs:**
-- AI-generated summary (60-100 words) of the article content.
-
----
-
-## 4. Recommendation System
-
-**Purpose:**  
-Generates personalized article recommendations based on user reading history, combining contextual embeddings with recency-based weighting to rank articles by relevance and freshness.
-
-**Inputs:**
-- `user`: Authenticated user object
-- Optional:
-  - `recency_factor`: Balance between recency and similarity.
-  - `decay_strength`: Weight steepness for recent reads.
-
-**Processing / Logic:**
-1. **History Check:**
-   - Verifies if the user has reading history.
-   - Returns an empty list if no records are found.
-   
-2. **Time-Weighted Embedding Generation:**
-   - Retrieves up to **N** (default: 10) recent articles viewed by the user.
-   - For each article, fetches:
-     - Title embeddings from the DB.
-     - Viewing timestamp.
-   - Calculates time-normalized recency for each article, applying exponential weighting:
-
-    <p align="center">
-    <img src="images/equations/exponential_weight.png" alt="Your Image Description">
-    </p>
-
-   where **r_i** is the normalized recency, and **β** is the decay strength.
-
-   - Final user embedding:
-
-    <p align="center">
-    <img src="images/equations/final_embedding.png" alt="Your Image Description">
-    </p>
-
-   where **e_i** is the embedding of article **i**.
-
-3. **Scoring & Filtering:**
-   - Filters out articles already viewed by the user.
-   - Scores remaining articles using:
-
-    <p align="center">
-    <img src="images/equations/scoring.png" alt="Your Image Description">
-    </p>
-
-   where **α** is the recency factor.
-
-4. **Pagination:**  
-   - Results are paginated and formatted before being returned.
-
-**Outputs:**
-- A list of article dictionaries.
-
----
-
-## 5. Search Engine
-
-**Purpose:**  
-The Search Engine module enables users to efficiently find news articles either through direct keyword matches or via semantic similarity, enhancing discoverability and personalization.
-
-**Inputs:**
-- `query`: Search string.
-- `context`: Boolean indicating keyword or contextual search.
-
-**Processing / Logic:**
-- If `context = False`:
-  - Performs an OR-based keyword match in article titles/content.
-  - Returns the latest matching articles.
-  
-- If `context = True`:
-  - Generates an embedding for the query using SBERT.
-  - Computes cosine similarity with stored article embeddings.
-  - Returns top-ranked results by similarity.
-
-- Results are paginated and formatted before being returned.
-
-**Output:**
-- Paginated list of article dictionaries relevant to the query.
-
----
-
-## 6. Authentication System
-
-**Purpose:**  
-Ensures secure access to the platform by verifying user credentials and managing session tokens. Implements JWT-based authentication to provide stateless, scalable user validation.
-
-**Inputs:**
-- `username`: Username entered by the user.
-- `password`: Password entered by the user.
-
-**Processing / Logic:**
-- Checks if the username exists in the system.
-- If the user exists, compares the provided password with the stored hashed password using a secure verification method.
-- If valid, generates:
-  - A short-lived JWT access token.
-  - A long-lived refresh token.
-
-**Output:**
-- JSON response containing `access_token`.
-- HTTP-only cookie containing `refresh_token`.
-
----
-
-## 7. User Operations Module
-
-**Purpose:**  
-Manages all user interactions with content, including liking, bookmarking, viewing history, and managing subscriptions.
-
-**Inputs:**
-- `user_id`: ID of the logged-in user.
-- `article_id` (optional): For actions like like, bookmark, or history update.
-- `source_id` (optional): For subscribing/unsubscribing to news sources.
-
-**Processing / Logic:**
-- **User Likes**: Allows users to like or unlike articles.
-- **User Bookmarks**: Allows users to bookmark or unbookmark articles.
-- **User History**: Updates when an article is read or summarized, recording timestamps.
-- **User Subscriptions**: Allows subscribing or unsubscribing to sources.
-
-**Outputs:**
-- Success/failure response.
-- User-specific data (liked articles, bookmarks, history, subscriptions).
-
----
-
-## 8. User Management System
-
-**Purpose:**  
-Enables users to create and manage their accounts. Supports secure registration, profile updates, password changes, and account deletion.
-
-**Inputs:**
-- `User data` (full name, username, email, password)
-- `Updated user information` (name, email, password)
-- `Authentication token` (to authorize user actions)
-
-**Processing / Logic:**
-- **User Registration**: Accepts and validates user data, stores it securely in the database.
-- **Profile Update**: Allows updating name/email after validation.
-- **Password Update**: Verifies current password, updates with a hashed new password.
-- **Account Deletion**: Permanently deletes the user’s data.
-
-**Output:**
-- Confirmation messages for each operation (e.g., "User registered", "Profile updated", "Password changed", "Account deleted").
-
-## Contributors
-
-- [@Anmol25](https://github.com/Anmol25)
+* **GitHub**: [@Anmol25](https://github.com/Anmol25)
