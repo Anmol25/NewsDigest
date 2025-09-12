@@ -25,7 +25,8 @@ class Articles(Base):
     tsv = Column(TSVECTOR)
 
     __table_args__ = (
-        UniqueConstraint('title', 'source', name='uq_title_source'),
+        # UniqueConstraint('title', 'source', name='uq_title_source'),
+        UniqueConstraint('link', name='uq_link'),
     )
 
 

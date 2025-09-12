@@ -3,6 +3,7 @@ operations.py
 This module contains the operations for the database.
 """
 
+from .models import Articles
 import logging
 from datetime import datetime, timezone
 
@@ -18,55 +19,78 @@ logger = logging.getLogger(__name__)
 
 
 def insert_articles(articles: list[dict]):
-    """Efficiently performs a bulk "upsert" of articles into the database.
-
-    Inserts all articles in a single statement using Postgres ON CONFLICT.
-    Updates existing rows only if the incoming article has a more recent
-    published_date.
+    """
+    Bulk insert articles with ON CONFLICT for 'link'.
+    Preprocesses the batch to remove duplicate links and duplicate (title, source) pairs,
+    keeping only the article with the latest published_date.
     """
     if not articles:
         logger.info("No articles to insert or update.")
         return
 
-    # Map articles into list of dicts ready for insert
+    # Step 1: Deduplicate by link
+    link_map = {}
+    for art in articles:
+        link = art["link"]
+        if link not in link_map or art["published"] > link_map[link]["published"]:
+            link_map[link] = art
+    deduped_by_link = list(link_map.values())
+
+    # Step 2: Deduplicate by (title, source)
+    title_source_map = {}
+    for art in deduped_by_link:
+        key = (art["title"], art["source"])
+        if key not in title_source_map or art["published"] > title_source_map[key]["published"]:
+            title_source_map[key] = art
+    final_articles = list(title_source_map.values())
+
+    logger.info(
+        f"Deduplicated batch: {len(articles)} -> {len(final_articles)} articles")
+
+    # Step 3: Map articles to dicts for insertion
     mapped_articles = [
         {
             "title": a["title"],
             "link": a["link"],
             "published_date": a["published"],
-            "image": a["image"],
+            "image": a.get("image"),
             "source": a["source"],
             "topic": a["topic"],
             "embeddings": a["embeddings"],
             "summary": None,
+            "tsv": None
         }
-        for a in articles
+        for a in final_articles
     ]
 
     try:
         with context_db() as db:
             stmt = pg_insert(Articles).values(mapped_articles)
 
-            update_stmt = stmt.on_conflict_do_update(
-                constraint="uq_title_source",
+            # ON CONFLICT for link only
+            stmt = stmt.on_conflict_do_update(
+                index_elements=['link'],
                 set_={
-                    "link": stmt.excluded.link,
+                    "title": stmt.excluded.title,
+                    "source": stmt.excluded.source,
                     "published_date": stmt.excluded.published_date,
                     "image": stmt.excluded.image,
+                    "topic": stmt.excluded.topic,
                     "embeddings": stmt.excluded.embeddings,
                     "summary": stmt.excluded.summary,
+                    "tsv": stmt.excluded.tsv
                 },
-                where=(Articles.published_date < stmt.excluded.published_date),
+                where=(stmt.excluded.published_date > Articles.published_date)
             )
 
-            db.execute(update_stmt)
+            db.execute(stmt)
             db.commit()
 
         logger.info(
-            f"Database upserted successfully")
+            f"Successfully inserted/updated {len(final_articles)} articles.")
 
     except Exception as e:
-        logger.exception(f"Error during bulk insert/upsert: {e}")
+        logger.exception(f"Error during bulk insert/upsert of articles: {e}")
 
 
 def check_user_in_db(user: UserCreate, db: Session):
