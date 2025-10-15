@@ -67,6 +67,14 @@ The project uses a modern Python/TypeScript stack:
 
 ---
 
+## Requirements
+
+- Python 3.12.4
+    - This project is currently developed and tested on Python 3.12.4. It may or may not work on higher Python versions.
+    - Download: https://www.python.org/downloads/release/python-3124/
+
+---
+
 ## Local Setup
 
 To get this running on your own machine, follow these steps.
@@ -97,11 +105,20 @@ This is the easiest way to get a Postgres instance with the `pgvector` extension
 
 1.  Navigate to the backend folder: `cd apps/backend`
 2.  Create and activate a Python virtual environment:
-    ```bash
-    python -m venv .venv
-    source .venv/bin/activate
-    # On Windows: .venv\Scripts\activate
-    ```
+    
+        - macOS/Linux (bash/zsh):
+            ```bash
+            python -m venv .venv
+            source .venv/bin/activate
+            ```
+
+        - Windows (PowerShell):
+            ```powershell
+            # Ensure Python 3.12.4 is the default or use its full path
+            py -3.12 -m venv .venv
+            .venv\Scripts\Activate.ps1
+            ```
+
 3.  Install the dependencies: `pip install -r requirements.txt`
 4.  Run the server: `uvicorn main:app`
     *The first time you run this, SQLAlchemy will automatically create all the tables in the database.*

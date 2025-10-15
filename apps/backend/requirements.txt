@@ -22,10 +22,10 @@ lxml==5.3.0
 lxml_html_clean==0.4.1
 bcrypt==3.2.2
 goose3==3.1.19
-tqdm
-python-dotenv
-langchain
-langchain-core
-langchain-google-genai
-google-generativeai
-newspaper3k
+tqdm==4.67.1
+python-dotenv==1.1.1
+langchain==0.3.27
+langchain-core==0.3.78
+langchain-google-genai==2.0.10
+google-generativeai==0.8.5
+newspaper3k==0.2.8
