@@ -8,10 +8,9 @@ from fastapi import Query
 from sqlalchemy.orm import Session, aliased
 from sqlalchemy.sql import case, ColumnElement
 
-from src.database.models import Articles, UserLikes, UserBookmarks
+from src.database.models import Articles, UserBookmarks
 
 # Define aliases for user interactions
-like_alias = aliased(UserLikes)
 bookmark_alias = aliased(UserBookmarks)
 # Define the basic query structure for articles
 QUERY_STRUCTURE = (
@@ -22,8 +21,6 @@ QUERY_STRUCTURE = (
     Articles.image,
     Articles.source,
     Articles.topic,
-    case((like_alias.article_id.isnot(None), True),
-         else_=False).label("liked"),
     case((bookmark_alias.article_id.isnot(None), True),
          else_=False).label("bookmarked")
 )
@@ -39,8 +36,6 @@ def get_article_query(db: Session, current_user_id: int, *add_columns: ColumnEle
     Returns:
         Query: SQLAlchemy query object."""
     return (db.query(*QUERY_STRUCTURE, *add_columns)
-            .outerjoin(like_alias, (Articles.id == like_alias.article_id) &
-                       (like_alias.user_id == current_user_id))
             .outerjoin(bookmark_alias, (Articles.id == bookmark_alias.article_id) &
                        (bookmark_alias.user_id == current_user_id)))
 
@@ -64,7 +59,6 @@ def format_article_results(results: list) -> list:
             'image': item.image,
             'source': item.source,
             'topic': item.topic,
-            'liked': item.liked,
             'bookmarked': item.bookmarked
         }
         for item in results

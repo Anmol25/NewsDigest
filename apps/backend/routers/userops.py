@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel
 
 from src.database.session import get_db
-from src.database.models import Users, UserLikes, UserBookmarks, Sources, UserSubscriptions, UserHistory
+from src.database.models import Users, UserBookmarks, Sources, UserSubscriptions, UserHistory
 from src.users.services import get_current_active_user, verify_password, get_password_hash
 
 
@@ -22,33 +22,6 @@ router = APIRouter()
 
 class ArticleRequest(BaseModel):
     article_id: int
-
-
-@router.post("/like")
-async def like_article(request: ArticleRequest, current_user: Users = Depends(get_current_active_user), db: Session = Depends(get_db)):
-    """Like an article for a specific user.
-
-    Args:
-        request (ArticleRequest): Article ID.
-        current_user (Users): Current active user.
-        db (Session): Database session.
-
-    Returns:
-        bool: True if liked, False otherwise."""
-    article_id = request.article_id
-    if current_user:
-        like = db.query(UserLikes).filter(
-            UserLikes.user_id == current_user.id, UserLikes.article_id == article_id).first()
-        if like:
-            db.delete(like)
-        else:  # Like article
-            like = UserLikes(user_id=current_user.id, article_id=article_id,
-                             # Use timezone.utc
-                             liked_at=datetime.now(timezone.utc))
-            db.add(like)
-        db.commit()
-        return True
-    return False
 
 
 @router.post("/bookmark")

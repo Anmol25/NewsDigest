@@ -4,29 +4,19 @@ This module provides endpoints for fetching articles, searching, and managing us
 It includes functionality for refreshing feeds, checking user subscriptions, and retrieving personalized feeds.
 """
 
-import asyncio
 import logging
-import threading
-import time
-from contextlib import asynccontextmanager
-from concurrent.futures import ThreadPoolExecutor
-
-import yaml
-from fastapi import APIRouter, HTTPException, FastAPI, Depends, Query
+from fastapi import APIRouter, HTTPException, FastAPI, Depends, Query, Request
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from sqlalchemy import desc
 from sqlalchemy.sql import ColumnElement
 from typing import Optional
 
-from src.aggregator.feeds import Feeds
 from src.aggregator.model import SBERT
 from src.aggregator.search import search
 from src.database.session import get_db
 from src.database.operations import insert_articles
 from src.database.models import Articles, Users, Sources, UserSubscriptions, UserHistory
 from src.database.queries import (
-    like_alias,
     bookmark_alias,
     get_article_query,
     paginate_and_format,
@@ -35,52 +25,15 @@ from src.users.services import get_current_active_user
 from src.users.recommendation import Recommender
 
 logger = logging.getLogger(__name__)
-
-# Initialize sbert for context search
-logger.info("Initializing SBERT for context search")
-sbert_search = SBERT()
-# Initialize separate sbert for fetching articles (for thread safety)
-logger.info("Initializing SBERT for fetching articles")
-sbert_feeds = SBERT()
-articles = Feeds(sbert_feeds)
-REFRESH_INTERVAL = 60 * 5  # 10 minutes
+router = APIRouter()
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """Manage the feed refresh task lifecycle.
-
-    Args:
-        app (FastAPI): FastAPI application instance."""
-    executor = ThreadPoolExecutor(max_workers=1)
-
-    def refresh_worker():
-        while True:
-            try:
-                logger.info("Refreshing Feeds")
-                with open("utils/feeds.yaml", 'r') as file:
-                    rss_feeds = yaml.safe_load(file)
-                # Run the async code in a separate event loop in this thread
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
-                loop.run_until_complete(
-                    articles.refresh_articles(rss_feeds))
-                articles_list = articles.get_articles()
-                logger.info(f"Fetched {len(articles_list)} articles")
-                if articles_list:
-                    insert_articles(articles_list)
-                logger.info(
-                    f"Refreshed Feeds Successfully, Next Refresh in {REFRESH_INTERVAL//60} minutes")
-            except Exception as e:
-                logger.error(f"Error refreshing feeds: {e}")
-            time.sleep(REFRESH_INTERVAL)
-    # Start the worker thread
-    thread = threading.Thread(target=refresh_worker, daemon=True)
-    thread.start()
-    yield
-    executor.shutdown(wait=False)
-
-router = APIRouter(lifespan=lifespan)
+# Dependency to access SBERT created in main and stored on app.state
+def get_sbert(request: Request) -> SBERT:
+    s = getattr(request.app.state, "sbert", None)
+    if s is None:
+        raise HTTPException(status_code=500, detail="SBERT not initialized")
+    return s
 
 
 def fetch_article(db: Session, current_user_id: int, page: int, page_size: int, filter_by: ColumnElement, order_by: ColumnElement) -> list:
@@ -123,9 +76,7 @@ def handle_article_request(request: ArticleRequest, page: int, page_size: int, d
 
     Returns:
         list: List of articles based on the request type and filters."""
-    if request.type == "liked":
-        return fetch_article(db, current_user_id, page, page_size, like_alias.article_id.isnot(None), like_alias.liked_at.desc())
-    elif request.type == "bookmarked":
+    if request.type == "bookmarked":
         return fetch_article(db, current_user_id, page, page_size, bookmark_alias.article_id.isnot(None), bookmark_alias.bookmarked_at.desc())
     elif request.type == "source":
         return fetch_article(db, current_user_id, page, page_size, Articles.source == request.source, Articles.published_date.desc())
@@ -163,7 +114,8 @@ async def get_articles(request: ArticleRequest, page: int = Query(1, ge=1), page
 @router.get("/search")
 async def search_article(query: str, page: int = Query(1, description="Page number"),
                          limit: int = Query(20, description="Results per page"), db: Session = Depends(get_db),
-                         current_user: Users = Depends(get_current_active_user)) -> list:
+                         current_user: Users = Depends(get_current_active_user),
+                         sbert: SBERT = Depends(get_sbert)) -> list:
     """Search for articles in DataBase.
 
     Args:
@@ -179,7 +131,7 @@ async def search_article(query: str, page: int = Query(1, description="Page numb
         skip = (page - 1) * limit
         search_results = None
         search_results = search(
-            current_user.id, query, sbert_search.model, sbert_search.get_device(), db, skip, limit)
+            current_user.id, query, sbert.model, sbert.get_device(), db, skip, limit)
         if not search_results:
             return []
         return search_results
@@ -348,7 +300,6 @@ async def get_history(page: int = Query(1, ge=1), page_size: int = Query(20, ge=
                 'image': item.image,
                 'source': item.source,
                 'topic': item.topic,
-                'liked': item.liked,
                 'bookmarked': item.bookmarked,
                 'summary': item.summary,
                 'watched_at': item.watched_at

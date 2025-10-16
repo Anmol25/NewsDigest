@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from src.database.session import get_db
 from src.database.models import Articles, Users
 from src.users.services import get_current_active_user
-from routers.aggregator import search_article
+from routers.content import search_article
 from src.ai.highlights import SearchHighlights
 from fastapi.responses import StreamingResponse
 

@@ -161,7 +161,6 @@ def search_with_scores(current_user_id: int, query: str, model: Any, device: str
             'image': item.image,
             'source': item.source,
             'topic': item.topic,
-            'liked': item.liked,
             'bookmarked': item.bookmarked,
             'bm25_score': float(item.bm25_score),
             'hybrid_score': float(item.hybrid_score),
