@@ -17,9 +17,10 @@ class ArticleLoader(BaseLoader):
         return Document(
             page_content=page_content if page_content else "",  # Ensure content is not None
             metadata={
-                "title": item['title'],
-                "published_date": item['date'],
-                "source": item['source']
+                key: item[key]
+                for key in ["title", "datetime", "source"]
+                # include only if key exists and value is truthy
+                if key in item and item[key]
             }
         )
 

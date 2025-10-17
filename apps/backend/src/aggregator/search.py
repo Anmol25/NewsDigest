@@ -25,25 +25,8 @@ VECTOR_WEIGHT = 0.4
 HYBRID_WEIGHT = 0.35
 RECENCY_WEIGHT = 0.65
 
-
-def search(current_user_id: int, query: str, model: Any, device: str, db: Session, skip: int, limit: int, min_score: float = 0.18) -> List[dict]:
-    """Perform hybrid search combining BM25 and vector similarity with pagination.
-
-    Args:
-        current_user_id (int): ID of the current user.
-        query (str): Query string to search in the database.
-        model (Any): Model used to create embeddings for the query.
-        device (str): Device (e.g., 'cuda' or 'cpu') to store the embeddings on.
-        db (Session): SQLAlchemy database session.
-        skip (int): Number of records to skip for pagination.
-        limit (int): Maximum number of records to return.
-        min_score (float): Minimum hybrid score threshold.
-
-    Returns:
-        List[dict]: A list of dictionaries representing similar articles.
-    """
-
-    # Generate query embedding
+def search_db(query: str, model: Any, device: str) -> List[dict]:
+     # Generate query embedding
     query_embedding = model.encode(
         [query], convert_to_tensor=True, device=device)
     query_embedding = query_embedding.cpu().numpy().flatten().tolist()
@@ -71,6 +54,26 @@ def search(current_user_id: int, query: str, model: Any, device: str, db: Sessio
     # Combined score (Hybrid + Recency) - used for ordering
     combined_score = (hybrid_score * HYBRID_WEIGHT) + \
         (recency_score * RECENCY_WEIGHT)
+
+    return bm25_score, vector_score, hybrid_score, recency_score, combined_score
+
+def search(current_user_id: int, query: str, model: Any, device: str, db: Session, skip: int, limit: int, min_score: float = 0.18) -> List[dict]:
+    """Perform hybrid search combining BM25 and vector similarity with pagination.
+
+    Args:
+        current_user_id (int): ID of the current user.
+        query (str): Query string to search in the database.
+        model (Any): Model used to create embeddings for the query.
+        device (str): Device (e.g., 'cuda' or 'cpu') to store the embeddings on.
+        db (Session): SQLAlchemy database session.
+        skip (int): Number of records to skip for pagination.
+        limit (int): Maximum number of records to return.
+        min_score (float): Minimum hybrid score threshold.
+
+    Returns:
+        List[dict]: A list of dictionaries representing similar articles.
+    """
+    bm25_score, vector_score, hybrid_score, recency_score, combined_score = search_db(query, model, device)
 
     # Build query using the existing query structure
     base_query = get_article_query(

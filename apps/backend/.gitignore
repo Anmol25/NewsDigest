@@ -11,3 +11,4 @@ model/
 #tests
 test.db
 test.py
+test.ipynb

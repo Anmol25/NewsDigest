@@ -1,8 +1,9 @@
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 
+from src.aggregator.model import SBERT
 from src.database.session import get_db
 from src.database.models import Articles, Users
 from src.users.services import get_current_active_user
@@ -14,17 +15,26 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
+# Dependency to access SBERT created in main and stored on app.state
+
+
+def get_sbert(request: Request) -> SBERT:
+    s = getattr(request.app.state, "sbert", None)
+    if s is None:
+        raise HTTPException(status_code=500, detail="SBERT not initialized")
+    return s
+
 
 @router.get("/highlights")
-async def get_hightlights(query: str, db: Session = Depends(get_db), current_user: Users = Depends(get_current_active_user)):
-    res = await search_article(query, page=1, limit=5, db=db, current_user=current_user)
+async def get_hightlights(query: str, db: Session = Depends(get_db), current_user: Users = Depends(get_current_active_user), sbert: SBERT = Depends(get_sbert)):
+    res = await search_article(query, page=1, limit=5, db=db, current_user=current_user, sbert=sbert)
     if not res:
         return []
     articles = [
         {
             'title': item['title'],
             'link': item['link'],
-            'date': item['published_date'],
+            'datetime': item['published_date'],
             'source': item['source']
         }
         for item in res
