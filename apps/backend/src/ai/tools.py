@@ -1,4 +1,4 @@
-from langchain.tools import tool
+from langchain.tools import tool, ToolRuntime
 from langgraph.runtime import get_runtime
 from pydantic import BaseModel, Field
 from dataclasses import dataclass
@@ -59,7 +59,7 @@ class SearchDBInput(BaseModel):
     limit: int = Field(25, description="Maximum number of results to return.")
 
 
-@tool("search_db", args_schema=SearchDBInput, return_direct=True)
+@tool("search_db", args_schema=SearchDBInput)
 def search_db_tool(query: str, recent: bool, skip: int = 0, limit: int = 10) -> str:
     """Search Internal Database of NewsDigest for similar articles based on query (str)."""
     runtime = get_runtime(DBContext)
@@ -84,7 +84,7 @@ def search_db_tool(query: str, recent: bool, skip: int = 0, limit: int = 10) -> 
         combined_score.label('combined_score')
     )
 
-    return json.dumps(articles, default=str, separators=(',', ':'))
+    return f"Found {len(articles)} articles:\n" + json.dumps(articles, default=str, separators=(',', ':'))
 
 
 class ArticleSchema(BaseModel):
@@ -101,7 +101,7 @@ class ScrapeInput(BaseModel):
         description="List of articles to scrape with keys: link, title, datetime, source.")
 
 
-@tool("scrape_articles", args_schema=ScrapeInput, return_direct=True)
+@tool("scrape_articles", args_schema=ScrapeInput)
 def scrape_articles_tool(articles: List[dict]) -> str:
     """Scrape articles from provided links and return their content and metadata as JSON."""
     loader = ArticleLoader(articles)
@@ -114,4 +114,4 @@ def scrape_articles_tool(articles: List[dict]) -> str:
             "metadata": doc.metadata
         })
 
-    return json.dumps(result, ensure_ascii=False, separators=(',', ':'))
+    return f"Scraped {len(result)} articles:\n" + json.dumps(result, ensure_ascii=False, separators=(',', ':'))

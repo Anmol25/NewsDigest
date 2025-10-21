@@ -3,25 +3,37 @@ from concurrent.futures import ThreadPoolExecutor
 
 from langchain_core.document_loaders import BaseLoader
 from langchain_core.documents import Document
+from pydantic import BaseModel, Field
+from typing import Any, List, Optional
 
 from src.articles.scraper import get_article
+
+
+class ArticleSchema(BaseModel):
+    link: str = Field(...,
+                      description="Link to the article, (Mandatory for scraping)")
+    title: Optional[str] = Field(..., description="Title of the article")
+    datetime: Optional[str] = Field(...,
+                                    description="Publication date of the article")
+    source: Optional[str] = Field(..., description="Source of the article")
 
 
 class ArticleLoader(BaseLoader):
     def __init__(self, article_list: List[dict]):
         self.articles = article_list
 
-    def _fetch_and_create_document(self, item: dict) -> Document:
+    def _fetch_and_create_document(self, item: ArticleSchema) -> Document:
         """Helper function to fetch content and create a Document object for a single article."""
-        page_content = get_article(item['link'])
+        page_content = get_article(item.link)
+        metadata = {
+            key: getattr(item, key)
+            for key in ["title", "datetime", "source"]
+            # include only if attribute exists and is truthy
+            if getattr(item, key, None)
+        }
         return Document(
             page_content=page_content if page_content else "",  # Ensure content is not None
-            metadata={
-                key: item[key]
-                for key in ["title", "datetime", "source"]
-                # include only if key exists and value is truthy
-                if key in item and item[key]
-            }
+            metadata=metadata
         )
 
     def lazy_load(self):
