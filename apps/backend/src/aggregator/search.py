@@ -12,10 +12,17 @@ from typing import List, Any
 from sqlalchemy import or_, case, text
 from sqlalchemy import select, func, cast, desc
 from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import func
 
 from src.database.models import Articles
-from src.database.queries import format_article_results, get_article_query, paginate_and_format
+from src.database.queries import (
+    format_article_results,
+    get_article_query,
+    paginate_and_format,
+    build_article_select,
+    paginate_and_format_async,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -172,3 +179,24 @@ def search_with_scores(current_user_id: int, query: str, model: Any, device: str
         }
         for item in results
     ]
+
+
+async def search_async(current_user_id: int, query: str, model: Any, device: str, db: AsyncSession, skip: int, limit: int, min_score: float = 0.18) -> List[dict]:
+    """Async variant of hybrid search combining BM25 and vector similarity with pagination."""
+    bm25_score, vector_score, hybrid_score, recency_score, combined_score = search_db(query, model, device)
+
+    # Build select using async-friendly helpers
+    stmt = build_article_select(
+        current_user_id,
+        bm25_score.label('bm25_score'),
+        vector_score.label('vector_score'),
+        hybrid_score.label('hybrid_score'),
+        recency_score.label('recency_score'),
+        combined_score.label('combined_score')
+    )
+
+    # Apply filters and ordering
+    stmt = stmt.where(hybrid_score >= min_score).order_by(combined_score.desc())
+
+    # Paginate and format
+    return await paginate_and_format_async(db, stmt, skip, limit)
