@@ -9,8 +9,9 @@ from datetime import timedelta
 from fastapi import APIRouter, Depends, HTTPException, status, Response, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.database.session import get_db
+from src.database.session import get_db, get_async_db
 from src.database.operations import create_user_in_db, check_user_in_db
 from src.users.schemas import Token, UserCreate
 from src.users.services import (
@@ -30,7 +31,7 @@ router = APIRouter()
 
 
 @router.post("/register")
-async def create_user(user: UserCreate, db: Session = Depends(get_db)) -> dict:
+async def create_user(user: UserCreate, db: AsyncSession = Depends(get_async_db)) -> dict:
     """Create a new User.
 
     Args:
@@ -40,14 +41,14 @@ async def create_user(user: UserCreate, db: Session = Depends(get_db)) -> dict:
     Returns:
         dict: Response message."""
     # Check if user exist in DB
-    user_response = check_user_in_db(user, db)
+    user_response = await check_user_in_db(user, db)
     if user_response["userExists"] or user_response["emailExists"]:
         raise HTTPException(status_code=409, detail=user_response)
     try:
         # Hash Password
         user.password = get_password_hash(user.password)
         # Create User in DB
-        user_created = create_user_in_db(user, db)
+        user_created = await create_user_in_db(user, db)
         if not user_created:
             raise HTTPException(
                 status_code=500, detail="Failed to create User")

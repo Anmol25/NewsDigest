@@ -3,12 +3,12 @@ operations.py
 This module contains the operations for the database.
 """
 
-from .models import Articles
 import logging
 from datetime import datetime, timezone
 
-from sqlalchemy.orm import Session
+from sqlalchemy import select, and_
 from sqlalchemy.dialects.postgresql import insert as pg_insert
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from .session import context_db
 from .models import Articles, Users, UserHistory
@@ -93,37 +93,40 @@ def insert_articles(articles: list[dict]):
         logger.exception(f"Error during bulk insert/upsert of articles: {e}")
 
 
-def check_user_in_db(user: UserCreate, db: Session):
+async def check_user_in_db(user: UserCreate, db: AsyncSession):
     """Checks if a user exists in the database and returns a response indicating if the user exists.
     Args:
         user: The user data to check in the database.
-        db: The database session to use for the query.
+        db: The async database session to use for the query.
     Returns:
         dict: A dictionary containing two boolean values indicating if the user exists."""
     try:
         response = {"userExists": False, "emailExists": False}
         # Check Email
-        exist_user = db.query(Users).filter(Users.email == user.email).first()
+        result = await db.execute(select(Users).where(Users.email == user.email))
+        exist_user = result.scalar_one_or_none()
         if exist_user:
             response["emailExists"] = True
-        exist_user = db.query(Users).filter(
-            Users.username == user.username).first()
+
+        result = await db.execute(select(Users).where(Users.username == user.username))
+        exist_user = result.scalar_one_or_none()
         if exist_user:
             response["userExists"] = True
         return response
     except Exception as e:
         logger.error(f"Error in Checking User in Database: {e}")
+        return {"userExists": False, "emailExists": False}
 
 
-def create_user_in_db(user: UserCreate, db: Session):
+async def create_user_in_db(user: UserCreate, db: AsyncSession):
     """Creates a new user in the database.
     Args:
         user: The user data to create in the database.
-        db: The database session to use for the creation.
+        db: The async database session to use for the creation.
     Returns:
         bool: True if the user was created successfully, False otherwise."""
     try:
-        UserDB = Users(
+        user_db = Users(
             username=user.username,
             fullname=user.fullname,
             email=user.email,
@@ -131,34 +134,39 @@ def create_user_in_db(user: UserCreate, db: Session):
             is_active=True
         )
         try:
-            db.add(UserDB)
-            db.commit()
-        except:
-            db.rollback()
+            db.add(user_db)
+            await db.commit()
+        except Exception:
+            await db.rollback()
             return False
         return True
     except Exception as e:
-        logger.error("UnExpected Error occured while Creating user: {e}")
+        logger.error(f"Unexpected error occurred while Creating user: {e}")
+        return False
 
 
-def update_user_history(db: Session, userid: int, art_id):
+async def update_user_history(db: AsyncSession, userid: int, art_id: int):
     """Updates the user history in the database.
     Args:
-        db: The database session to use for the update.
+        db: The async database session to use for the update.
         userid: The user ID to update the history for.
         art_id: The article ID to update the history for.
     Returns:
-        bool: True if the update was successful, False otherwise."""
+        None
+    """
     try:
-        hist_item = db.query(UserHistory).filter(
-            (UserHistory.user_id == userid) & (UserHistory.article_id == art_id)).first()
+        result = await db.execute(
+            select(UserHistory).where(
+                and_(UserHistory.user_id == userid, UserHistory.article_id == art_id)
+            )
+        )
+        hist_item = result.scalar_one_or_none()
         if hist_item:
             try:
-                hist_item.watched_at = datetime.now(
-                    timezone.utc)  # Use timezone.utc
-                db.commit()
+                hist_item.watched_at = datetime.now(timezone.utc)  # Use timezone.utc
+                await db.commit()
             except Exception as e:
-                db.rollback()
+                await db.rollback()
                 logger.error(f"Cannot Update Time of User History: {e}")
         else:
             # Else Add to DB
@@ -169,9 +177,9 @@ def update_user_history(db: Session, userid: int, art_id):
                     watched_at=datetime.now(timezone.utc)  # Use timezone.utc
                 )
                 db.add(user_hist)
-                db.commit()
+                await db.commit()
             except Exception as e:
-                db.rollback()
+                await db.rollback()
                 logger.error(f"Cannot add article to user history: {e}")
     except Exception as e:
         logger.error(f"Unexpected error while updating user history: {e}")
