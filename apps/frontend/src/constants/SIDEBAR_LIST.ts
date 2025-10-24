@@ -3,7 +3,9 @@ type SidebarItem = {
     to: string;
     image: string;
     image_fill: string;
+    onclick?: () => void;
 };
+
 
 export const SIDEBAR_TOP_LIST: SidebarItem[] = [
     {name:'Home',to:'/home', image:'ri-home-2-line', image_fill: 'ri-home-2-fill'},
@@ -16,6 +18,5 @@ export const SIDEBAR_TOP_LIST: SidebarItem[] = [
 ]
 
 export const SIDEBAR_BOTTOM_LIST: SidebarItem[] = [
-    {name:'Settings',to:'/profile', image:'ri-settings-4-line', image_fill: 'ri-settings-4-fill'},
-    {name:'Log Out',to:'/logout', image:'ri-logout-box-line', image_fill: 'ri-logout-box-fill'}
+    {name:'Settings',to:'/profile', image:'ri-settings-4-line', image_fill: 'ri-settings-4-fill'}
 ]
