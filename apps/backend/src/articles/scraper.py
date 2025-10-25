@@ -1,5 +1,4 @@
 import logging
-import requests
 from goose3 import Goose
 from newspaper import Article
 
@@ -13,7 +12,7 @@ def get_article(url: str):
     """
 
     try:
-        # --- Try with requests + Goose ---
+        # --- Try with Goose ---
         # Fetch Article
         g = Goose()
         article = g.extract(url=url)

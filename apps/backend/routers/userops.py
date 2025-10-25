@@ -7,7 +7,6 @@ import logging
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, HTTPException, Depends, Response
-from sqlalchemy.orm import Session
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete
 from pydantic import BaseModel
@@ -28,14 +27,7 @@ class ArticleRequest(BaseModel):
 
 @router.post("/bookmark")
 async def bookmark_article(request: ArticleRequest, current_user: Users = Depends(get_current_active_user), db: AsyncSession = Depends(get_async_db)):
-    """Bookmark an article for a specific user.
-
-    Args:
-        request (ArticleRequest): Article ID.
-        current_user (Users): Current active user.
-        db (Session): Database session.
-    Returns:
-        bool: True if bookmarked, False otherwise."""
+    """Bookmark an article for a specific user."""
     article_id = request.article_id
     if current_user:
         result = await db.execute(
@@ -65,15 +57,7 @@ class SubscriptionsRequest(BaseModel):
 
 @router.post("/subscribe")
 async def add_subscriptions(request: SubscriptionsRequest, current_user: Users = Depends(get_current_active_user), db: AsyncSession = Depends(get_async_db)):
-    """Subscribe or unsubscribe to a source.
-
-    Args:
-        request (SubscriptionsRequest): Source name.
-        current_user (Users): Current active user.
-        db (Session): Database session.
-
-    Returns:
-        dict: Subscription status."""
+    """Subscribe or unsubscribe to a source."""
     try:
         source = request.source
         result = await db.execute(select(Sources.id).where(Sources.source == source))
@@ -113,13 +97,7 @@ async def add_subscriptions(request: SubscriptionsRequest, current_user: Users =
 
 @router.get("/getuser")
 async def get_user(current_user: Users = Depends(get_current_active_user)):
-    """Get current user details.
-
-    Args:
-        current_user (Users): Current active user.
-
-    Returns:
-        dict: Current user details."""
+    """Get current user details."""
     if current_user:
         return {"username": current_user.username, "fullname": current_user.fullname, "email": current_user.email}
     logger.error("User not logged in")
@@ -134,12 +112,7 @@ class UpdateProfile(BaseModel):
 
 @router.post("/updateprofile")
 async def update_profile(request: UpdateProfile, current_user: Users = Depends(get_current_active_user), db: AsyncSession = Depends(get_async_db)):
-    """Update User Profile.
-
-    Args:
-        request (UpdateProfile): User profile details.
-        current_user (Users): Current active user.
-        db (Session): Database session.
+    """Update User Profile..
 
     Returns:
         dict: Profile update status."""
@@ -151,7 +124,8 @@ async def update_profile(request: UpdateProfile, current_user: Users = Depends(g
 
     # Check if the email is already in use by another user
     result = await db.execute(
-        select(Users).where(Users.email == request.email, Users.id != current_user.id)
+        select(Users).where(Users.email == request.email,
+                            Users.id != current_user.id)
     )
     existing_user = result.scalar_one_or_none()
     if existing_user:
@@ -173,15 +147,7 @@ async def update_profile(request: UpdateProfile, current_user: Users = Depends(g
 
 @router.get("/deleteaccount")
 async def delete_user(response: Response, current_user: Users = Depends(get_current_active_user), db: AsyncSession = Depends(get_async_db)):
-    """Delete User Account.
-
-    Args:
-        response (Response): Response object.
-        current_user (Users): Current active user.
-        db (Session): Database session.
-
-    Returns:
-        dict: Account deletion status."""
+    """Delete User Account."""
     try:
         result = await db.execute(select(Users).where(Users.id == current_user.id))
         user = result.scalar_one_or_none()
@@ -205,15 +171,7 @@ class UpdatePassword(BaseModel):
 
 @router.post("/updatepassword")
 async def update_password(request: UpdatePassword, current_user: Users = Depends(get_current_active_user), db: AsyncSession = Depends(get_async_db)):
-    """Update User Password.
-
-    Args:
-        request (UpdatePassword): Password details.
-        current_user (Users): Current active user.
-        db (Session): Database session.
-
-    Returns:
-        dict: Password update status."""
+    """Update User Password."""
     result = await db.execute(select(Users).where(Users.id == current_user.id))
     user = result.scalar_one_or_none()
     if verify_password(request.oldPassword, user.hashed_password):
@@ -232,18 +190,12 @@ async def update_password(request: UpdatePassword, current_user: Users = Depends
 
 @router.get("/checkhistory")
 async def check_history(current_user: Users = Depends(get_current_active_user), db: AsyncSession = Depends(get_async_db)):
-    """Check if User History exists.
-
-    Args:
-        current_user (Users): Current active user.
-        db (Session): Database session.
-
-    Returns:
-        dict: History check status."""
+    """Check if User History exists."""
     try:
         result = await db.execute(
             select(
-                select(UserHistory).where(UserHistory.user_id == current_user.id).exists()
+                select(UserHistory).where(
+                    UserHistory.user_id == current_user.id).exists()
             )
         )
         history_exists = bool(result.scalar())
@@ -260,14 +212,7 @@ async def check_history(current_user: Users = Depends(get_current_active_user), 
 
 @router.get("/clearhistory")
 async def clear_history(current_user: Users = Depends(get_current_active_user), db: AsyncSession = Depends(get_async_db)):
-    """Clear User History.
-
-    Args:
-        current_user (Users): Current active user.
-        db (Session): Database session.
-
-    Returns:
-        dict: History clearance status."""
+    """Clear User History."""
     try:
         await db.execute(
             delete(UserHistory).where(UserHistory.user_id == current_user.id)
@@ -282,15 +227,7 @@ async def clear_history(current_user: Users = Depends(get_current_active_user), 
 
 @router.get("/delete-history-item")
 async def delete_history_item(id: int, current_user: Users = Depends(get_current_active_user), db: AsyncSession = Depends(get_async_db)):
-    """Delete single history item.
-
-    Args:
-        id (int): Article ID.
-        current_user (Users): Current active user.
-        db (Session): Database session.
-
-    Returns:
-        dict: Deletion status."""
+    """Delete single history item."""
     try:
         result = await db.execute(
             select(UserHistory).where(

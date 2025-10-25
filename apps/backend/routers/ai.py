@@ -1,11 +1,11 @@
 import logging
 
 from fastapi import APIRouter, Depends, HTTPException, Request
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.aggregator.model import SBERT
-from src.database.session import get_db
-from src.database.models import Articles, Users
+from src.database.session import get_async_db
+from src.database.models import Users
 from src.users.services import get_current_active_user
 from routers.content import search_article
 from src.ai.highlights import SearchHighlights
@@ -26,7 +26,7 @@ def get_sbert(request: Request) -> SBERT:
 
 
 @router.get("/highlights")
-async def get_hightlights(query: str, db: Session = Depends(get_db), current_user: Users = Depends(get_current_active_user), sbert: SBERT = Depends(get_sbert)):
+async def get_hightlights(query: str, db: AsyncSession = Depends(get_async_db), current_user: Users = Depends(get_current_active_user), sbert: SBERT = Depends(get_sbert)):
     res = await search_article(query, page=1, limit=5, db=db, current_user=current_user, sbert=sbert)
     if not res:
         return []

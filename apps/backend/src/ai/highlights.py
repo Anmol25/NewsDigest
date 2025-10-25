@@ -8,6 +8,7 @@ from langchain_core.prompts import PromptTemplate
 from dotenv import load_dotenv
 
 from src.ai.article_loader import ArticleLoader
+from src.ai.article_loader import ArticleSchema
 
 load_dotenv()
 
@@ -49,13 +50,16 @@ User Query: {query}
 [END OF ARTICLES]""")
 
     def load_articles(self, articles_list):
-        loader = ArticleLoader(articles_list)
+        articles_list = [{**item, "datetime": item["datetime"].isoformat()}  for item in articles_list]
+        
+        articles = [ArticleSchema(**item) for item in articles_list]
+        loader = ArticleLoader(articles)
         docs = loader.load()
         return docs
 
     async def generate_highlights(self, query, articles):
         text = "\n\n".join(
-            f"Title: {item.metadata['title']}\nPublished Date: {item.metadata['published_date']}\nSource: {item.metadata['source']}\nText: {item.page_content}" for item in articles)
+            f"Title: {item.metadata['title']}\nPublished Date: {item.metadata['datetime']}\nSource: {item.metadata['source']}\nText: {item.page_content}" for item in articles)
 
         chain = self.prompt | self.model
 

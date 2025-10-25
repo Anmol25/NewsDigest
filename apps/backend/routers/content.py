@@ -1,27 +1,23 @@
 """
-aggregator.py
+content.py
 This module provides endpoints for fetching articles, searching, and managing user subscriptions.
 It includes functionality for refreshing feeds, checking user subscriptions, and retrieving personalized feeds.
 """
 
 import logging
-from fastapi import APIRouter, HTTPException, FastAPI, Depends, Query, Request
+from fastapi import APIRouter, HTTPException, Depends, Query, Request
 from pydantic import BaseModel
-from sqlalchemy.orm import Session
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.sql import ColumnElement
 from typing import Optional
 
 from src.aggregator.model import SBERT
-from src.aggregator.search import search_async
-from src.database.session import get_db, get_async_db
-from src.database.operations import insert_articles
+from src.aggregator.search import search
+from src.database.session import get_async_db
 from src.database.models import Articles, Users, Sources, UserSubscriptions, UserHistory
 from src.database.queries import (
     bookmark_alias,
-    get_article_query,
-    paginate_and_format,
     build_article_select,
     paginate_and_format_async,
 )
@@ -60,15 +56,7 @@ class ArticleRequest(BaseModel):
 
 
 async def handle_article_request(request: ArticleRequest, page: int, page_size: int, db: AsyncSession, current_user_id: int) -> list:
-    """Handle article request based on type.
-
-    Args:
-        request (ArticleRequest): Request object containing filter criteria.
-        db (Session): Database session.
-        current_user (Users): Current logged-in user.
-
-    Returns:
-        list: List of articles based on the request type and filters."""
+    """Handle article request based on type."""
     if request.type == "bookmarked":
         return await fetch_article(db, current_user_id, page, page_size, bookmark_alias.article_id.isnot(None), bookmark_alias.bookmarked_at.desc())
     elif request.type == "source":
@@ -82,15 +70,7 @@ async def handle_article_request(request: ArticleRequest, page: int, page_size: 
 @router.post("/articles")
 async def get_articles(request: ArticleRequest, page: int = Query(1, ge=1), page_size: int = Query(20, ge=1, le=50),
                        db: AsyncSession = Depends(get_async_db), current_user: Users = Depends(get_current_active_user)) -> list:
-    """Get articles based on user preferences and filters.
-
-    Args:
-        request (ArticleRequest): Request object containing filter criteria.
-        db (Session): Database session.
-        current_user (Users): Current logged-in user.
-
-    Returns:
-        list: List of articles based on the request type and filters."""
+    """Get articles based on user preferences and filters."""
     try:
         results = await handle_article_request(
             request, page, page_size, db, current_user.id)
@@ -107,22 +87,13 @@ async def get_articles(request: ArticleRequest, page: int = Query(1, ge=1), page
 @router.get("/search")
 async def search_article(query: str, page: int = Query(1, description="Page number"),
                          limit: int = Query(20, description="Results per page"), db: AsyncSession = Depends(get_async_db),
-                         current_user: Users = Depends(get_current_active_user),
+                         current_user: Users = Depends(
+                             get_current_active_user),
                          sbert: SBERT = Depends(get_sbert)) -> list:
-    """Search for articles in DataBase.
-
-    Args:
-        query (str): Search query string.
-        page (int): Page number for pagination.
-        limit (int): Number of results per page.
-        db (Session): Database session.
-        current_user (Users): Current logged-in user.
-
-    Returns:
-        list: List of articles matching the search query."""
+    """Search for articles in DataBase."""
     try:
         skip = (page - 1) * limit
-        search_results = await search_async(
+        search_results = await search(
             current_user.id, query, sbert.model, sbert.get_device(), db, skip, limit)
         if not search_results:
             return []
@@ -137,18 +108,9 @@ async def search_article(query: str, page: int = Query(1, description="Page numb
 @router.get("/foryou")
 async def personalized_feed(page: int = Query(1, ge=1), page_size: int = Query(20, ge=1, le=50),
                             current_user: Users = Depends(get_current_active_user), db: AsyncSession = Depends(get_async_db)) -> list:
-    """Get personalized article recommendations.
-
-    Args:
-        page (int): Page number for pagination.
-        page_size (int): Number of results per page.
-        current_user (Users): Current logged-in user.
-        db (Session): Database session.
-
-    Returns:
-        list: List of personalized article recommendations."""
+    """Get personalized article recommendations."""
     try:
-        feed = await Recommender.get_recommendations_async(
+        feed = await Recommender.get_recommendations(
             current_user, db, page, page_size)
         if not feed:
             raise HTTPException(
@@ -165,15 +127,7 @@ async def personalized_feed(page: int = Query(1, ge=1), page_size: int = Query(2
 
 @router.get("/isSubscribed")
 async def is_subscribed(source: str, current_user: Users = Depends(get_current_active_user), db: AsyncSession = Depends(get_async_db)) -> dict:
-    """Check if the user is subscribed to a specific source.
-
-    Args:
-        source (str): Source name to check subscription status.
-        current_user (Users): Current logged-in user.
-        db (Session): Database session.
-
-    Returns:
-        dict: Subscription status."""
+    """Check if the user is subscribed to a specific source."""
     try:
         result = await db.execute(select(Sources.id).where(Sources.source == source))
         row = result.first()
@@ -197,14 +151,7 @@ async def is_subscribed(source: str, current_user: Users = Depends(get_current_a
 
 @router.get("/getSubscriptions")
 async def get_user_subscriptions(current_user: Users = Depends(get_current_active_user), db: AsyncSession = Depends(get_async_db)) -> list:
-    """Get all sources the user is subscribed to.
-
-    Args:
-        current_user (Users): Current logged-in user.
-        db (Session): Database session.
-
-    Returns:
-        list: List of subscribed sources."""
+    """Get all sources the user is subscribed to."""
     try:
         result = await db.execute(
             select(Sources.source)
@@ -226,16 +173,7 @@ async def get_user_subscriptions(current_user: Users = Depends(get_current_activ
 @router.get("/subscribed-articles")
 async def get_subscribed_articles(page: int = Query(1, ge=1), page_size: int = Query(20, ge=1, le=50),
                                   current_user: Users = Depends(get_current_active_user), db: AsyncSession = Depends(get_async_db)) -> list:
-    """Get articles from all sources the user has subscribed to.
-
-    Args:
-        page (int): Page number for pagination.
-        page_size (int): Number of results per page.
-        current_user (Users): Current logged-in user.
-        db (Session): Database session.
-
-    Returns:
-        list: List of articles from subscribed sources."""
+    """Get articles from all sources the user has subscribed to."""
     try:
         # Get all sources the user is subscribed to
         result = await db.execute(
@@ -266,31 +204,12 @@ async def get_subscribed_articles(page: int = Query(1, ge=1), page_size: int = Q
 @router.get("/user-history")
 async def get_history(page: int = Query(1, ge=1), page_size: int = Query(20, ge=1, le=50),
                       current_user: Users = Depends(get_current_active_user), db: AsyncSession = Depends(get_async_db)) -> list:
-    """Get User History.
-
-    Args:
-        page (int): Page number for pagination.
-        page_size (int): Number of results per page.
-        current_user (Users): Current logged-in user.
-        db (Session): Database session.
-
-    Returns:
-        List[Dict]: List of articles with user history details."""
+    """Get User History."""
     try:
         offset = (page - 1) * page_size
         stmt = (
-            select(
-                Articles.id,
-                Articles.title,
-                Articles.link,
-                Articles.published_date,
-                Articles.image,
-                Articles.source,
-                Articles.topic,
-                bookmark_alias.article_id.isnot(None).label("bookmarked"),
-                Articles.summary,
-                UserHistory.watched_at,
-            )
+            build_article_select(
+                current_user.id, Articles.summary, UserHistory.watched_at)
             .join(UserHistory, UserHistory.article_id == Articles.id)
             .where(UserHistory.user_id == current_user.id)
             .order_by(UserHistory.watched_at.desc())
