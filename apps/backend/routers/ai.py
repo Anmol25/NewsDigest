@@ -3,6 +3,9 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
+from pydantic import BaseModel
+from typing import Optional
+import uuid
 
 from src.aggregator.model import SBERT
 from src.database.session import get_async_db, get_db
@@ -10,6 +13,7 @@ from src.database.models import Users
 from src.users.services import get_current_active_user
 from routers.content import search_article
 from src.ai.highlights import SearchHighlights
+from src.ai.utils.db_queries import create_session, log_chat_message
 from fastapi.responses import StreamingResponse
 from src.ai.agent import NewsDigestAgent
 
@@ -46,9 +50,28 @@ async def get_hightlights(query: str, db: AsyncSession = Depends(get_async_db), 
     return StreamingResponse(highlights, media_type="text/plain")
 
 
-@router.get("/agent_test")
-async def test_agent(input: str, session_id: str, db: Session = Depends(get_db), current_user: Users = Depends(get_current_active_user), sbert: SBERT = Depends(get_sbert)):
-    Session_id = session_id
-    new_session = False
-    agent = NewsDigestAgent(sbert, db, Session_id, new_session, input)
-    return StreamingResponse(agent.call_agent(), media_type="application/json")
+class ChatbotRequest(BaseModel):
+    user_query: str
+    session_id: Optional[str] = None
+
+
+@router.post("/agent_test")
+async def test_agent(request: ChatbotRequest, db: AsyncSession = Depends(get_async_db), current_user: Users = Depends(get_current_active_user), sbert: SBERT = Depends(get_sbert)):
+    user_query = request.user_query
+    session_id, new_session = None, False
+    user_id = current_user.id
+    if request.session_id:
+        session_id = request.session_id
+        new_session = False
+    else:
+        session_id = str(uuid.uuid4())
+        new_session = True
+        # Create a new Session in database
+        await create_session(db, session_id, user_id)
+    print("Session ID:", session_id)
+    # Log User message in DB
+    await log_chat_message(db, session_id, 'user', user_query, {})
+
+    agent = NewsDigestAgent(sbert, db, user_id,
+                            session_id, new_session)
+    return StreamingResponse(agent.call_agent(user_query), media_type="application/json")

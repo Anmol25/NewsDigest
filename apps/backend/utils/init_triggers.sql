@@ -19,3 +19,30 @@ BEGIN
     END IF;
 END
 $$;
+
+-- Create the function to update chat session's last activity timestamp
+CREATE OR REPLACE FUNCTION update_chat_session_last_activity()
+RETURNS TRIGGER AS $$
+BEGIN
+    UPDATE chat_sessions
+    SET last_activity = NEW.created_at
+    WHERE id = NEW.session_id;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create the trigger to call the function after inserting a chat message
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_trigger
+        WHERE tgname = 'trg_update_last_activity'
+    ) THEN
+        CREATE TRIGGER trg_update_last_activity
+        AFTER INSERT ON chat_messages
+        FOR EACH ROW
+        EXECUTE FUNCTION update_chat_session_last_activity();
+    END IF;
+END;
+$$;

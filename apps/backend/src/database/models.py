@@ -5,7 +5,7 @@ This module contains the models for the database.
 
 from datetime import datetime
 from sqlalchemy import TIMESTAMP, CheckConstraint, Column, Integer, String, DateTime, Text, Boolean, ForeignKey, UniqueConstraint
-from sqlalchemy.dialects.postgresql import TSVECTOR
+from sqlalchemy.dialects.postgresql import TSVECTOR, JSONB
 from pgvector.sqlalchemy import Vector
 import uuid
 
@@ -90,8 +90,8 @@ class ChatSession(Base):
     user_id = Column(Integer, ForeignKey(
         "users.id", ondelete="CASCADE"), nullable=False)
     session_name = Column(String(255), nullable=True)
-    started_at = Column(TIMESTAMP, default=datetime.utcnow)
-    last_activity = Column(TIMESTAMP, default=datetime.utcnow)
+    started_at = Column(DateTime(timezone=True), nullable=False)
+    last_activity = Column(DateTime(timezone=True), nullable=False)
 
 
 class ChatMessage(Base):
@@ -103,8 +103,10 @@ class ChatMessage(Base):
         "chat_sessions.id", ondelete="CASCADE"), nullable=False)
     sender = Column(String(10), nullable=False)
     message = Column(Text, nullable=False)
-    created_at = Column(TIMESTAMP, default=datetime.utcnow)
+    created_at = Column(DateTime(timezone=True), nullable=False)
+    message_metadata = Column(JSONB, nullable=False, default=dict)
 
     __table_args__ = (
-        CheckConstraint("sender IN ('user', 'ai')", name="check_sender_valid"),
+        CheckConstraint("sender IN ('user', 'ai')",
+                        name="check_sender_valid"),
     )

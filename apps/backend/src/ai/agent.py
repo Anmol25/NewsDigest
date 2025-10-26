@@ -10,8 +10,8 @@ from langchain.agents import create_agent
 from langchain.agents.middleware import SummarizationMiddleware
 import os
 import json
-from fastapi.responses import JSONResponse
-
+from src.ai.utils.title_generator import TitleGenerator
+from src.ai.utils.db_queries import update_session_name, log_chat_message
 
 load_dotenv()
 
@@ -19,7 +19,7 @@ load_dotenv()
 MODEL_NAME = 'gemini-2.5-flash'
 
 NEWSDIGEST_SYSTEM_PROMPT = """
-You are an intelligent AI assistant for NewsDigest, a news aggregation platform. Your role is to answer user queries by combining information from the internal news database and external article scraping.
+You are an intelligent AI assistant for NewsDigest, an Intelligent news platform. Your role is to answer user queries by combining information from the internal news database and external article scraping.
 
 **Instructions:**
 
@@ -35,59 +35,64 @@ You are an intelligent AI assistant for NewsDigest, a news aggregation platform.
 * **Core Answer (Bullet Points):** Present the main findings and answers as a bulleted list.
     * Each bullet point must start with a **bold heading** followed by a colon (e.g., `**Key Finding:** ...`).
     * After the heading, provide a clear, concise summary of the key fact.
-    * Cite the source for each fact at the end of the bullet point's text using the format: `[source](link)`.
+    * Cite the source for each fact at the end of the bullet point's text using the format: `[Name of Source](link)`.
 * **Concluding Context:** After the bullet points, add a final, brief paragraph providing any relevant additional context, background, or closely related information from the articles that would be helpful to the user.
 * **Tone:** Maintain a neutral, factual, and professional news tone throughout. Avoid generic filler text.
-Final Response should be in string format.
 """
 
 
 class NewsDigestAgent:
-    def __init__(self, sbert, db, session_id, new_session: bool, input):
-        self.model = ChatGoogleGenerativeAI(model=MODEL_NAME)
+    def __init__(self, sbert, db, user_id, session_id, new_session: bool):
+        self.model = ChatGoogleGenerativeAI(model=MODEL_NAME, temperature=0.1)
         self.tools = [search_db_tool, scrape_articles_tool]
         self.dbi_url = os.getenv("DATABASE_URL")
         self.sbert = sbert
         self.db = db
         self.session_id = session_id
         self.new_session = new_session
-        self.input = input
+        self.user_id = user_id
 
     def parse_response(self, stream_mode, chunk, final_message):
         if stream_mode == "custom":
-            return chunk
+            return chunk, final_message
         else:
             message, metadata = chunk
             if metadata["langgraph_node"] == "model":
                 if not message.content:
-                    return None
+                    return None, final_message
                 elif type(message.content) == list:
                     final_message += message.content[0]["text"]
-                    return {"type": "model", "message": message.content[0]["text"]}
+                    return {"type": "model", "message": message.content[0]["text"]}, final_message
                 else:
                     final_message += message.content
-                    return {"type": "model", "message": message.content}
+                    return {"type": "model", "message": message.content}, final_message
+            return None, final_message
 
-    async def call_agent(self):
+    def make_agent(self, checkpointer):
+        agent = create_agent(
+            self.model,
+            tools=self.tools,
+            context_schema=DBContext,
+            system_prompt=NEWSDIGEST_SYSTEM_PROMPT,
+            checkpointer=checkpointer,
+            middleware=[
+                SummarizationMiddleware(
+                    model=self.model,
+                    max_tokens_before_summary=4000,
+                    messages_to_keep=20,
+                ),
+            ],
+        )
+
+        return agent
+
+    async def call_agent(self, msg):
         async with AsyncPostgresSaver.from_conn_string(self.dbi_url) as checkpointer:
             await checkpointer.setup()
-            agent = create_agent(
-                self.model,
-                tools=self.tools,
-                context_schema=DBContext,
-                system_prompt=NEWSDIGEST_SYSTEM_PROMPT,
-                checkpointer=checkpointer,
-                middleware=[
-                    SummarizationMiddleware(
-                        model=self.model,
-                        max_tokens_before_summary=4000,
-                        messages_to_keep=20,
-                    ),
-                ],
-            )
+            agent = self.make_agent(checkpointer)
 
             final_message = ""
-            input = {"messages": [{"role": "user", "content": self.input}]}
+            input = {"messages": [{"role": "user", "content": msg}]}
             config = {"configurable": {"thread_id": self.session_id}}
             context = DBContext(
                 model=self.sbert.model,
@@ -96,11 +101,19 @@ class NewsDigestAgent:
             )
 
             async for stream_mode, chunk in agent.astream(input=input, config=config, context=context, stream_mode=["custom", "messages"]):
-                response = self.parse_response(
+                response, final_message = self.parse_response(
                     stream_mode, chunk, final_message)
                 if not response:
                     continue
-                # print(response)
                 yield json.dumps(response).encode("utf-8")
 
-            # Insert in Database
+            # Generate title (if new session)
+            if self.new_session:
+                title_gen = TitleGenerator()
+                title = title_gen.generate_title(msg, final_message)
+                # Update title in DB
+                await update_session_name(self.db, self.session_id, title["title"])
+                title_response = {'type': "title", "data": title}
+                yield json.dumps(title_response).encode("utf-8")
+            # Insert messages into DB
+            await log_chat_message(self.db, self.session_id, 'ai', final_message, {})
