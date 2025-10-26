@@ -3,9 +3,11 @@ models.py
 This module contains the models for the database.
 """
 
-from sqlalchemy import Column, Integer, String, DateTime, Text, Boolean, ForeignKey, UniqueConstraint
+from datetime import datetime
+from sqlalchemy import TIMESTAMP, CheckConstraint, Column, Integer, String, DateTime, Text, Boolean, ForeignKey, UniqueConstraint
 from sqlalchemy.dialects.postgresql import TSVECTOR
 from pgvector.sqlalchemy import Vector
+import uuid
 
 from .base import Base
 
@@ -78,3 +80,31 @@ class UserSubscriptions(Base):
         "users.id", ondelete="CASCADE"), nullable=False)
     source_id = Column(Integer, ForeignKey(
         "sources.id", ondelete="CASCADE"), nullable=False)
+
+
+class ChatSession(Base):
+    __tablename__ = "chat_sessions"
+
+    id = Column(String(36), primary_key=True,
+                default=lambda: str(uuid.uuid4()))
+    user_id = Column(Integer, ForeignKey(
+        "users.id", ondelete="CASCADE"), nullable=False)
+    session_name = Column(String(255), nullable=True)
+    started_at = Column(TIMESTAMP, default=datetime.utcnow)
+    last_activity = Column(TIMESTAMP, default=datetime.utcnow)
+
+
+class ChatMessage(Base):
+    __tablename__ = "chat_messages"
+
+    id = Column(String(36), primary_key=True,
+                default=lambda: str(uuid.uuid4()))
+    session_id = Column(String(36), ForeignKey(
+        "chat_sessions.id", ondelete="CASCADE"), nullable=False)
+    sender = Column(String(10), nullable=False)
+    message = Column(Text, nullable=False)
+    created_at = Column(TIMESTAMP, default=datetime.utcnow)
+
+    __table_args__ = (
+        CheckConstraint("sender IN ('user', 'ai')", name="check_sender_valid"),
+    )

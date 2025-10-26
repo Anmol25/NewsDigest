@@ -9,6 +9,7 @@ from datetime import timedelta
 from fastapi import APIRouter, Depends, HTTPException, status, Response, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
 
 from src.database.session import get_async_db
 from src.database.operations import create_user_in_db, check_user_in_db

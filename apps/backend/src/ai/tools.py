@@ -9,6 +9,7 @@ from sqlalchemy.sql import ColumnElement
 from src.database.models import Articles
 import json
 from src.ai.article_loader import ArticleLoader
+from langgraph.config import get_stream_writer
 
 
 def retrieve_articles_db(db: Session, offset, limit, hybrid_score, combined_score, recent, *columns: ColumnElement, min_score: float = 0.18):
@@ -62,6 +63,9 @@ class SearchDBInput(BaseModel):
 @tool("search_db", args_schema=SearchDBInput)
 def search_db_tool(query: str, recent: bool, skip: int = 0, limit: int = 10) -> str:
     """Search Internal Database of NewsDigest for similar articles based on query (str)."""
+    writer = get_stream_writer()
+    writer({"type": "tool", "message": f"Searching Database for: {query}",
+           "tool_status": "started"})
     runtime = get_runtime(DBContext)
     model = runtime.context.model
     device = runtime.context.device
@@ -83,7 +87,7 @@ def search_db_tool(query: str, recent: bool, skip: int = 0, limit: int = 10) -> 
         recency_score.label('recency_score'),
         combined_score.label('combined_score')
     )
-
+    writer({"type": "tool", "tool_status": "ended"})
     return f"Found {len(articles)} articles:\n" + json.dumps(articles, default=str, separators=(',', ':'))
 
 
@@ -104,6 +108,10 @@ class ScrapeInput(BaseModel):
 @tool("scrape_articles", args_schema=ScrapeInput)
 def scrape_articles_tool(articles: List[dict]) -> str:
     """Scrape articles from provided links and return their content and metadata as JSON."""
+    writer = get_stream_writer()
+    writer({"type": "tool", "message": f"Scraping {len(articles)} articles...",
+           "tool_status": "started"})
+
     loader = ArticleLoader(articles)
     documents = loader.load()
 
@@ -113,5 +121,5 @@ def scrape_articles_tool(articles: List[dict]) -> str:
             "page_content": doc.page_content,
             "metadata": doc.metadata
         })
-
+    writer({"type": "tool", "tool_status": "ended"})
     return f"Scraped {len(result)} articles:\n" + json.dumps(result, ensure_ascii=False, separators=(',', ':'))
