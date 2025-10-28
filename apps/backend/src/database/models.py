@@ -3,9 +3,11 @@ models.py
 This module contains the models for the database.
 """
 
-from sqlalchemy import Column, Integer, String, DateTime, Text, Boolean, ForeignKey, UniqueConstraint
-from sqlalchemy.dialects.postgresql import TSVECTOR
+from datetime import datetime
+from sqlalchemy import TIMESTAMP, CheckConstraint, Column, Integer, String, DateTime, Text, Boolean, ForeignKey, UniqueConstraint
+from sqlalchemy.dialects.postgresql import TSVECTOR, JSONB
 from pgvector.sqlalchemy import Vector
+import uuid
 
 from .base import Base
 
@@ -52,17 +54,6 @@ class UserHistory(Base):
     watched_at = Column(DateTime(timezone=True), nullable=False)
 
 
-class UserLikes(Base):
-    __tablename__ = "userlikes"
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey(
-        "users.id", ondelete="CASCADE"), nullable=False)
-    article_id = Column(Integer, ForeignKey(
-        "articles.id", ondelete="CASCADE"), nullable=False)
-    liked_at = Column(DateTime(timezone=True), nullable=False)
-
-
 class UserBookmarks(Base):
     __tablename__ = "userbookmarks"
 
@@ -89,3 +80,33 @@ class UserSubscriptions(Base):
         "users.id", ondelete="CASCADE"), nullable=False)
     source_id = Column(Integer, ForeignKey(
         "sources.id", ondelete="CASCADE"), nullable=False)
+
+
+class ChatSession(Base):
+    __tablename__ = "chat_sessions"
+
+    id = Column(String(36), primary_key=True,
+                default=lambda: str(uuid.uuid4()))
+    user_id = Column(Integer, ForeignKey(
+        "users.id", ondelete="CASCADE"), nullable=False)
+    session_name = Column(String(255), nullable=True)
+    started_at = Column(DateTime(timezone=True), nullable=False)
+    last_activity = Column(DateTime(timezone=True), nullable=False)
+
+
+class ChatMessage(Base):
+    __tablename__ = "chat_messages"
+
+    id = Column(String(36), primary_key=True,
+                default=lambda: str(uuid.uuid4()))
+    session_id = Column(String(36), ForeignKey(
+        "chat_sessions.id", ondelete="CASCADE"), nullable=False)
+    sender = Column(String(10), nullable=False)
+    message = Column(Text, nullable=False)
+    created_at = Column(DateTime(timezone=True), nullable=False)
+    message_metadata = Column(JSONB, nullable=False, default=dict)
+
+    __table_args__ = (
+        CheckConstraint("sender IN ('user', 'ai')",
+                        name="check_sender_valid"),
+    )

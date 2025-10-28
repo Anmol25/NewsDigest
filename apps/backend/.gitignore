@@ -11,3 +11,6 @@ model/
 #tests
 test.db
 test.py
+test.ipynb
+test2.ipynb
+test3.ipynb

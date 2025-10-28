@@ -10,8 +10,10 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 
-from src.database.session import get_db
+from src.database.session import get_db, get_async_db
 from src.database.models import Users
 
 
@@ -55,15 +57,16 @@ def get_user(db: Session, username: str):
         return user
 
 
-def authenticate_user(db: Session, username: str, password: str):
-    """Authenticate a user by verifying their username and password.
+async def authenticate_user(db: AsyncSession, username: str, password: str):
+    """Authenticate a user by verifying their username and password (async).
     Args:
-        db (Session): The database session to use for the query.
+        db (AsyncSession): The async database session to use for the query.
         username (str): The username of the user to authenticate.
         password (str): The password of the user to authenticate.
     Returns:
         bool: True if authentication is successful, False otherwise."""
-    user = get_user(db, username)
+    result = await db.execute(select(Users).where(Users.username == username))
+    user = result.scalar_one_or_none()
     if not user:
         return False
     if not verify_password(password, user.hashed_password):
@@ -117,7 +120,7 @@ def decode_refresh_token(refresh_token: str):
     return payload
 
 
-async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_async_db)):
     """Get Current User.
     Args:
         token (str): The token to decode.
@@ -136,7 +139,9 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
             raise credentials_exception
     except JWTError:
         raise credentials_exception
-    user = get_user(db, username)
+    # Async fetch user
+    result = await db.execute(select(Users).where(Users.username == username))
+    user = result.scalar_one_or_none()
     if user is None:
         raise credentials_exception
     return user

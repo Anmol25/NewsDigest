@@ -13,10 +13,11 @@ PyYAML==6.0.2
 scipy==1.15.1
 sentence_transformers==3.4.0
 SQLAlchemy==2.0.37
-torch==2.5.1
+torch==2.9.0
 transformers==4.48.1
 uvicorn==0.34.0
 psycopg2-binary==2.9.10
+asyncpg==0.30.0
 python-multipart==0.0.20
 lxml==5.3.0
 lxml_html_clean==0.4.1
@@ -24,8 +25,10 @@ bcrypt==3.2.2
 goose3==3.1.19
 tqdm==4.67.1
 python-dotenv==1.1.1
-langchain==0.3.27
-langchain-core==0.3.78
-langchain-google-genai==2.0.10
-google-generativeai==0.8.5
 newspaper3k==0.2.8
+langchain==1.0.2
+langchain-core==1.0.0
+langchain-google-genai==3.0.0
+langchain-checkpoint-postgres==3.0.0
+
+# google-generativeai==0.8.5

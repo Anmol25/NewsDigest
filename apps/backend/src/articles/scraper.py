@@ -1,5 +1,4 @@
 import logging
-import requests
 from goose3 import Goose
 from newspaper import Article
 
@@ -10,11 +9,11 @@ def get_article(url: str):
     """
     Fetch and Parse Article
     Tries Goose first, falls back to newspaper3k if Goose fails.
+    Returns None if both fail.
     """
 
     try:
-        # --- Try with requests + Goose ---
-        # Fetch Article
+        # --- Try with Goose ---
         g = Goose()
         article = g.extract(url=url)
 
@@ -35,5 +34,4 @@ def get_article(url: str):
         return article.text if article.text else None
     except Exception as e:
         logger.error(f"newspaper3k also failed: {e}")
-        raise Exception(
-            f"Failed to fetch or parse article with both Goose and newspaper3k: {str(e)}")
+        return None

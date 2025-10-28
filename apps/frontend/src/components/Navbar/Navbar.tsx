@@ -20,12 +20,15 @@ function NavBar2() {
             </div>
             <div className='flex flex-row gap-10 px-6'>
                 <NavLink
+                    // className={({ isActive }) =>
+                    //     `text-basePrimary  font-semibold bg-brandColor px-5 py-2 rounded-3xl ${isActive ? 'shadow-chatActive' : 'shadow-md hover:animate-hoverShadowEffect'
+                    //     }`
+                    // }
                     className={({ isActive }) =>
-                        `text-basePrimary  font-semibold bg-brandColor px-5 py-2 rounded-3xl ${isActive ? 'shadow-chatActive' : 'shadow-md hover:animate-hoverShadowEffect'
-                        }`
+                        `border-2 border-brandColor font-semibold bg-basePrimary px-5 py-2 rounded-3xl shadow-md hover:animate-hoverShadowEffect ${isActive ? 'text-basePrimary bg-brandColor' : 'text-brandColor'} transition duration-300 ease-in-out`
                     }
                     to='/chat'>
-                    Chat
+                    AI Assistant
                 </NavLink>
             </div>
         </div>);

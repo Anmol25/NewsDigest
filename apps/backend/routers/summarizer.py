@@ -7,10 +7,11 @@ import logging
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 
 from src.summarizer.summarizer import Summarizer
-from src.database.session import get_db
+from src.database.session import get_async_db
 from src.database.models import Articles, Users
 from src.database.operations import update_user_history
 from src.users.services import get_current_active_user
@@ -29,23 +30,11 @@ class ArticleUrl(BaseModel):
 
 
 @router.get("/summarize")
-def summarize(id: int, update_history: bool = True, db: Session = Depends(get_db), current_user: Users = Depends(get_current_active_user)):
-    """Summarize an article by its ID.
-
-    Args:
-        id (int): Article ID
-        update_history (bool): Flag to update user history
-        db (Session): Database session
-        current_user (Users): Current active user
-
-    Returns:
-        dict: Summary of the article
-
-    Raises:
-        HTTPException: If article not found or summarization fails
-    """
+async def summarize(id: int, update_history: bool = True, db: AsyncSession = Depends(get_async_db), current_user: Users = Depends(get_current_active_user)):
+    """Summarize an article by its ID."""
     try:
-        article = db.query(Articles).filter(Articles.id == id).first()
+        result = await db.execute(select(Articles).where(Articles.id == id))
+        article = result.scalar_one_or_none()
         if not article:
             raise HTTPException(
                 status_code=404,
@@ -54,15 +43,15 @@ def summarize(id: int, update_history: bool = True, db: Session = Depends(get_db
         # If summary already exists, return it
         if article.summary:
             if update_history:
-                update_user_history(db, current_user.id, article.id)
+                await update_user_history(db, current_user.id, article.id)
             return {"data": article.summary}
         # Try to generate new summary
         try:
             generated_summary = dbart.infer(article.link)
             article.summary = generated_summary
-            db.commit()
+            await db.commit()
             if update_history:
-                update_user_history(db, current_user.id, article.id)
+                await update_user_history(db, current_user.id, article.id)
             return {"data": generated_summary}
         except Exception as e:
             raise HTTPException(
