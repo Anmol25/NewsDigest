@@ -26,8 +26,9 @@ goose3==3.1.19
 tqdm==4.67.1
 python-dotenv==1.1.1
 newspaper3k==0.2.8
-langchain==1.0.0
+langchain==1.0.2
 langchain-core==1.0.0
 langchain-google-genai==3.0.0
+langchain-checkpoint-postgres==3.0.0
 
 # google-generativeai==0.8.5

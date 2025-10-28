@@ -25,7 +25,7 @@ function NavBar2() {
                         }`
                     }
                     to='/chat'>
-                    Chat
+                    AI Assistant
                 </NavLink>
             </div>
         </div>);

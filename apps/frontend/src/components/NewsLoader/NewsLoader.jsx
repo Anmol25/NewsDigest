@@ -5,9 +5,15 @@ import PropTypes from 'prop-types';
 import { useAxios } from '../../services/AxiosConfig';
 import { debounce } from 'lodash';
 
-function NewsLoader(props){
+// UI/behavior constants
+const PAGE_SIZE = 20;            // Expected page size from API
+const SCROLL_THRESHOLD = 100;    // px from bottom to trigger next load
+const SCROLL_DEBOUNCE_MS = 200;  // debounce delay for scroll handler
+
+function NewsLoader({ url, parameters, requestBody, setHasArticles }){
     const axiosInstance = useAxios();
-    const {url, parameters, requestBody, setHasArticles} = props;
+
+    // Data/infinite-scroll state
     const [items, setItems] = useState([]);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
@@ -18,10 +24,11 @@ function NewsLoader(props){
     const pageRef = useRef(page);
     const hasMoreRef = useRef(hasMore);
 
-    // keep refs in sync with state to avoid stale closures in event listeners
+    // Keep refs in sync with state to avoid stale closures in event listeners
     useEffect(() => { pageRef.current = page }, [page]);
     useEffect(() => { hasMoreRef.current = hasMore }, [hasMore]);
 
+    // Determine the closest scrollable ancestor; fallback to window
     const getScrollParent = (node) => {
         if (!node) return window;
         let el = node;
@@ -37,33 +44,31 @@ function NewsLoader(props){
         return window;
     };
 
+    // Fetch a page using GET or POST based on presence of requestBody
+    const fetchPage = useCallback(async (currentPage) => {
+        const commonParams = { params: { page: currentPage, ...(parameters || {}) } };
+        if (requestBody) {
+            return axiosInstance.post(url, { ...requestBody }, commonParams);
+        }
+        return axiosInstance.get(url, commonParams);
+    }, [axiosInstance, url, parameters, requestBody]);
+
+    // Load and append items for a given page index
     const loadItems = useCallback(async (currentPage) => {
         if (loadingRef.current || !hasMoreRef.current) return;
         loadingRef.current = true;
 
         try {
-            let response;
-            if (requestBody) {
-                response = await axiosInstance.post(url, {...requestBody}, {
-                    params: {
-                        page: currentPage,
-                        ...parameters
-                    }
-                });
-            } else {
-                response = await axiosInstance.get(url, {
-                    params: {
-                        page: currentPage,
-                        ...parameters
-                    }
-                });
-            }
+            const response = await fetchPage(currentPage);
             const newData = response.data || [];
-            if (setHasArticles && newData.length > 0){
+
+            // Inform parent that we have at least one article
+            if (setHasArticles && newData.length > 0) {
                 setHasArticles(true);
             }
-            const moreData = newData.length === 20; // page-size assumption kept
-            setItems(prev => currentPage === 1 ? newData : [...prev, ...newData]);
+
+            const moreData = newData.length === PAGE_SIZE; // respect page-size heuristic
+            setItems(prev => (currentPage === 1 ? newData : [...prev, ...newData]));
             setHasMore(moreData);
             setPage(currentPage + 1);
         } catch (error) {
@@ -72,9 +77,9 @@ function NewsLoader(props){
         } finally {
             loadingRef.current = false;
         }
-    }, [axiosInstance, url, parameters, requestBody, setHasArticles]);
+    }, [fetchPage, setHasArticles]);
 
-    // initial load and reset when key props change
+    // Initial load and reset when key props change
     useEffect(() => {
         setItems([]);
         setPage(1);
@@ -86,33 +91,32 @@ function NewsLoader(props){
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [url, JSON.stringify(parameters || {}), JSON.stringify(requestBody || {})]);
 
-    // detect scroll parent after mount
+    // Detect scroll parent after mount
     useEffect(() => {
         const sp = getScrollParent(containerRef.current);
         scrollParentRef.current = sp;
     }, []);
 
-    // attach debounced scroll listener to the detected scroll parent (or window)
+    // Attach debounced scroll listener to the detected scroll parent (or window)
     useEffect(() => {
         const scrollParent = scrollParentRef.current || window;
         if (!scrollParent) return;
 
-        const threshold = 100; // pixels from bottom to trigger load
         const onScroll = debounce(() => {
             // compute whether we've scrolled near the bottom
             let reachedBottom = false;
             if (scrollParent === window) {
                 const scrollY = window.scrollY || window.pageYOffset;
-                reachedBottom = window.innerHeight + scrollY >= document.documentElement.scrollHeight - threshold;
+                reachedBottom = window.innerHeight + scrollY >= document.documentElement.scrollHeight - SCROLL_THRESHOLD;
             } else {
                 const el = scrollParent;
-                reachedBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - threshold;
+                reachedBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - SCROLL_THRESHOLD;
             }
 
             if (reachedBottom && hasMoreRef.current && !loadingRef.current) {
                 loadItems(pageRef.current);
             }
-        }, 200);
+        }, SCROLL_DEBOUNCE_MS);
 
         // add listener (use passive when possible)
         try {
@@ -144,7 +148,7 @@ function NewsLoader(props){
             ))}
             {hasMore ? (
                 <div className="flex items-center justify-center h-16 col-span-full">
-                    <div className="w-6 h-6 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
+                    <div aria-label="Loading more articles" className="w-6 h-6 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
                 </div>
             ) : items.length ? "" : (
                 <div className="col-span-full flex items-center justify-center h-24">
