@@ -11,7 +11,7 @@ function ChatHistory() {
                 <p className="text-textBig font-semibold">Chats</p>
                 <button className="text-textMediumSmall text-textSecondary cursor-pointer hover:underline">Clear All</button>
             </div>
-            <div className="flex-1 gap-0 flex flex-col overflow-y-auto">
+            <div className="flex-1 gap-0 flex flex-col overflow-y-auto  scrollbar-thin scrollbar-thumb-textSecondary scrollbar-thumb-rounded-3xl">
                 {/* Example Chat History Items */}
                 <ChatHistoryItem sessionId="1" sessionName="Lorem Ipsum dolor sit amet" />
                 <ChatHistoryItem sessionId="2" sessionName="Lorem Ipsum dolor sit amet" />

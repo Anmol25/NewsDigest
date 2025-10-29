@@ -1,11 +1,18 @@
-import React from "react";
+import React, { useEffect } from "react";
 import ChatHistory from "../../components/ChatComponents/ChatHistory";
 import ChatMessages from "../../components/ChatComponents/ChatMessages";
 import { useState } from "react";
+import { useParams } from "react-router-dom";
 
 function Chat(){
-    const [sessionId, setSessionId] = useState<string | null>(null);
-    const [sessionName, setSessionName] = useState<string | null>(null);
+    const urlSessionId = useParams().sessionId || null;
+    const [currSessionId, setcurrSessionId] = useState<string | null>(urlSessionId);
+    const [sessionList, setSessionList] = useState<Array<{sessionId: string, sessionName: string}>>([]);
+
+    useEffect(() => {
+        setcurrSessionId(urlSessionId);
+        console.log("Session ID from URL:", urlSessionId);
+    }, [urlSessionId]);
 
     return (
         <div className="h-full w-full p-5 pt-2.5">
@@ -14,7 +21,7 @@ function Chat(){
                     <ChatHistory />
                 </div>
                 <div className="w-[82.5%] h-full flex flex-col min-h-0 overflow-hidden">
-                    <ChatMessages sessionId={sessionId} sessionName={sessionName} />
+                    <ChatMessages sessionId={currSessionId} sessionName={sessionList.find(chat => chat.sessionId === currSessionId)?.sessionName || null} />
                 </div>
             </div>
         </div>

@@ -153,5 +153,5 @@ class NewsDigestAgent:
                 print(title_response)
                 yield json.dumps(title_response).encode("utf-8")
             # Insert messages into DB
-            print(final_message)
+            print(repr(final_message))
             await log_chat_message(self.db, self.session_id, 'ai', final_message, {})

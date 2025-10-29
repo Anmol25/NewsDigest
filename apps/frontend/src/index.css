@@ -1,5 +1,11 @@
 @import "tailwindcss";
-@plugin 'tailwind-scrollbar';
+
+
+@plugin 'tailwind-scrollbar' {
+    nocompatible: true;
+    preferredStrategy: 'pseudoelements';
+}
+
 @theme {
     /* Color Themes */
     --color-brandColor: #1E2022;
@@ -55,7 +61,6 @@
         }
     }
 }
-
 
 body{
     margin: 0;

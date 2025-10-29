@@ -48,7 +48,7 @@ function MessageBar() {
 
     return (
         <form
-            className="flex flex-row items-center w-full min-h-8 rounded-3xl shadow-md px-1 py-1.5  bg-basePrimary"
+            className="flex flex-row items-center w-full min-h-8 rounded-3xl shadow-md px-1 py-1.5 bg-basePrimary"
             onSubmit={(e) => {
                 e.preventDefault();
                 handleSubmit();
