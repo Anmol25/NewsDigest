@@ -35,6 +35,7 @@ function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/history" element={<UserHistory />} />
           <Route path="/channels" element={<Channels />} />
+          <Route path="/chat/:sessionId" element={<Chat />} />
           <Route path="/chat" element={<Chat />} />
         </Route>
       </Route>
