@@ -52,20 +52,18 @@ async def get_hightlights(query: str, db: AsyncSession = Depends(get_async_db), 
 
 class ChatbotRequest(BaseModel):
     user_query: str
-    session_id: Optional[str] = None
+    session_id: str
+    newSession: Optional[bool] = False
 
 
 @router.post("/agent_test")
 async def test_agent(request: ChatbotRequest, db: AsyncSession = Depends(get_async_db), current_user: Users = Depends(get_current_active_user), sbert: SBERT = Depends(get_sbert)):
     user_query = request.user_query
-    session_id, new_session = None, False
+    session_id = request.session_id
+    new_session = request.newSession
     user_id = current_user.id
-    if request.session_id:
-        session_id = request.session_id
-        new_session = False
-    else:
-        session_id = str(uuid.uuid4())
-        new_session = True
+
+    if new_session:
         # Create a new Session in database
         await create_session(db, session_id, user_id)
     print("Session ID:", session_id)
@@ -74,7 +72,7 @@ async def test_agent(request: ChatbotRequest, db: AsyncSession = Depends(get_asy
 
     agent = NewsDigestAgent(sbert, db, user_id,
                             session_id, new_session)
-    return StreamingResponse(agent.call_agent(user_query), media_type="application/json")
+    return StreamingResponse(agent.call_agent(user_query), media_type="application/x-ndjson")
 
 
 @router.get("/chat_messages")

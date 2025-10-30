@@ -7,6 +7,7 @@ import React, {
 } from "react";
 
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../../contexts/AuthContext";
 
 function MessageBar({
   sessionId,
@@ -33,9 +34,8 @@ function MessageBar({
   const [isMultiline, setIsMultiline] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const MAX_ROWS = 10;
-
-  //
   const navigate = useNavigate();
+  const { accessToken } = useAuth();
 
   const adjustHeight = () => {
     const ta = textareaRef.current;
@@ -69,6 +69,102 @@ function MessageBar({
     // Shift+Enter will naturally insert a newline (no preventDefault)
   };
 
+  const fetchAIResponse = async (
+    userMessage: string,
+    newSession: boolean,
+    sessionId: string
+  ) => {
+    
+    const response = await fetch("http://localhost:8000/agent_test", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`
+      },
+      body: JSON.stringify({
+        user_query: userMessage,
+        session_id: sessionId,
+        newSession: newSession,
+      }),
+    });
+
+     // 2. Basic response checks
+    if (!response.ok || !response.body) {
+      console.error("Network or streaming not available", response.status);
+      return;
+    }
+
+    // 3. Prepare reader + decoder
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder("utf-8");
+
+    // 4. Buffer for partial lines
+    let buffer = "";
+
+    // 5. Ensure there's an AI placeholder to append into
+    setChatList(prev => [...prev, { message: "", sender: "ai" }]);
+    if (newSession) setNewSession(false);
+
+    try {
+      while (true) {
+        const { value, done } = await reader.read(); // A
+        if (done) break;                              // B
+
+        buffer += decoder.decode(value, { stream: true }); // C
+
+        // Split into lines; last element may be incomplete
+        const lines = buffer.split("\n");                // D
+        buffer = lines.pop() ?? "";                      // E
+
+        for (const line of lines) {
+          if (!line.trim()) continue; // skip empty lines
+
+          // parse JSON safely
+          let data;
+          try {
+            data = JSON.parse(line);                      // F
+          } catch (err) {
+            console.warn("Failed to parse line:", line);
+            continue;
+          }
+
+          if (data.type == "tool"){
+            // Handle tool data if needed
+            console.log("Tool data received:", data);
+          }else if (data.type === "model") {
+            const content = data.message || "";
+            // Append content to the last AI message
+            setChatList((prevList) => {
+              const updatedList = [...prevList];
+              const lastIndex = updatedList.length - 1;
+              if (updatedList[lastIndex].sender === "ai") {
+                updatedList[lastIndex].message += content;
+              }
+              return updatedList;
+            });
+        }else if (data.type === "title") {
+            const title = data.message?.title ?? "Untitled";
+            // handle title updates
+            setSessionList((prevList) => {
+              return prevList.map((session) =>
+                session.sessionId === sessionId
+                  ? { ...session, sessionName: title }
+                  : session
+              );
+            });
+        }else{
+            console.warn("Unknown data type:", data);
+        }
+        }
+      }
+    } catch (err) {
+      console.error("Stream read error:", err);
+    } finally {
+      // optionally close/cancel reader
+      try { reader.cancel(); } catch {}
+    }
+  };
+
   const handleSubmit = () => {
     if (value.trim() === "") return;
 
@@ -77,8 +173,6 @@ function MessageBar({
       ...prevList,
       { message: value.trim(), sender: "user" },
     ]);
-
-    // Clear input
     setValue("");
 
     // If it's a new session, update session list
@@ -90,7 +184,11 @@ function MessageBar({
 
       navigate(`/chat/${sessionId}`);
     }
+    // Fetch AI response
+    fetchAIResponse(value.trim(), newSession, sessionId);
   };
+
+
 
   return (
     <form

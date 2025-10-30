@@ -121,9 +121,9 @@ class NewsDigestAgent:
     async def call_agent(self, msg):
         async with AsyncPostgresSaver.from_conn_string(self.dbi_url) as checkpointer:
             await checkpointer.setup()
-            if self.new_session:
-                print({"session_id": self.session_id})
-                yield json.dumps({"session_id": self.session_id}).encode("utf-8")
+            # if self.new_session:
+            #     print({"session_id": self.session_id})
+            #     yield json.dumps({"session_id": self.session_id}).encode("utf-8")
             agent = self.make_agent(checkpointer)
 
             final_message = ""
@@ -141,7 +141,7 @@ class NewsDigestAgent:
                 if not response:
                     continue
                 print(response)
-                yield json.dumps(response).encode("utf-8")
+                yield json.dumps(response).encode("utf-8") + "\n".encode("utf-8")
 
             # Generate title (if new session)
             if self.new_session:
@@ -149,9 +149,9 @@ class NewsDigestAgent:
                 title = title_gen.generate_title(msg, final_message)
                 # Update title in DB
                 await update_session_name(self.db, self.session_id, title["title"])
-                title_response = {'type': "title", "data": title}
+                title_response = {'type': "title", "message": title}
                 print(title_response)
-                yield json.dumps(title_response).encode("utf-8")
-            # Insert messages into DB
+                yield json.dumps(title_response).encode("utf-8") + "\n".encode("utf-8")
+            #  Insert messages into DB
             print(repr(final_message))
             await log_chat_message(self.db, self.session_id, 'ai', final_message, {})

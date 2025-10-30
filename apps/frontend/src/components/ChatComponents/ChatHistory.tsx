@@ -7,7 +7,7 @@ function ChatHistory({ sessionList, setChatList }: { sessionList: Array<{ sessio
     const axiosInstance = useAxios();
 
     useEffect(() => {
-        // Fetch chat sessions from backend or local storage here
+        // Fetch chat sessions from backend
         async function fetchChatSessions() {
             try {
                 const response = await axiosInstance.get('/chat_history');
