@@ -2,11 +2,10 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
 function MessageComponent({ message, sender }: { message: string, sender: 'user' | 'ai' }) {
-
     return (
         <div>
             {sender === 'ai' && (
-                <div className={`p-2.5`}>
+                <div className={`p-2.5 break-words`}>
                     <ReactMarkdown
                         components={{
                             ul: ({ node, ...props }) => (
@@ -21,7 +20,7 @@ function MessageComponent({ message, sender }: { message: string, sender: 'user'
                             a: ({ node, ...props }) => (
                                 <a
                                     {...props}
-                                    className="py-0.5 px-1.5 border text-xs border-textSecondary rounded-3xl whitespace-nowrap"
+                                    className="py-0.5 px-1.5 border text-xs border-[#B9B9B9] bg-[#B9B9B9] rounded-3xl whitespace-nowrap hover:bg-[#989797] hover:border-[#989797] transition-colors shadow-md"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                 />

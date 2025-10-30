@@ -80,7 +80,7 @@ console.log(
     <div
       className={`h-full min-h-0 justify-center items-center flex flex-col ${
         newSession ? "gap-5 " : "gap-0 pt-0 pb-2.5"
-      } font-[system-ui]`}
+      } `}
     >
       {newSession && (
         <div className="flex flex-col gap-10 items-center px-25">
@@ -93,7 +93,7 @@ console.log(
       {!newSession && (
         <div
           ref={scrollContainerRef}
-          className="flex-1 min-h-0 justify-end overflow-y-auto scrollbar-thin scrollbar-thumb-textSecondary scrollbar-thumb-rounded-3xl px-30 gap-3"
+          className="flex-1 min-h-0 w-full justify-end overflow-y-auto scrollbar-thin scrollbar-thumb-textSecondary scrollbar-thumb-rounded-3xl px-40 gap-3"
         >
           {chatList.map((chat, index) => (
             <div
@@ -111,7 +111,7 @@ console.log(
           ))}
         </div>
       )}
-      <div className="w-full px-30">
+      <div className="w-full px-40">
         <MessageBar sessionId={sessionId} chatList={chatList} setChatList={setChatList} newSession={newSession} setNewSession={setNewSession} sessionList={sessionList} setSessionList={setSessionList} />
       </div>
     </div>

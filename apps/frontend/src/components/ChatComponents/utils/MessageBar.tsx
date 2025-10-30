@@ -132,16 +132,37 @@ function MessageBar({
             // Handle tool data if needed
             console.log("Tool data received:", data);
           }else if (data.type === "model") {
+
+
+            // const content = data.message || "";
+            // // Append content to the last AI message
+            // setChatList((prevList) => {
+            //   const updatedList = [...prevList];
+            //   const lastIndex = updatedList.length - 1;
+            //   if (updatedList[lastIndex].sender === "ai") {
+            //     updatedList[lastIndex].message += content;
+            //   }
+            //   return updatedList;
+            // });
+
             const content = data.message || "";
-            // Append content to the last AI message
-            setChatList((prevList) => {
-              const updatedList = [...prevList];
-              const lastIndex = updatedList.length - 1;
-              if (updatedList[lastIndex].sender === "ai") {
-                updatedList[lastIndex].message += content;
-              }
-              return updatedList;
-            });
+  setChatList((prevList) => {
+    if (prevList.length === 0) return prevList; // prevent error if empty
+    
+    const updatedList = [...prevList];
+    const lastMessage = updatedList.at(-1);
+    
+    if (lastMessage?.sender === "ai") {
+      updatedList[updatedList.length - 1] = {
+        ...lastMessage,
+        message: lastMessage.message + content,
+      };
+    }
+    return updatedList;
+  });
+
+
+            
         }else if (data.type === "title") {
             const title = data.message?.title ?? "Untitled";
             // handle title updates
