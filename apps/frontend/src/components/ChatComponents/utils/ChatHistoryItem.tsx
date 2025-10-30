@@ -1,12 +1,18 @@
 import { NavLink } from "react-router-dom";
 import { useState } from "react";
 
-function ChatHistoryItem({ sessionId, sessionName }: { sessionId: string, sessionName: string }) {
+function ChatHistoryItem({ sessionId, sessionName }: { sessionId: string, sessionName: string | null}) {
     const [hovered, setHovered] = useState(false);
 
     return (
         <NavLink
             to={`/chat/${sessionId}`}
+            onClick={(e) => {
+                // Prevent re-navigation if already on the same page
+                if (window.location.pathname === `/chat/${sessionId}`) {
+                    e.preventDefault();
+                }
+            }}
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}
             className={({ isActive }) =>

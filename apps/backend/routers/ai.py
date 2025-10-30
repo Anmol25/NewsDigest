@@ -13,7 +13,7 @@ from src.database.models import Users
 from src.users.services import get_current_active_user
 from routers.content import search_article
 from src.ai.highlights import SearchHighlights
-from src.ai.utils.db_queries import create_session, log_chat_message
+from src.ai.utils.db_queries import create_session, log_chat_message, get_chat_messages, get_chat_sessions
 from fastapi.responses import StreamingResponse
 from src.ai.agent import NewsDigestAgent
 
@@ -75,3 +75,17 @@ async def test_agent(request: ChatbotRequest, db: AsyncSession = Depends(get_asy
     agent = NewsDigestAgent(sbert, db, user_id,
                             session_id, new_session)
     return StreamingResponse(agent.call_agent(user_query), media_type="application/json")
+
+
+@router.get("/chat_messages")
+async def load_chat(sessionId: str, page: int = 1, limit: int = 20, db: AsyncSession = Depends(get_async_db), current_user: Users = Depends(get_current_active_user)):
+    messages = await get_chat_messages(
+        db, sessionId, page, limit, current_user.id)
+    return messages
+
+
+@router.get("/chat_history")
+async def chat_history(page: int = 1, limit: int = 10, db: AsyncSession = Depends(get_async_db), current_user: Users = Depends(get_current_active_user)):
+    # Pass parameters by name to avoid positional-argument mixup
+    sessions = await get_chat_sessions(db=db, page=page, limit=limit, user_id=current_user.id)
+    return sessions

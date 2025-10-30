@@ -18,6 +18,14 @@ function MessageComponent({ message, sender }: { message: string, sender: 'user'
                             p: ({ node, ...props }) => (
                                 <p className="" {...props} />
                             ),
+                            a: ({ node, ...props }) => (
+                                <a
+                                    {...props}
+                                    className="py-0.5 px-1.5 border text-xs border-textSecondary rounded-3xl whitespace-nowrap"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                />
+                            ),
                         }}
                         remarkPlugins={[remarkGfm]}
                     >
@@ -26,7 +34,7 @@ function MessageComponent({ message, sender }: { message: string, sender: 'user'
                 </div>
             )}
             {sender === 'user' && (
-                <div className="bg-basePrimary p-2.5 rounded-md ml-40 shadow-md inline-block">
+                <div className="bg-basePrimary p-2.5 rounded-md ml-40 shadow-md inline-block ">
                     <span>{message}</span>
                 </div>
             )}
