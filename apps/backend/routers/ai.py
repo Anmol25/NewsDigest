@@ -83,8 +83,7 @@ async def load_chat(sessionId: str, page: int = 1, limit: int = 20, db: AsyncSes
 
 
 @router.get("/chat_history")
-async def chat_history(page: int = 1, limit: int = 100, db: AsyncSession = Depends(get_async_db), current_user: Users = Depends(get_current_active_user)):
-    # Pass parameters by name to avoid positional-argument mixup
+async def chat_history(page: int = 1, limit: int = 20, db: AsyncSession = Depends(get_async_db), current_user: Users = Depends(get_current_active_user)):
     sessions = await get_chat_sessions(db=db, page=page, limit=limit, user_id=current_user.id)
     return sessions
 

@@ -46,7 +46,6 @@ function Chat(){
                         <ChatMessages
                             key={currSessionId}
                             sessionId={currSessionId}
-                            sessionList={sessionList}
                             setSessionList={setSessionList}
                             newSession={newSession}
                             setNewSession={setNewSession}

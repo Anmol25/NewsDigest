@@ -1,7 +1,9 @@
+import { memo, useMemo } from "react";
 import { getUserQueryRecommendations } from "./userQueries";
 
 function QuerySuggest() {
-  const recommendations = getUserQueryRecommendations(5);
+  // Memoize to avoid changing suggestions on parent re-renders
+  const recommendations = useMemo(() => getUserQueryRecommendations(5), []);
 
   return (
     <div className="flex flex-wrap justify-center gap-1.5 items-center">
@@ -17,4 +19,4 @@ function QuerySuggest() {
   );
 }
 
-export default QuerySuggest; 
+export default memo(QuerySuggest);
