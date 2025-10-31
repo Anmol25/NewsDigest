@@ -10,6 +10,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy import text
+from langgraph.checkpoint.postgres import PostgresSaver
+from dotenv import load_dotenv
+import os
 
 import utils.logger as logger
 from routers.auth import router as auth_router
@@ -23,6 +26,10 @@ from src.aggregator.model import SBERT
 from src.aggregator.feeds import Feeds
 from src.database.operations import insert_articles
 
+load_dotenv()
+
+DATABASE_URL_KEY = os.getenv("DATABASE_URL")
+
 logger = logging.getLogger(__name__)
 REFRESH_INTERVAL = 60 * 5
 
@@ -35,6 +42,10 @@ async def lifespan(app: FastAPI):
         conn.commit()
     # Create tables if they dont exist
     Base.metadata.create_all(bind=engine)
+
+    # Create Agent Checkpoint Table (PostgresSaver)
+    with PostgresSaver.from_conn_string(DATABASE_URL_KEY) as checkpointer:
+        checkpointer.setup()
 
     # Execute the SQL file with trigger + function
     with engine.connect() as conn:
@@ -60,12 +71,14 @@ async def lifespan(app: FastAPI):
                     rss_feeds = yaml.safe_load(file)
                 loop = asyncio.new_event_loop()
                 asyncio.set_event_loop(loop)
-                loop.run_until_complete(app.state.articles.refresh_articles(rss_feeds))
+                loop.run_until_complete(
+                    app.state.articles.refresh_articles(rss_feeds))
                 articles_list = app.state.articles.get_articles()
                 logger.info(f"Fetched {len(articles_list)} articles")
                 if articles_list:
                     insert_articles(articles_list)
-                logger.info(f"Refreshed Feeds Successfully, Next Refresh in {REFRESH_INTERVAL//60} minutes")
+                logger.info(
+                    f"Refreshed Feeds Successfully, Next Refresh in {REFRESH_INTERVAL//60} minutes")
             except Exception as e:
                 logger.error(f"Error refreshing feeds: {e}")
             time.sleep(REFRESH_INTERVAL)
@@ -82,7 +95,8 @@ app.include_router(summarize_router)
 app.include_router(user_router)
 app.include_router(ai_router)
 
-origins = ["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:3000", "http://127.0.0.1:3000"]
+origins = ["http://localhost:5173", "http://127.0.0.1:5173",
+           "http://localhost:3000", "http://127.0.0.1:3000"]
 
 # Add CORS middleware
 app.add_middleware(

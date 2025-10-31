@@ -11,23 +11,25 @@ import { useAuth } from "../../../contexts/AuthContext";
 
 function MessageBar({
   sessionId,
-  sessionList,
   setSessionList,
   newSession,
   setNewSession,
-  chatList,
   setChatList,
+  setIsLoading,
+  setActiveTools,
 }: {
   sessionId: string;
-  sessionList: Array<{ sessionId: string; sessionName: string | null }>;
   setSessionList: Dispatch<
     SetStateAction<Array<{ sessionId: string; sessionName: string | null }>>
   >;
   newSession: boolean;
   setNewSession: Dispatch<SetStateAction<boolean>>;
-  chatList: Array<{ message: string; sender: "user" | "ai" }>;
   setChatList: Dispatch<
     SetStateAction<Array<{ message: string; sender: "user" | "ai" }>>
+  >;
+  setIsLoading: Dispatch<SetStateAction<boolean>>;
+  setActiveTools: Dispatch<
+    SetStateAction<Array<{ tool_call_id: string; message?: string }>>
   >;
 }) {
   const [value, setValue] = useState("");
@@ -91,6 +93,8 @@ function MessageBar({
      // 2. Basic response checks
     if (!response.ok || !response.body) {
       console.error("Network or streaming not available", response.status);
+      setActiveTools([]);
+      setIsLoading(false);
       return;
     }
 
@@ -129,9 +133,28 @@ function MessageBar({
           }
 
           if (data.type == "tool"){
-            // Handle tool data if needed
-            console.log("Tool data received:", data);
+            // Maintain tool stack: add/update on started, remove on ended
+            const status = data.tool_status as string | undefined;
+            const id = data.tool_call_id as string | undefined;
+            if (!id || !status) continue;
+
+            if (status === "started") {
+              setActiveTools((prev) => {
+                const existing = prev.find((t) => t.tool_call_id === id);
+                if (existing) {
+                  return prev.map((t) =>
+                    t.tool_call_id === id ? { tool_call_id: id, message: data.message } : t
+                  );
+                }
+                return [...prev, { tool_call_id: id, message: data.message }];
+              });
+            } else if (status === "ended") {
+              setActiveTools((prev) => prev.filter((t) => t.tool_call_id !== id));
+            }
           }else if (data.type === "model") {
+            // Model content started, clear tools and hide loader
+            setActiveTools([]);
+            setIsLoading(false);
 
 
             // const content = data.message || "";
@@ -180,6 +203,8 @@ function MessageBar({
       }
     } catch (err) {
       console.error("Stream read error:", err);
+      setActiveTools([]);
+      setIsLoading(false);
     } finally {
       // optionally close/cancel reader
       try { reader.cancel(); } catch {}
@@ -195,6 +220,10 @@ function MessageBar({
       { message: value.trim(), sender: "user" },
     ]);
     setValue("");
+
+    // Prepare loader state
+    setIsLoading(true);
+    setActiveTools([]);
 
     // If it's a new session, update session list
     if (newSession) {

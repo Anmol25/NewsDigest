@@ -1,10 +1,16 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import ChatHistoryItem from "./utils/ChatHistoryItem";
-import { useEffect } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useAxios } from '../../services/AxiosConfig';
+import DeletePopup from "./utils/DeletePopup";
 
 function ChatHistory({ sessionList, setChatList }: { sessionList: Array<{ sessionId: string, sessionName: string | null}>, setChatList: Function }) {
     const axiosInstance = useAxios();
+    const navigate = useNavigate();
+    const location = useLocation();
+    const [showDeletePopup, setShowDeletePopup] = useState(false);
+    const [deleteMode, setDeleteMode] = useState<'all' | 'single'>('all');
+    const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
 
     useEffect(() => {
         // Fetch chat sessions from backend
@@ -43,14 +49,63 @@ function ChatHistory({ sessionList, setChatList }: { sessionList: Array<{ sessio
             </NavLink>
             <div className="flex flex-row justify-between">
                 <p className="text-textBig font-semibold">Chats</p>
-                <button className="text-textMediumSmall text-textSecondary cursor-pointer hover:underline">Clear All</button>
+                <button
+                    className="text-textMediumSmall text-textSecondary cursor-pointer hover:underline"
+                    onClick={() => {
+                        setDeleteMode('all');
+                        setSelectedSessionId(null);
+                        setShowDeletePopup(true);
+                    }}
+                >
+                    Clear All
+                </button>
             </div>
             <div className="flex-1 gap-0 flex flex-col overflow-y-auto  scrollbar-thin scrollbar-thumb-textSecondary scrollbar-thumb-rounded-3xl">
-                {sessionList.map((session) => (
-                    <ChatHistoryItem key={session.sessionId} sessionId={session.sessionId} sessionName={session.sessionName} />
-                ))}
-
+                {sessionList.length === 0 ? (
+                    <div className="flex h-full items-center justify-center text-textSecondary text-md">
+                        No Chat History
+                    </div>
+                ) : (
+                    sessionList.map((session) => (
+                        <ChatHistoryItem
+                            key={session.sessionId}
+                            sessionId={session.sessionId}
+                            sessionName={session.sessionName}
+                            onDeleteClick={(sid: string) => {
+                                setDeleteMode('single');
+                                setSelectedSessionId(sid);
+                                setShowDeletePopup(true);
+                            }}
+                        />
+                    ))
+                )}
             </div>
+            <DeletePopup
+                isOpen={showDeletePopup}
+                mode={deleteMode}
+                sessionId={selectedSessionId}
+                onClose={() => setShowDeletePopup(false)}
+                onSuccess={useCallback((mode, sid) => {
+                    const match = location.pathname.match(/^\/chat\/([^/]+)$/);
+                    const activeSessionId = match ? match[1] : null;
+
+                    if (mode === 'all') {
+                        setChatList([]);
+                        // If currently viewing a specific chat, navigate back to /chat
+                        if (activeSessionId) {
+                            navigate('/chat', { replace: true });
+                        }
+                    } else if (mode === 'single' && sid) {
+                        setChatList((prev: Array<{ sessionId: string, sessionName: string | null}>) =>
+                            prev.filter((s) => s.sessionId !== sid)
+                        );
+                        // If the deleted session is the one currently open, navigate back to /chat
+                        if (activeSessionId === sid) {
+                            navigate('/chat', { replace: true });
+                        }
+                    }
+                }, [location.pathname, navigate, setChatList])}
+            />
         </div>
     );
 }

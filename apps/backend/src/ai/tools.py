@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 from typing import Any, List, Optional, Annotated
+import json
+import asyncio
 
 from langchain.tools import tool, ToolRuntime
 from langchain_core.tools import InjectedToolCallId
@@ -13,7 +15,7 @@ from sqlalchemy.sql import ColumnElement
 from src.aggregator.search import search_db
 from src.ai.article_loader import ArticleLoader
 from src.database.models import Articles
-import json
+
 
 # BUG: Not using pydantic model for tool inputs due to langchain issue:
 # See https://github.com/langchain-ai/langchain/issues/33646
@@ -197,9 +199,9 @@ async def scrape_articles_tool(articles: List[ArticleSchema], runtime: ToolRunti
     writer = get_stream_writer()
     writer({"type": "tool", "tool_call_id": tool_call_id, "message": f"Scraping {len(articles)} articles...",
            "tool_status": "started"})
-
     loader = ArticleLoader(articles)
-    documents = loader.load()
+    # documents = loader.load()
+    documents = await asyncio.to_thread(loader.load)
 
     result = [{"page_content": doc.page_content, "metadata": doc.metadata}
               for doc in documents]

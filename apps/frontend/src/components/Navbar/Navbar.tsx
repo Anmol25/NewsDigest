@@ -25,7 +25,7 @@ function NavBar2() {
                     //     }`
                     // }
                     className={({ isActive }) =>
-                        `border-2 border-brandColor font-semibold bg-basePrimary px-5 py-2 rounded-3xl shadow-md hover:animate-hoverShadowEffect ${isActive ? 'text-basePrimary bg-brandColor' : 'text-brandColor'} transition duration-300 ease-in-out`
+                        `border-2 border-brandColor font-semibold bg-basePrimary px-5 py-2 rounded-3xl shadow-md hover:animate-hoverShadowEffect ${isActive ? 'text-basePrimary bg-brandColor animate-hoverShadowEffect' : 'text-brandColor'} transition duration-300 ease-in-out`
                     }
                     to='/chat'>
                     AI Assistant

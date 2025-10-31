@@ -46,3 +46,63 @@ BEGIN
     END IF;
 END;
 $$;
+
+-- Add Foreign Key Constraint to Checkpoint Tables of Agents
+DO
+$$
+BEGIN
+    -- checkpoints table
+    IF EXISTS (
+        SELECT 1 FROM information_schema.tables
+        WHERE table_name = 'checkpoints'
+    ) THEN
+        IF NOT EXISTS (
+            SELECT 1 FROM information_schema.table_constraints
+            WHERE constraint_name = 'fk_checkpoints_thread_id'
+              AND table_name = 'checkpoints'
+        ) THEN
+            ALTER TABLE checkpoints
+            ADD CONSTRAINT fk_checkpoints_thread_id
+            FOREIGN KEY (thread_id)
+            REFERENCES chat_sessions(id)
+            ON DELETE CASCADE;
+        END IF;
+    END IF;
+
+    -- checkpoint_writes table
+    IF EXISTS (
+        SELECT 1 FROM information_schema.tables
+        WHERE table_name = 'checkpoint_writes'
+    ) THEN
+        IF NOT EXISTS (
+            SELECT 1 FROM information_schema.table_constraints
+            WHERE constraint_name = 'fk_checkpoint_writes_thread_id'
+              AND table_name = 'checkpoint_writes'
+        ) THEN
+            ALTER TABLE checkpoint_writes
+            ADD CONSTRAINT fk_checkpoint_writes_thread_id
+            FOREIGN KEY (thread_id)
+            REFERENCES chat_sessions(id)
+            ON DELETE CASCADE;
+        END IF;
+    END IF;
+
+    -- checkpoint_blobs table
+    IF EXISTS (
+        SELECT 1 FROM information_schema.tables
+        WHERE table_name = 'checkpoint_blobs'
+    ) THEN
+        IF NOT EXISTS (
+            SELECT 1 FROM information_schema.table_constraints
+            WHERE constraint_name = 'fk_checkpoint_blobs_thread_id'
+              AND table_name = 'checkpoint_blobs'
+        ) THEN
+            ALTER TABLE checkpoint_blobs
+            ADD CONSTRAINT fk_checkpoint_blobs_thread_id
+            FOREIGN KEY (thread_id)
+            REFERENCES chat_sessions(id)
+            ON DELETE CASCADE;
+        END IF;
+    END IF;
+END
+$$;

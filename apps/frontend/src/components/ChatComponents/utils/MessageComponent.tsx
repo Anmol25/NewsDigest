@@ -5,7 +5,7 @@ function MessageComponent({ message, sender }: { message: string, sender: 'user'
     return (
         <div>
             {sender === 'ai' && (
-                <div className={`p-2.5 break-words`}>
+                <div className={`p-2.5`}>
                     <ReactMarkdown
                         components={{
                             ul: ({ node, ...props }) => (
@@ -20,7 +20,7 @@ function MessageComponent({ message, sender }: { message: string, sender: 'user'
                             a: ({ node, ...props }) => (
                                 <a
                                     {...props}
-                                    className="py-0.5 px-1.5 border text-xs border-[#B9B9B9] bg-[#B9B9B9] rounded-3xl whitespace-nowrap hover:bg-[#989797] hover:border-[#989797] transition-colors shadow-md"
+                                    className="py-0.5 px-1.5 border text-xs border-[#B9B9B9] bg-[#B9B9B9] rounded-3xl break-all whitespace-nowrap hover:bg-[#989797] hover:border-[#989797] transition-colors shadow-md"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                 />

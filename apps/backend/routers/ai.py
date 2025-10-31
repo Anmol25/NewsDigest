@@ -5,11 +5,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Optional
-import uuid
+from sqlalchemy import delete
 
 from src.aggregator.model import SBERT
 from src.database.session import get_async_db, get_db
-from src.database.models import Users
+from src.database.models import Users, ChatSession
 from src.users.services import get_current_active_user
 from routers.content import search_article
 from src.ai.highlights import SearchHighlights
@@ -17,13 +17,13 @@ from src.ai.utils.db_queries import create_session, log_chat_message, get_chat_m
 from fastapi.responses import StreamingResponse
 from src.ai.agent import NewsDigestAgent
 
+
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
+
 # Dependency to access SBERT created in main and stored on app.state
-
-
 def get_sbert(request: Request) -> SBERT:
     s = getattr(request.app.state, "sbert", None)
     if s is None:
@@ -87,3 +87,56 @@ async def chat_history(page: int = 1, limit: int = 100, db: AsyncSession = Depen
     # Pass parameters by name to avoid positional-argument mixup
     sessions = await get_chat_sessions(db=db, page=page, limit=limit, user_id=current_user.id)
     return sessions
+
+
+@router.delete("/chat_session")
+async def delete_chat_session(sessionId: str, db: AsyncSession = Depends(get_async_db), current_user: Users = Depends(get_current_active_user)):
+    """Delete a single chat session for the current user."""
+    try:
+        # Verify session exists and belongs to current user
+        session_obj = await db.get(ChatSession, sessionId)
+        if not session_obj or session_obj.user_id != current_user.id:
+            # Hide existence details for non-owners
+            raise HTTPException(status_code=404, detail="Session not found")
+
+        # Delete the session (messages will cascade)
+        res_sess = await db.execute(
+            delete(ChatSession).where(
+                ChatSession.id == sessionId, ChatSession.user_id == current_user.id
+            )
+        )
+        await db.commit()
+
+        return {
+            "deleted": True,
+            "deleted_sessions": getattr(res_sess, "rowcount", None),
+        }
+    except HTTPException:
+        # Pass through explicit HTTP errors
+        raise
+    except Exception as e:
+        await db.rollback()
+        logger.error(f"Error deleting chat session {sessionId}: {e}")
+        raise HTTPException(status_code=500, detail="Failed to delete session")
+
+
+@router.delete("/chat_history")
+async def clear_chat_history(db: AsyncSession = Depends(get_async_db), current_user: Users = Depends(get_current_active_user)):
+    """Delete all chat sessions for the current user."""
+    try:
+        # Delete the sessions for current user (messages will cascade)
+        res_sess = await db.execute(
+            delete(ChatSession).where(ChatSession.user_id == current_user.id)
+        )
+        await db.commit()
+
+        return {
+            "deleted": True,
+            "deleted_sessions": getattr(res_sess, "rowcount", None),
+        }
+    except Exception as e:
+        await db.rollback()
+        logger.error(
+            f"Error clearing chat history for user {current_user.id}: {e}")
+        raise HTTPException(
+            status_code=500, detail="Failed to clear chat history")

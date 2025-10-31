@@ -24,6 +24,11 @@ function ChatMessages(props: ChatMessagesProps) {
   const [chatList, setChatList] = useState<
     Array<{ message: string; sender: "user" | "ai" }>
   >([]);
+  // Loading and tool state (for displaying tool stack and default thinking state)
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [activeTools, setActiveTools] = useState<
+    Array<{ tool_call_id: string; message?: string }>
+  >([]);
   const fetchCalled = useRef(false);
 
   // Extracted so it can be reused elsewhere (e.g., manual refresh, retry handlers)
@@ -93,7 +98,7 @@ console.log(
       {!newSession && (
         <div
           ref={scrollContainerRef}
-          className="flex-1 min-h-0 w-full justify-end overflow-y-auto scrollbar-thin scrollbar-thumb-textSecondary scrollbar-thumb-rounded-3xl px-40 gap-3"
+          className="flex-1 min-h-0 w-full justify-end overflow-y-auto overflow-x-clip scrollbar-thin scrollbar-thumb-textSecondary scrollbar-thumb-rounded-3xl px-40 gap-3"
         >
           {chatList.map((chat, index) => (
             <div
@@ -111,8 +116,36 @@ console.log(
           ))}
         </div>
       )}
+      
+      {isLoading && (
+        <div className="w-full px-40 mb-2">
+          <div className="w-full flex flex-col gap-2 rounded-xl border border-[#D5D5D5] bg-[#E0E0E0] px-4 py-3 shadow-md">
+            {activeTools.length === 0 ? (
+              <div className="flex items-center gap-3 text-brandColor">
+                <span className="ai-loader" />
+                <span>Thinking...</span>
+              </div>
+            ) : (
+              activeTools.map((tool) => (
+                <div key={tool.tool_call_id} className="flex items-center gap-3 text-textSecondary">
+                  <span className="ai-loader" />
+                  <span>{tool.message ?? "Working..."}</span>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
       <div className="w-full px-40">
-        <MessageBar sessionId={sessionId} chatList={chatList} setChatList={setChatList} newSession={newSession} setNewSession={setNewSession} sessionList={sessionList} setSessionList={setSessionList} />
+        <MessageBar
+          sessionId={sessionId}
+          setChatList={setChatList}
+          newSession={newSession}
+          setNewSession={setNewSession}
+          setSessionList={setSessionList}
+          setIsLoading={setIsLoading}
+          setActiveTools={setActiveTools}
+        />
       </div>
     </div>
   );

@@ -81,7 +81,7 @@ function News(props: News2Props) {
                     </div>
                 </div>
                 {summary &&
-                    <div className="flex flex-grow bg-baseSecondary my-1 px-2 py-1 rounded-xl text-textMediumSmall overflow-y-auto h-40 scrollbar scrollbar-track-transparent scrollbar-thumb-borderPrimary animate-fade-in">
+                    <div className="flex flex-grow bg-baseSecondary my-1 px-2 py-1 rounded-xl text-textMediumSmall overflow-y-auto h-40 scrollbar-thin scrollbar-thumb-textSecondary scrollbar-thumb-rounded-3xl animate-fade-in">
                         {displayText}
                     </div>}
                 <div className={!summary ? "flex flex-row justify-between items-center h-[40px]" : "flex flex-row justify-end gap-5 items-center h-[40px]"}>
