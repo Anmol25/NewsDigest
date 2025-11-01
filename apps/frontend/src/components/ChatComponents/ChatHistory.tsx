@@ -4,7 +4,15 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { useAxios } from '../../services/AxiosConfig';
 import DeletePopup from "./utils/DeletePopup";
 
-function ChatHistory({ sessionList, setChatList }: { sessionList: Array<{ sessionId: string, sessionName: string | null}>, setChatList: Function }) {
+type ChatHistoryProps = {
+    sessionList: Array<{ sessionId: string; sessionName: string | null }>;
+    setChatList: Function;
+    miniMode?: boolean; // if true, render for MiniChat (no NavLink navigation)
+    onSelectSession?: (sessionId: string) => void; // used only in miniMode to select a session
+    activeSessionId?: string; // for miniMode, indicate which one is active
+};
+
+function ChatHistory({ sessionList, setChatList, miniMode = false, onSelectSession, activeSessionId }: ChatHistoryProps) {
     const axiosInstance = useAxios();
     const navigate = useNavigate();
     const location = useLocation();
@@ -118,14 +126,16 @@ function ChatHistory({ sessionList, setChatList }: { sessionList: Array<{ sessio
 
     return (
         <div className="flex h-full min-h-0 flex-col p-2.5 gap-2.5">
-            <NavLink className="flex w-full items-center justify-center text-center p-2.5 rounded-4xl bg-brandColor text-basePrimary font-semibold shadow-md gap-1 text-textMedium" to="/chat" onClick={(e) => {
-                // Prevent re-navigation if already on the same page
-                if (window.location.pathname === `/chat`) {
-                    e.preventDefault();
-                }
-            }}>
-                <i className="ri-add-line"></i>New Chat
-            </NavLink>
+            {!miniMode && (
+                <NavLink className="flex w-full items-center justify-center text-center p-2.5 rounded-4xl bg-brandColor text-basePrimary font-semibold shadow-md gap-1 text-textMedium" to="/chat" onClick={(e) => {
+                    // Prevent re-navigation if already on the same page
+                    if (window.location.pathname === `/chat`) {
+                        e.preventDefault();
+                    }
+                }}>
+                    <i className="ri-add-line"></i>New Chat
+                </NavLink>
+            )}
             <div className="flex flex-row justify-between">
                 <p className="text-textBig font-semibold">Chats</p>
                 <button
@@ -157,6 +167,11 @@ function ChatHistory({ sessionList, setChatList }: { sessionList: Array<{ sessio
                             key={session.sessionId}
                             sessionId={session.sessionId}
                             sessionName={session.sessionName}
+                            isActive={miniMode && activeSessionId === session.sessionId}
+                            miniMode={miniMode}
+                            onSelect={(sid: string) => {
+                                onSelectSession?.(sid);
+                            }}
                             onDeleteClick={(sid: string) => {
                                 setDeleteMode('single');
                                 setSelectedSessionId(sid);
@@ -192,20 +207,24 @@ function ChatHistory({ sessionList, setChatList }: { sessionList: Array<{ sessio
                         setHasMore(true);
                         // Kick off fresh load of page 1
                         loadPage(1);
-                        // If currently viewing a specific chat, navigate back to /chat
-                        if (activeSessionId) {
-                            navigate('/chat', { replace: true });
+                        if (!miniMode) {
+                            // If currently viewing a specific chat, navigate back to /chat
+                            if (activeSessionId) {
+                                navigate('/chat', { replace: true });
+                            }
                         }
                     } else if (mode === 'single' && sid) {
                         setChatList((prev: Array<{ sessionId: string, sessionName: string | null}>) =>
                             prev.filter((s) => s.sessionId !== sid)
                         );
-                        // If the deleted session is the one currently open, navigate back to /chat
-                        if (activeSessionId === sid) {
-                            navigate('/chat', { replace: true });
+                        if (!miniMode) {
+                            // If the deleted session is the one currently open, navigate back to /chat
+                            if (activeSessionId === sid) {
+                                navigate('/chat', { replace: true });
+                            }
                         }
                     }
-                }, [location.pathname, navigate, setChatList, loadPage])}
+                }, [location.pathname, navigate, setChatList, loadPage, miniMode])}
             />
         </div>
     );

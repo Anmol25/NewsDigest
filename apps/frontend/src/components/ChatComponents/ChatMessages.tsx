@@ -5,6 +5,8 @@ import MessageBar from "./utils/MessageBar";
 import QuerySuggest from "./utils/QuerySuggest";
 import MessageComponent from "./utils/MessageComponent";
 import { useAxios } from "../../services/AxiosConfig";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
 
 type ChatMessagesProps = {
   sessionId: string;
@@ -13,10 +15,11 @@ type ChatMessagesProps = {
   >;
   newSession: boolean;
   setNewSession: Dispatch<SetStateAction<boolean>>;
+  isMini?: boolean; // compact rendering for mini chat window
 };
 
 function ChatMessages(props: ChatMessagesProps) {
-  const { sessionId, newSession, setNewSession, setSessionList } = props;
+  const { sessionId, newSession, setNewSession, setSessionList, isMini = false } = props;
   const axiosInstance = useAxios();
   const [introMessage, setIntroMessage] = useState<string | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
@@ -41,6 +44,133 @@ function ChatMessages(props: ChatMessagesProps) {
   const prevScrollHeightRef = useRef<number>(0);
   const prevScrollTopRef = useRef<number>(0);
   const lastOpRef = useRef<"idle" | "prepend">("idle");
+  const navigate = useNavigate();
+  const { accessToken } = useAuth();
+
+  // Suggestion sender: mimic MessageBar behavior
+  const fetchAIResponse = async (
+    userMessage: string,
+    freshSession: boolean,
+    sid: string
+  ) => {
+    const response = await fetch("http://localhost:8000/agent_test", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({
+        user_query: userMessage,
+        session_id: sid,
+        newSession: freshSession,
+      }),
+    });
+
+    if (!response.ok || !response.body) {
+      console.error("Network or streaming not available", response.status);
+      setActiveTools([]);
+      setIsLoading(false);
+      return;
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder("utf-8");
+    let buffer = "";
+
+    // Ensure AI placeholder to append into
+    setChatList((prev) => [...prev, { message: "", sender: "ai" }]);
+    if (freshSession) setNewSession(false);
+
+    try {
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? "";
+
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          let data: any;
+          try {
+            data = JSON.parse(line);
+          } catch (err) {
+            console.warn("Failed to parse line:", line);
+            continue;
+          }
+
+          if (data.type == "tool") {
+            const status = data.tool_status as string | undefined;
+            const id = data.tool_call_id as string | undefined;
+            if (!id || !status) continue;
+            if (status === "started") {
+              setActiveTools((prev) => {
+                const existing = prev.find((t) => t.tool_call_id === id);
+                if (existing) {
+                  return prev.map((t) =>
+                    t.tool_call_id === id ? { tool_call_id: id, message: data.message } : t
+                  );
+                }
+                return [...prev, { tool_call_id: id, message: data.message }];
+              });
+            } else if (status === "ended") {
+              setActiveTools((prev) => prev.filter((t) => t.tool_call_id !== id));
+            }
+          } else if (data.type === "model") {
+            setActiveTools([]);
+            setIsLoading(false);
+            const content = data.message || "";
+            setChatList((prevList) => {
+              if (prevList.length === 0) return prevList;
+              const updatedList = [...prevList];
+              const lastMessage = updatedList.at(-1);
+              if (lastMessage?.sender === "ai") {
+                updatedList[updatedList.length - 1] = {
+                  ...lastMessage,
+                  message: lastMessage.message + content,
+                } as any;
+              }
+              return updatedList;
+            });
+          } else if (data.type === "title") {
+            const title = data.message?.title ?? "Untitled";
+            setSessionList((prevList) =>
+              prevList.map((s) => (s.sessionId === sid ? { ...s, sessionName: title } : s))
+            );
+          } else {
+            console.warn("Unknown data type:", data);
+          }
+        }
+      }
+    } catch (err) {
+      console.error("Stream read error:", err);
+      setActiveTools([]);
+      setIsLoading(false);
+    } finally {
+      try {
+        reader.cancel();
+      } catch {}
+    }
+  };
+
+  const sendSuggestion = (q: string) => {
+    if (!q.trim()) return;
+    // Add user message
+    setChatList((prev) => [...prev, { message: q.trim(), sender: "user" }]);
+    // loader state
+    setIsLoading(true);
+    setActiveTools([]);
+    // if it's a new session, update list and optionally navigate in full chat
+    if (newSession) {
+      setSessionList((prevList) => [{ sessionId, sessionName: null }, ...prevList]);
+      if (!isMini) {
+        navigate(`/chat/${sessionId}`);
+      }
+    }
+    // fetch response
+    fetchAIResponse(q.trim(), newSession, sessionId);
+  };
 
   // Extracted so it can be reused elsewhere (e.g., manual refresh, retry handlers)
   const fetchChatMessages = async (id: string, targetPage = 1, limit = 20, mode: "initial" | "prepend" = "initial") => {
@@ -124,9 +254,6 @@ console.log(
         const diff = el.scrollHeight - prevScrollHeightRef.current;
         el.scrollTop = prevScrollTopRef.current + diff;
         lastOpRef.current = "idle";
-      } else {
-        // Default behavior: anchor to bottom
-        el.scrollTop = el.scrollHeight;
       }
     });
   }, [newSession, chatList]);
@@ -171,24 +298,42 @@ console.log(
     };
   }, [sessionId, newSession, isFetchingOlder, hasMore, page, olderObserverActive]);
 
+  // Container layout: in mini + newSession, pin MessageBar to bottom
+  const containerClasses = (() => {
+    if (isMini && newSession) {
+      return "h-full min-h-0 flex flex-col justify-between items-stretch gap-4 pb-2.5";
+    }
+    // original behavior for full page and existing sessions
+    return `h-full min-h-0 justify-center items-center flex flex-col ${
+      newSession ? "gap-5 " : "gap-0 pt-0 pb-2.5"
+    }`;
+  })();
+
   return (
-    <div
-      className={`h-full min-h-0 justify-center items-center flex flex-col ${
-        newSession ? "gap-5 " : "gap-0 pt-0 pb-2.5"
-      } `}
-    >
+    <div className={containerClasses}>
       {newSession && (
-        <div className="flex flex-col gap-10 items-center px-25">
-          <div className="text-brandColor text-center text-3xl font-semibold text-shadow-md">
-            {introMessage}
+        isMini ? (
+          <div className="flex-1 w-full flex items-center justify-center">
+            <div className="flex flex-col items-center gap-4 px-4">
+              <div className="text-brandColor text-center font-semibold text-shadow-md text-xl">
+                {introMessage}
+              </div>
+              <QuerySuggest isMini={true} onSelect={sendSuggestion} />
+            </div>
           </div>
-          <QuerySuggest />
-        </div>
+        ) : (
+          <div className="flex flex-col items-center gap-10 px-25">
+            <div className="text-brandColor text-center font-semibold text-shadow-md text-3xl">
+              {introMessage}
+            </div>
+            <QuerySuggest onSelect={sendSuggestion} />
+          </div>
+        )
       )}
       {!newSession && (
         <div
           ref={scrollContainerRef}
-          className="flex-1 min-h-0 w-full justify-end overflow-y-auto overflow-x-clip scrollbar-thin scrollbar-thumb-textSecondary scrollbar-thumb-rounded-3xl px-40 gap-3"
+          className={`flex-1 min-h-0 w-full justify-end overflow-y-auto overflow-x-clip scrollbar-thin scrollbar-thumb-textSecondary scrollbar-thumb-rounded-3xl ${isMini ? "px-3" : "px-40"} gap-3`}
         >
           {/* Top sentinel for infinite scroll */}
           <div ref={topSentinelRef} className="h-1" />
@@ -222,7 +367,7 @@ console.log(
       )}
       
       {isLoading && (
-        <div className="w-full px-40 mb-2">
+        <div className={`w-full ${isMini ? "px-3 mb-1" : "px-40 mb-2"}`}>
           <div className="w-full flex flex-col gap-2 rounded-xl border border-[#D5D5D5] bg-[#E0E0E0] px-4 py-3 shadow-md">
             {activeTools.length === 0 ? (
               <div className="flex items-center gap-3 text-brandColor">
@@ -240,7 +385,7 @@ console.log(
           </div>
         </div>
       )}
-      <div className="w-full px-40">
+      <div className={`w-full ${isMini ? "px-3" : "px-40"}`}>
         <MessageBar
           sessionId={sessionId}
           setChatList={setChatList}
@@ -249,6 +394,7 @@ console.log(
           setSessionList={setSessionList}
           setIsLoading={setIsLoading}
           setActiveTools={setActiveTools}
+          isMini={isMini}
         />
       </div>
     </div>
@@ -260,5 +406,6 @@ export default memo(
   ChatMessages,
   (prev, next) =>
     prev.sessionId === next.sessionId &&
-    prev.newSession === next.newSession
+    prev.newSession === next.newSession &&
+    prev.isMini === next.isMini
 );

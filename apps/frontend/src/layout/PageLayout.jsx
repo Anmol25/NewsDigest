@@ -1,9 +1,12 @@
 import NavBar from "../components/Navbar/Navbar";
 import SideBar from "../components/Sidebar/Sidebar";
 import Notification from "../components/Notification/Notification";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
+import MiniChatWidget from "../components/ChatMini/MiniChatWidget";
 
 const FeedLayout = () => {
+  const location = useLocation();
+  const isChatRoute = /^\/chat(\/.*)?$/.test(location.pathname);
   return (
     <div className="flex ">
       <NavBar />
@@ -12,6 +15,8 @@ const FeedLayout = () => {
         <Outlet />
       </div>
       <Notification />
+      {/* Floating mini chat available on all pages except full chat routes */}
+      {!isChatRoute && <MiniChatWidget />}
     </div>
   );
 };

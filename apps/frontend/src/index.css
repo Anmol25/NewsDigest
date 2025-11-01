@@ -132,3 +132,5 @@ body{
 @keyframes l1 {
     100% {box-shadow: 0 0 0 12px #0000}
 }
+
+/* (Removed) Compact overrides for ChatMessages in MiniChatWidget. */

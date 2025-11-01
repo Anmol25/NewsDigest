@@ -17,6 +17,7 @@ function MessageBar({
   setChatList,
   setIsLoading,
   setActiveTools,
+  isMini,
 }: {
   sessionId: string;
   setSessionList: Dispatch<
@@ -31,6 +32,7 @@ function MessageBar({
   setActiveTools: Dispatch<
     SetStateAction<Array<{ tool_call_id: string; message?: string }>>
   >;
+  isMini?: boolean;
 }) {
   const [value, setValue] = useState("");
   const [isMultiline, setIsMultiline] = useState(false);
@@ -231,8 +233,10 @@ function MessageBar({
         { sessionId: sessionId, sessionName: null },
         ...prevList,
       ]);
-
-      navigate(`/chat/${sessionId}`);
+      // In mini chat, do not navigate away to full chat on first message
+      if (!isMini) {
+        navigate(`/chat/${sessionId}`);
+      }
     }
     // Fetch AI response
     fetchAIResponse(value.trim(), newSession, sessionId);
