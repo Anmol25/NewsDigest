@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, List, Optional, Annotated
+from typing import Any, List, Optional, Annotated, Literal
 import json
 import asyncio
 
@@ -207,3 +207,91 @@ async def scrape_articles_tool(articles: List[ArticleSchema], runtime: ToolRunti
               for doc in documents]
     writer({"type": "tool", "tool_call_id": tool_call_id, "tool_status": "ended"})
     return f"Scraped {len(result)} articles:\n" + json.dumps(result, ensure_ascii=False, separators=(",", ":"))
+
+# Topics are now constrained at type-level via Literal in latest_by_topic_tool.
+
+
+async def _retrieve_latest_by_topic(db: AsyncSession, topic: str, limit: int) -> List[dict]:
+    """
+    Retrieve latest articles filtered by topic ordered by published_date DESC.
+    """
+    QUERY_STRUCTURE = (
+        Articles.id,
+        Articles.title,
+        Articles.link,
+        Articles.published_date,
+        Articles.source,
+    )
+
+    stmt = (
+        select(*QUERY_STRUCTURE)
+        .where(Articles.topic == topic)
+        .order_by(Articles.published_date.desc())
+        .limit(limit)
+    )
+
+    result = await db.execute(stmt)
+    rows = result.mappings().all()
+
+    return [
+        {
+            "id": r["id"],
+            "title": r["title"],
+            "link": r["link"],
+            "datetime": r["published_date"],
+            "source": r["source"],
+        }
+        for r in rows
+    ]
+
+
+@tool("latest_by_topic")
+async def latest_by_topic_tool(
+    runtime: ToolRuntime[DBContext],
+    topic: Literal[
+        "Top Stories",
+        "Latest",
+        "India",
+        "World",
+        "Economy",
+        "Science",
+        "Tech",
+        "Sports",
+        "Entertainment",
+    ],
+    limit: int = 20,
+) -> str:
+    """
+    Fetch the latest news articles for a specific topic from the internal database.
+
+    Validation is enforced via the Literal type on the `topic` parameter, which accepts
+    only the following exact values (case-sensitive):
+    "Top Stories", "Latest", "India", "World", "Economy", "Science",
+    "Tech", "Sports", "Entertainment".
+
+    Args:
+        topic: One of the allowed, exact topic strings listed above.
+        limit: Maximum number of results to return. Defaults to 20.
+
+    Returns:
+        str: JSON-formatted string of articles ordered by most recent published date first.
+    """
+    db = runtime.context.db
+    tool_call_id = runtime.tool_call_id
+
+    writer = get_stream_writer()
+    writer(
+        {
+            "type": "tool",
+            "tool_call_id": tool_call_id,
+            "message": f"Fetching latest articles for topic: {topic}",
+            "tool_status": "started",
+        }
+    )
+
+    articles = await _retrieve_latest_by_topic(db, topic, limit)
+
+    writer({"type": "tool", "tool_call_id": tool_call_id, "tool_status": "ended"})
+    return f"Found {len(articles)} articles:\n" + json.dumps(
+        articles, default=str, separators=(",", ":")
+    )

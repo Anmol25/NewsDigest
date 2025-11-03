@@ -16,7 +16,7 @@ from src.ai.highlights import SearchHighlights
 from src.ai.utils.db_queries import create_session, log_chat_message, get_chat_messages, get_chat_sessions
 from fastapi.responses import StreamingResponse
 from src.ai.agent import NewsDigestAgent
-
+from src.database.queries import get_article_brief_by_id
 
 logger = logging.getLogger(__name__)
 
@@ -73,6 +73,26 @@ async def test_agent(request: ChatbotRequest, db: AsyncSession = Depends(get_asy
     agent = NewsDigestAgent(sbert, db, user_id,
                             session_id, new_session)
     return StreamingResponse(agent.call_agent(user_query), media_type="application/x-ndjson")
+
+
+class AIAnalyzeRequest(BaseModel):
+    article_id: int
+    sessionId: str
+
+
+@router.post("/ai_analyze")
+async def ai_analyze(request: AIAnalyzeRequest, db: AsyncSession = Depends(get_async_db), current_user: Users = Depends(get_current_active_user), sbert: SBERT = Depends(get_sbert)):
+    session_id = request.sessionId
+    article_id = request.article_id
+    user_id = current_user.id
+
+    article_metadata = await get_article_brief_by_id(db, article_id)
+    await create_session(db, session_id, user_id)
+    await log_chat_message(db, session_id, 'user', "Analyze above Article", {"type": 'article_metadata', 'data': article_metadata})
+    agent = NewsDigestAgent(sbert, db, user_id,
+                            session_id, new_session=True)
+    async_gen = await agent.analyze_article(article_metadata)
+    return StreamingResponse(async_gen, media_type="application/x-ndjson")
 
 
 @router.get("/chat_messages")

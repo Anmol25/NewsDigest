@@ -16,16 +16,17 @@ type ChatMessagesProps = {
   newSession: boolean;
   setNewSession: Dispatch<SetStateAction<boolean>>;
   isMini?: boolean; // compact rendering for mini chat window
+  // If provided (only in MiniChat), trigger one-shot analyze flow on mount
+  initialAnalyze?: { articleId: number; articleMeta?: any } | null;
 };
 
 function ChatMessages(props: ChatMessagesProps) {
-  const { sessionId, newSession, setNewSession, setSessionList, isMini = false } = props;
+  const { sessionId, newSession, setNewSession, setSessionList, isMini = false, initialAnalyze = null } = props;
   const axiosInstance = useAxios();
   const [introMessage, setIntroMessage] = useState<string | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
-  const [chatList, setChatList] = useState<
-    Array<{ message: string; sender: "user" | "ai" }>
-  >([]);
+  type ChatMessage = { message: string; sender: "user" | "ai"; message_data?: any };
+  const [chatList, setChatList] = useState<Array<ChatMessage>>([]);
   // Loading and tool state (for displaying tool stack and default thinking state)
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [activeTools, setActiveTools] = useState<
@@ -77,8 +78,111 @@ function ChatMessages(props: ChatMessagesProps) {
     const decoder = new TextDecoder("utf-8");
     let buffer = "";
 
+  // Ensure AI placeholder to append into
+  setChatList((prev) => [...prev, { message: "", sender: "ai", message_data: {} }]);
+    if (freshSession) setNewSession(false);
+
+    try {
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? "";
+
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          let data: any;
+          try {
+            data = JSON.parse(line);
+          } catch (err) {
+            console.warn("Failed to parse line:", line);
+            continue;
+          }
+
+          if (data.type == "tool") {
+            const status = data.tool_status as string | undefined;
+            const id = data.tool_call_id as string | undefined;
+            if (!id || !status) continue;
+            if (status === "started") {
+              setActiveTools((prev) => {
+                const existing = prev.find((t) => t.tool_call_id === id);
+                if (existing) {
+                  return prev.map((t) =>
+                    t.tool_call_id === id ? { tool_call_id: id, message: data.message } : t
+                  );
+                }
+                return [...prev, { tool_call_id: id, message: data.message }];
+              });
+            } else if (status === "ended") {
+              setActiveTools((prev) => prev.filter((t) => t.tool_call_id !== id));
+            }
+          } else if (data.type === "model") {
+            setActiveTools([]);
+            setIsLoading(false);
+            const content = data.message || "";
+            setChatList((prevList) => {
+              if (prevList.length === 0) return prevList;
+              const updatedList = [...prevList];
+              const lastMessage = updatedList.at(-1);
+              if (lastMessage?.sender === "ai") {
+                updatedList[updatedList.length - 1] = {
+                  ...lastMessage,
+                  message: lastMessage.message + content,
+                } as any;
+              }
+              return updatedList;
+            });
+          } else if (data.type === "title") {
+            const title = data.message?.title ?? "Untitled";
+            setSessionList((prevList) =>
+              prevList.map((s) => (s.sessionId === sid ? { ...s, sessionName: title } : s))
+            );
+          } else {
+            console.warn("Unknown data type:", data);
+          }
+        }
+      }
+    } catch (err) {
+      console.error("Stream read error:", err);
+      setActiveTools([]);
+      setIsLoading(false);
+    } finally {
+      try {
+        reader.cancel();
+      } catch {}
+    }
+  };
+
+  // One-shot: analyze current article via /ai_analyze for new session
+  const fetchAnalyzeResponse = async (
+    articleId: number,
+    freshSession: boolean,
+    sid: string
+  ) => {
+    const response = await fetch("http://localhost:8000/ai_analyze", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({ article_id: articleId, sessionId: sid }),
+    });
+
+    if (!response.ok || !response.body) {
+      console.error("Network or streaming not available", response.status);
+      setActiveTools([]);
+      setIsLoading(false);
+      return;
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder("utf-8");
+    let buffer = "";
+
     // Ensure AI placeholder to append into
-    setChatList((prev) => [...prev, { message: "", sender: "ai" }]);
+    setChatList((prev) => [...prev, { message: "", sender: "ai", message_data: {} }]);
     if (freshSession) setNewSession(false);
 
     try {
@@ -157,7 +261,7 @@ function ChatMessages(props: ChatMessagesProps) {
   const sendSuggestion = (q: string) => {
     if (!q.trim()) return;
     // Add user message
-    setChatList((prev) => [...prev, { message: q.trim(), sender: "user" }]);
+    setChatList((prev) => [...prev, { message: q.trim(), sender: "user", message_data: {} }]);
     // loader state
     setIsLoading(true);
     setActiveTools([]);
@@ -183,8 +287,15 @@ function ChatMessages(props: ChatMessagesProps) {
         signal: controller.signal as any,
       });
 
-      // Reverse the fetched messages
-      const reversedMessages = response.data.reverse();
+      // Reverse and normalize the fetched messages
+      const reversedMessages = (Array.isArray(response.data) ? response.data : [])
+        .reverse()
+        .map((m: any) => ({
+          message: m.message,
+          sender: m.sender,
+          // Normalize backend field name: message_metadata -> message_data
+          message_data: m.message_data ?? m.message_metadata ?? {},
+        } as ChatMessage));
 
       // Merge based on mode: initial (append to bottom), prepend (older messages at top)
       if (mode === "prepend") {
@@ -222,6 +333,26 @@ function ChatMessages(props: ChatMessagesProps) {
     if (newSession) {
       const message = getRandomAssistantMessage();
       setIntroMessage(message);
+      // If an initial analyze payload is provided (MiniChat), auto-trigger it
+      if (initialAnalyze && initialAnalyze.articleId) {
+        // 1) create the new session entry visually
+        setSessionList((prevList) => [{ sessionId, sessionName: null }, ...prevList]);
+        // 2) push the user message with article mini card
+        setChatList((prev) => [
+          ...prev,
+          {
+            message: "Analyze above Article",
+            sender: "user",
+            message_data: initialAnalyze.articleMeta
+              ? { type: "article_metadata", data: initialAnalyze.articleMeta }
+              : {},
+          },
+        ]);
+        // 3) prepare loader and stream analyze
+        setIsLoading(true);
+        setActiveTools([]);
+        fetchAnalyzeResponse(initialAnalyze.articleId, true, sessionId);
+      }
     } else {
       // Initial page load (await to avoid immediate top-sentinel trigger)
       const LIMIT = 20;
@@ -354,6 +485,7 @@ console.log(
                 key={index}
                 message={chat.message}
                 sender={chat.sender}
+                message_data={chat.message_data}
               />
             </div>
           ))}

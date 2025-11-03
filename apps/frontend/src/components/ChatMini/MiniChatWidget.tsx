@@ -16,6 +16,10 @@ const MiniChatWidget: React.FC = () => {
   const [newSession, setNewSession] = useState<boolean>(false);
   const [portalEl, setPortalEl] = useState<HTMLElement | null>(null);
   const [view, setView] = useState<"chat" | "history">("chat");
+  const [pendingAnalyze, setPendingAnalyze] = useState<{
+    articleId: number;
+    articleMeta?: any;
+  } | null>(null);
 
   // local session list holder for ChatMessages' setSessionList prop
   const [sessionList, setSessionList] = useState<
@@ -40,6 +44,8 @@ const MiniChatWidget: React.FC = () => {
     setPortalEl(el);
   }, []);
 
+  
+
   // Initialize a fresh session id WHEN the widget opens for the first time
   useEffect(() => {
     if (!isOpen) return;
@@ -60,6 +66,25 @@ const MiniChatWidget: React.FC = () => {
     setView("chat");
   }, [generateUUID, newSession]);
 
+  // Listen for global event to open mini chat and trigger analyze-once
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const ce = e as CustomEvent;
+      const detail = ce.detail || {};
+      if (detail.action === "analyze" && detail.payload) {
+        setIsOpen(true);
+        // Always ensure a fresh session for analyze
+        if (!newSession) {
+          startNewChat();
+        }
+        setView("chat");
+        setPendingAnalyze(detail.payload);
+      }
+    };
+    window.addEventListener("newsdigest:open-mini-chat", handler as EventListener);
+    return () => window.removeEventListener("newsdigest:open-mini-chat", handler as EventListener);
+  }, [newSession, startNewChat]);
+
   // If portal root missing, render nothing to avoid layout side-effects
   if (!portalEl) return null;
 
@@ -79,7 +104,7 @@ const MiniChatWidget: React.FC = () => {
 
       {/* Panel */}
       {isOpen && (
-        <div className="w-[380px] h-[520px] max-w-[92vw] max-h-[82vh] rounded-2xl shadow-xl border border-[#E5E5E5] bg-white overflow-hidden flex flex-col">
+        <div className="w-[450px] h-[550px] max-w-[92vw] max-h-[82vh] rounded-2xl shadow-xl border border-[#E5E5E5] bg-white overflow-hidden flex flex-col">
           {/* Header */}
           <div className="flex items-center justify-between px-3 py-2 border-b border-[#ECECEC] bg-[#FAFAFA]">
             <div className="flex items-center gap-2">
@@ -164,6 +189,7 @@ const MiniChatWidget: React.FC = () => {
                   newSession={newSession}
                   setNewSession={setNewSession}
                   isMini
+                  initialAnalyze={pendingAnalyze}
                 />
               )
             )}

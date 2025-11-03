@@ -48,6 +48,16 @@ function News(props: News2Props) {
         handleBookmark(axiosInstance, id, setIsBookmarked);
     };
 
+    const onAnalyze = () => {
+        // Open mini chat with a fresh session and trigger analyze-once
+        const articleMeta = { id, title, link, image, source, published_date };
+        const detail = {
+            action: 'analyze',
+            payload: { articleId: id, articleMeta }
+        } as any;
+        window.dispatchEvent(new CustomEvent('newsdigest:open-mini-chat', { detail }));
+    };
+
     return (
         <div className="flex flex-col aspect-square min-h-[315px] min-w-[315px] shadow-md rounded-3xl hover:scale-105 transition duration-300 ease-in-out hover:shadow-lg overflow-hidden">
             {/* Image container with animation */}
@@ -88,7 +98,7 @@ function News(props: News2Props) {
                         {displayText}
                     </div>}
                 <div className={!summary ? "flex flex-row justify-between items-center h-[40px]" : "flex flex-row justify-end gap-5 items-center h-[40px]"}>
-                    <button className="flex items-center font-secondaryFont text-2xl cursor-pointer ">
+                    <button className="flex items-center font-secondaryFont text-2xl cursor-pointer " onClick={onAnalyze}>
                         AI
                     </button>
                     <div className="text-2xl cursor-pointer" onClick={onBookmark}>

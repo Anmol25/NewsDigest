@@ -13,6 +13,7 @@ function MessageBar({
   sessionId,
   setSessionList,
   newSession,
+  setNewSession,
   setChatList,
   setIsLoading,
   setActiveTools,
@@ -25,7 +26,7 @@ function MessageBar({
   newSession: boolean;
   setNewSession: Dispatch<SetStateAction<boolean>>;
   setChatList: Dispatch<
-    SetStateAction<Array<{ message: string; sender: "user" | "ai" }>>
+    SetStateAction<Array<{ message: string; sender: "user" | "ai"; message_data?: any }>>
   >;
   setIsLoading: Dispatch<SetStateAction<boolean>>;
   setActiveTools: Dispatch<
@@ -107,7 +108,7 @@ function MessageBar({
     let buffer = "";
 
     // 5. Ensure there's an AI placeholder to append into
-    setChatList(prev => [...prev, { message: "", sender: "ai" }]);
+  setChatList(prev => [...prev, { message: "", sender: "ai", message_data: {} }]);
     if (newSession) setNewSession(false);
 
     try {
@@ -218,7 +219,7 @@ function MessageBar({
     // Update chat list with new user message
     setChatList((prevList) => [
       ...prevList,
-      { message: value.trim(), sender: "user" },
+      { message: value.trim(), sender: "user", message_data: {} },
     ]);
     setValue("");
 

@@ -28,12 +28,18 @@ function Featured(props) {
     handleBookmark(axiosInstance, id, setIsBookmarked);
   };
 
+  const onAnalyze = () => {
+    const articleMeta = { id, title, link, image, source, published_date };
+    const detail = { action: 'analyze', payload: { articleId: id, articleMeta } };
+    window.dispatchEvent(new CustomEvent('newsdigest:open-mini-chat', { detail }));
+  };
+
   const [dateFormatted, timeFormatted] = formatDate(published_date);
 
   const ActionIcons = (
     <div className="flex items-center gap-3 h-8">
       {/* AI Button */}
-      <div className="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer transition-all duration-200 bg-white/20 hover:bg-white/30">
+      <div className="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer transition-all duration-200 bg-white/20 hover:bg-white/30" onClick={onAnalyze}>
         <button className="flex items-center font-secondaryFont text-xl cursor-pointer">
           AI
         </button>
