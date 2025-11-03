@@ -7,7 +7,6 @@ import asyncio
 import logging
 
 from .feed_parser import FeedParser
-from .deduplicator import Deduplicator
 
 logger = logging.getLogger(__name__)
 
@@ -49,8 +48,14 @@ class Feeds:
             logger.debug(f"Fetched {len(articles)} Articles")
             # Deduplicate Articles
             logger.debug("Deduplicating Articles")
-            result = Deduplicator.deduplicate(
-                articles, self.model, self.device)
+            # Attach embeddings to articles (mutates list)
+            try:
+                FeedParser.add_embeddings(articles, self.model, self.device)
+            except Exception as e:
+                logger.error(f"Error adding embeddings to articles: {e}")
+
+            # Simple deduplication (by link, then by (title, source))
+            result = FeedParser.simple_deduplicate(articles)
             return result
         except Exception as e:
             logger.error(f"Error in Fetching Feeds: {e}")

@@ -21,31 +21,12 @@ logger = logging.getLogger(__name__)
 def insert_articles(articles: list[dict]):
     """
     Bulk insert articles with ON CONFLICT for 'link'.
-    Preprocesses the batch to remove duplicate links and duplicate (title, source) pairs,
-    keeping only the article with the latest published_date.
+    Assumes deduplication is handled upstream (e.g., in feed parsing),
+    and performs an upsert per row based on 'link'.
     """
     if not articles:
         logger.info("No articles to insert or update.")
         return
-
-    # Step 1: Deduplicate by link
-    link_map = {}
-    for art in articles:
-        link = art["link"]
-        if link not in link_map or art["published"] > link_map[link]["published"]:
-            link_map[link] = art
-    deduped_by_link = list(link_map.values())
-
-    # Step 2: Deduplicate by (title, source)
-    title_source_map = {}
-    for art in deduped_by_link:
-        key = (art["title"], art["source"])
-        if key not in title_source_map or art["published"] > title_source_map[key]["published"]:
-            title_source_map[key] = art
-    final_articles = list(title_source_map.values())
-
-    logger.info(
-        f"Deduplicated batch: {len(articles)} -> {len(final_articles)} articles")
 
     # Step 3: Map articles to dicts for insertion
     mapped_articles = [
@@ -60,7 +41,7 @@ def insert_articles(articles: list[dict]):
             "summary": None,
             "tsv": None
         }
-        for a in final_articles
+        for a in articles
     ]
 
     try:
@@ -87,7 +68,7 @@ def insert_articles(articles: list[dict]):
             db.commit()
 
         logger.info(
-            f"Successfully inserted/updated {len(final_articles)} articles.")
+            f"Successfully inserted/updated {len(articles)} articles.")
 
     except Exception as e:
         logger.exception(f"Error during bulk insert/upsert of articles: {e}")
@@ -157,13 +138,15 @@ async def update_user_history(db: AsyncSession, userid: int, art_id: int):
     try:
         result = await db.execute(
             select(UserHistory).where(
-                and_(UserHistory.user_id == userid, UserHistory.article_id == art_id)
+                and_(UserHistory.user_id == userid,
+                     UserHistory.article_id == art_id)
             )
         )
         hist_item = result.scalar_one_or_none()
         if hist_item:
             try:
-                hist_item.watched_at = datetime.now(timezone.utc)  # Use timezone.utc
+                hist_item.watched_at = datetime.now(
+                    timezone.utc)  # Use timezone.utc
                 await db.commit()
             except Exception as e:
                 await db.rollback()

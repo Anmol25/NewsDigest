@@ -80,6 +80,27 @@ class FeedParser:
             return None
 
     @staticmethod
+    def add_embeddings(articles: list, model, device: str) -> list:
+        """
+        Attach embeddings to each article in-place using the provided model.
+        Returns the articles list (same objects; mutated to include 'embeddings').
+        """
+        try:
+            if not articles:
+                return []
+            titles = [item.get('title', '') for item in articles]
+            embeddings = model.encode(titles, device=device)
+            for i, item in enumerate(articles):
+                try:
+                    item['embeddings'] = embeddings[i]
+                except Exception:
+                    item['embeddings'] = None
+            return articles
+        except Exception as e:
+            logger.error(f"Error adding embeddings to articles: {e}")
+            return articles
+
+    @staticmethod
     def correct_time_components(s: str) -> str:
         """
         Correct invalid time components (hours >=24, minutes >=60, seconds >=60) in a datetime string.
@@ -152,6 +173,45 @@ class FeedParser:
         except Exception as e:
             logger.error(f"Error in Normalizing URL: {e}")
             return None
+
+    @staticmethod
+    def simple_deduplicate(articles: list) -> list:
+        """
+        Simple deduplication used in DB insertion logic.
+        1) Deduplicate by link (keep article with latest published)
+        2) Then deduplicate by (title, source) tuple (keep latest published)
+
+        Returns the deduplicated list of articles.
+        """
+        try:
+            if not articles:
+                return []
+
+            # Step 1: Deduplicate by link
+            link_map = {}
+            for art in articles:
+                link = art.get('link')
+                if not link:
+                    continue
+                existing = link_map.get(link)
+                if not existing or art.get('published') > existing.get('published'):
+                    link_map[link] = art
+
+            deduped_by_link = list(link_map.values())
+
+            # Step 2: Deduplicate by (title, source)
+            title_source_map = {}
+            for art in deduped_by_link:
+                key = (art.get('title'), art.get('source'))
+                existing = title_source_map.get(key)
+                if not existing or art.get('published') > existing.get('published'):
+                    title_source_map[key] = art
+
+            final_articles = list(title_source_map.values())
+            return final_articles
+        except Exception as e:
+            logger.error(f"Error during simple deduplication: {e}")
+            return articles
 
     @staticmethod
     def filter_video_links(url: str) -> str | None:
