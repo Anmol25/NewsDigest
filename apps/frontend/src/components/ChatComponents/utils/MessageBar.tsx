@@ -13,7 +13,6 @@ function MessageBar({
   sessionId,
   setSessionList,
   newSession,
-  setNewSession,
   setChatList,
   setIsLoading,
   setActiveTools,

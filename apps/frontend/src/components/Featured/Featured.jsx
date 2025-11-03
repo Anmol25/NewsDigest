@@ -4,6 +4,7 @@ import { NavLink } from 'react-router-dom';
 import { useAxios } from '../../services/AxiosConfig';
 import { formatDate, handleSummarize, handleTypingEffect, handleBookmark } from "../../utils/article";
 import placeholderImage from '../../assets/placeholder.jpg';
+import SharePopup from "../Share/SharePopup";
 
 function Featured(props) {
   const { image, source, title, link, published_date, id, bookmarked } = props;
@@ -12,6 +13,7 @@ function Featured(props) {
   const [isSummarizing, setIsSummarizing] = useState(false);
   const [displayText, setDisplayText] = useState('');
   const [isBookmarked, setIsBookmarked] = useState(bookmarked);
+  const [isShareOpen, setIsShareOpen] = useState(false);
   
   useEffect(() => {
     if (!summary) return;
@@ -46,7 +48,7 @@ function Featured(props) {
         </div>
       </div>
       {/* Share Button */}
-      <div className="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer transition-all duration-200 bg-white/20 hover:bg-white/30">
+      <div className="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer transition-all duration-200 bg-white/20 hover:bg-white/30" onClick={() => setIsShareOpen(true)}>
         <i className="ri-share-fill"></i>
       </div>
     </div>
@@ -119,6 +121,13 @@ function Featured(props) {
           )}
         </div>
       </div>
+      {/* Share Modal */}
+      <SharePopup
+        isOpen={isShareOpen}
+        onClose={() => setIsShareOpen(false)}
+        url={link}
+        title={title}
+      />
     </div>
   );
 }

@@ -2,8 +2,10 @@ import React from "react";
 import { NavLink } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useAxios } from '../../services/AxiosConfig';
+// @ts-ignore Allow missing asset in some environments; design expects placeholder
 import placeholderImage from '../../assets/placeholder.jpg';
 import { getRelativeTime, handleSummarize, handleTypingEffect, handleBookmark } from "../../utils/article";
+import SharePopup from "../Share/SharePopup";
 
 interface News2Props {
     id: number;
@@ -22,6 +24,7 @@ function News(props: News2Props) {
     const [isSummarizing, setIsSummarizing] = useState<boolean>(false);
     const [isBookmarked, setIsBookmarked] = useState<boolean>(bookmarked || false);
     const [isImageHiding, setIsImageHiding] = useState<boolean>(false);
+    const [isShareOpen, setIsShareOpen] = useState<boolean>(false);
 
     const [displayText, setDisplayText] = useState('');
 
@@ -91,7 +94,7 @@ function News(props: News2Props) {
                     <div className="text-2xl cursor-pointer" onClick={onBookmark}>
                         <i className={isBookmarked ? "ri-bookmark-fill" : "ri-bookmark-line"}></i>
                     </div>
-                    <div className="text-2xl cursor-pointer">
+                    <div className="text-2xl cursor-pointer" onClick={() => setIsShareOpen(true)}>
                         <i className="ri-share-line"></i>
                     </div>
                     {!summary &&
@@ -112,6 +115,13 @@ function News(props: News2Props) {
                         </button>}
                 </div>
             </div>
+            {/* Share Modal */}
+            <SharePopup
+                isOpen={isShareOpen}
+                onClose={() => setIsShareOpen(false)}
+                url={link}
+                title={title}
+            />
         </div>
     );
 }

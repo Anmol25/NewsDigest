@@ -5,6 +5,7 @@
     nocompatible: true;
     preferredStrategy: 'pseudoelements';
 }
+@plugin "@tailwindcss/typography";
 
 @theme {
     /* Color Themes */

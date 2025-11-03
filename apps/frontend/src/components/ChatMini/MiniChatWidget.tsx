@@ -7,7 +7,6 @@ import ChatHistory from "../ChatComponents/ChatHistory";
 /**
  * MiniChatWidget
  * - Renders a floating chat launcher and mini chat panel using a React Portal.
- * - Persists its open state and a dedicated sessionId in localStorage.
  */
 const MiniChatWidget: React.FC = () => {
   const navigate = useNavigate();
@@ -72,9 +71,9 @@ const MiniChatWidget: React.FC = () => {
           type="button"
           onClick={toggle}
           aria-label="Open assistant chat"
-          className="rounded-full shadow-lg bg-brandColor text-white p-4 hover:scale-105 transition-transform duration-150 focus:outline-none"
+          className="rounded-full shadow-lg bg-brandColor text-white p-4 hover:scale-110 transition-transform duration-150 focus:outline-none cursor-pointer"
         >
-          <i className="ri-chat-3-line text-xl" />
+          <i className="ri-chat-ai-fill text-3xl"></i>
         </button>
       )}
 
