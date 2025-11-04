@@ -11,25 +11,33 @@ function MessageComponent({
   sender: "user" | "ai";
   message_data?: any;
 }) {
+  const isError = message_data?.type === "error";
+
   return (
     <div>
       {sender === "ai" && (
-        <div className={`p-2.5 max-w-full break-words prose`}>
-          <ReactMarkdown
-            components={{
-              a: ({ node, ...props }) => (
-                <a
-                  {...props}
-                  className="inline-block max-w-full no-underline align-middle py-0.5 px-1.5 border text-xs border-[#B9B9B9] bg-[#B9B9B9] rounded-3xl break-all hover:bg-[#989797] hover:border-[#989797] transition-colors shadow-md"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                />
-              ),
-            }}
-            remarkPlugins={[remarkGfm]}
-          >
-            {message}
-          </ReactMarkdown>
+        <div className={`p-2.5 max-w-full break-words ${isError ? "" : "prose"}`}>
+          {isError ? (
+            <div className="inline-block rounded-md border border-[#F5B1B1] bg-[#FDEDED] px-3 py-2 text-sm font-medium text-[#B91C1C] shadow-md">
+              <span className="whitespace-pre-wrap break-words">{message}</span>
+            </div>
+          ) : (
+            <ReactMarkdown
+              components={{
+                a: ({ node, ...props }) => (
+                  <a
+                    {...props}
+                    className="inline-block max-w-full no-underline align-middle py-0.5 px-1.5 border text-xs border-[#B9B9B9] bg-[#B9B9B9] rounded-3xl break-all hover:bg-[#989797] hover:border-[#989797] transition-colors shadow-md"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  />
+                ),
+              }}
+              remarkPlugins={[remarkGfm]}
+            >
+              {message}
+            </ReactMarkdown>
+          )}
         </div>
       )}
       {sender === "user" && (

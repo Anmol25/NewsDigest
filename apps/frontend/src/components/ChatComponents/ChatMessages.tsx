@@ -174,6 +174,48 @@ function ChatMessages(props: ChatMessagesProps) {
               continue;
             }
 
+            if (payload.type === "error") {
+              const errorMessage =
+                typeof payload.message === "string"
+                  ? payload.message
+                  : String(payload.message ?? "An unexpected error occurred.");
+
+              setChatList((prev) => {
+                const errorEntry: ChatMessage = {
+                  message: errorMessage,
+                  sender: "ai",
+                  message_data: { type: "error" },
+                };
+
+                if (prev.length === 0) {
+                  return [errorEntry];
+                }
+
+                const updated = [...prev];
+                const lastIndex = updated.length - 1;
+                const lastMessage = updated[lastIndex];
+
+                if (
+                  lastMessage.sender === "ai" &&
+                  lastMessage.message === "" &&
+                  (!lastMessage.message_data ||
+                    Object.keys(lastMessage.message_data).length === 0)
+                ) {
+                  updated[lastIndex] = {
+                    ...lastMessage,
+                    message: errorEntry.message,
+                    message_data: errorEntry.message_data,
+                  };
+                  return updated;
+                }
+
+                updated.push(errorEntry);
+                return updated;
+              });
+
+              continue;
+            }
+
             if (payload.type === "model") {
               setActiveTools([]);
               setIsLoading(false);
