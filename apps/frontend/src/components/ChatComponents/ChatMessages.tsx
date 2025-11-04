@@ -1,12 +1,14 @@
-import { useEffect, useRef, useState, memo } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
+import { useNavigate } from "react-router-dom";
 import { getRandomAssistantMessage } from "./utils/assistantintro";
 import MessageBar from "./utils/MessageBar";
 import QuerySuggest from "./utils/QuerySuggest";
 import MessageComponent from "./utils/MessageComponent";
 import { useAxios } from "../../services/AxiosConfig";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
+
+const MESSAGES_PAGE_SIZE = 20;
 
 type ChatMessagesProps = {
   sessionId: string;
@@ -18,362 +20,370 @@ type ChatMessagesProps = {
   isMini?: boolean; // compact rendering for mini chat window
   // If provided (only in MiniChat), trigger one-shot analyze flow on mount
   initialAnalyze?: { articleId: number; articleMeta?: any } | null;
+  onConsumedInitialAnalyze?: () => void;
 };
 
 function ChatMessages(props: ChatMessagesProps) {
-  const { sessionId, newSession, setNewSession, setSessionList, isMini = false, initialAnalyze = null } = props;
+  const {
+    sessionId,
+    newSession,
+    setNewSession,
+    setSessionList,
+    isMini = false,
+    initialAnalyze = null,
+    onConsumedInitialAnalyze,
+  } = props;
+
   const axiosInstance = useAxios();
-  const [introMessage, setIntroMessage] = useState<string | null>(null);
-  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const { accessToken } = useAuth();
+  const navigate = useNavigate();
+
   type ChatMessage = { message: string; sender: "user" | "ai"; message_data?: any };
+  type ActiveTool = { tool_call_id: string; message?: string };
+
+  const [introMessage, setIntroMessage] = useState<string | null>(null);
   const [chatList, setChatList] = useState<Array<ChatMessage>>([]);
-  // Loading and tool state (for displaying tool stack and default thinking state)
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [activeTools, setActiveTools] = useState<
-    Array<{ tool_call_id: string; message?: string }>
-  >([]);
-  const fetchCalled = useRef(false);
-  // Paging and infinite scroll state
+  const [activeTools, setActiveTools] = useState<Array<ActiveTool>>([]);
   const [page, setPage] = useState<number>(1);
   const [hasMore, setHasMore] = useState<boolean>(true);
-  const [isFetchingOlder, setIsFetchingOlder] = useState<boolean>(false);
   const [isFetching, setIsFetching] = useState<boolean>(false);
-  const [olderObserverActive, setOlderObserverActive] = useState<boolean>(false);
-  const loadedPagesRef = useRef<Set<number>>(new Set());
+  const [isFetchingOlder, setIsFetchingOlder] = useState<boolean>(false);
+  const [observerReady, setObserverReady] = useState<boolean>(false);
+
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const topSentinelRef = useRef<HTMLDivElement | null>(null);
-  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const loadedPagesRef = useRef<Set<number>>(new Set());
   const prevScrollHeightRef = useRef<number>(0);
   const prevScrollTopRef = useRef<number>(0);
   const lastOpRef = useRef<"idle" | "prepend">("idle");
-  const navigate = useNavigate();
-  const { accessToken } = useAuth();
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const initGuardRef = useRef<boolean>(false);
+  const prevSessionIdRef = useRef<string | null>(null);
+  const initialAnalyzeRunRef = useRef<boolean>(false);
 
-  // Suggestion sender: mimic MessageBar behavior
-  const fetchAIResponse = async (
-    userMessage: string,
-    freshSession: boolean,
-    sid: string
-  ) => {
-    const response = await fetch("http://localhost:8000/agent_test", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-      },
-      body: JSON.stringify({
-        user_query: userMessage,
-        session_id: sid,
-        newSession: freshSession,
-      }),
-    });
-
-    if (!response.ok || !response.body) {
-      console.error("Network or streaming not available", response.status);
-      setActiveTools([]);
-      setIsLoading(false);
-      return;
+  const containerClasses = useMemo(() => {
+    if (isMini && newSession) {
+      return "h-full min-h-0 flex flex-col justify-between items-stretch gap-4 pb-2.5";
     }
+    return `h-full min-h-0 justify-center items-center flex flex-col ${
+      newSession ? "gap-5 " : "gap-0 pt-0 pb-2.5"
+    }`;
+  }, [isMini, newSession]);
 
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder("utf-8");
-    let buffer = "";
-
-  // Ensure AI placeholder to append into
-  setChatList((prev) => [...prev, { message: "", sender: "ai", message_data: {} }]);
-    if (freshSession) setNewSession(false);
-
-    try {
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
-
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split("\n");
-        buffer = lines.pop() ?? "";
-
-        for (const line of lines) {
-          if (!line.trim()) continue;
-          let data: any;
-          try {
-            data = JSON.parse(line);
-          } catch (err) {
-            console.warn("Failed to parse line:", line);
-            continue;
-          }
-
-          if (data.type == "tool") {
-            const status = data.tool_status as string | undefined;
-            const id = data.tool_call_id as string | undefined;
-            if (!id || !status) continue;
-            if (status === "started") {
-              setActiveTools((prev) => {
-                const existing = prev.find((t) => t.tool_call_id === id);
-                if (existing) {
-                  return prev.map((t) =>
-                    t.tool_call_id === id ? { tool_call_id: id, message: data.message } : t
-                  );
-                }
-                return [...prev, { tool_call_id: id, message: data.message }];
-              });
-            } else if (status === "ended") {
-              setActiveTools((prev) => prev.filter((t) => t.tool_call_id !== id));
-            }
-          } else if (data.type === "model") {
-            setActiveTools([]);
-            setIsLoading(false);
-            const content = data.message || "";
-            setChatList((prevList) => {
-              if (prevList.length === 0) return prevList;
-              const updatedList = [...prevList];
-              const lastMessage = updatedList.at(-1);
-              if (lastMessage?.sender === "ai") {
-                updatedList[updatedList.length - 1] = {
-                  ...lastMessage,
-                  message: lastMessage.message + content,
-                } as any;
-              }
-              return updatedList;
-            });
-          } else if (data.type === "title") {
-            const title = data.message?.title ?? "Untitled";
-            setSessionList((prevList) =>
-              prevList.map((s) => (s.sessionId === sid ? { ...s, sessionName: title } : s))
-            );
-          } else {
-            console.warn("Unknown data type:", data);
-          }
-        }
-      }
-    } catch (err) {
-      console.error("Stream read error:", err);
-      setActiveTools([]);
-      setIsLoading(false);
-    } finally {
-      try {
-        reader.cancel();
-      } catch {}
-    }
-  };
-
-  // One-shot: analyze current article via /ai_analyze for new session
-  const fetchAnalyzeResponse = async (
-    articleId: number,
-    freshSession: boolean,
-    sid: string
-  ) => {
-    const response = await fetch("http://localhost:8000/ai_analyze", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-      },
-      body: JSON.stringify({ article_id: articleId, sessionId: sid }),
-    });
-
-    if (!response.ok || !response.body) {
-      console.error("Network or streaming not available", response.status);
-      setActiveTools([]);
-      setIsLoading(false);
-      return;
-    }
-
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder("utf-8");
-    let buffer = "";
-
-    // Ensure AI placeholder to append into
-    setChatList((prev) => [...prev, { message: "", sender: "ai", message_data: {} }]);
-    if (freshSession) setNewSession(false);
-
-    try {
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
-
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split("\n");
-        buffer = lines.pop() ?? "";
-
-        for (const line of lines) {
-          if (!line.trim()) continue;
-          let data: any;
-          try {
-            data = JSON.parse(line);
-          } catch (err) {
-            console.warn("Failed to parse line:", line);
-            continue;
-          }
-
-          if (data.type == "tool") {
-            const status = data.tool_status as string | undefined;
-            const id = data.tool_call_id as string | undefined;
-            if (!id || !status) continue;
-            if (status === "started") {
-              setActiveTools((prev) => {
-                const existing = prev.find((t) => t.tool_call_id === id);
-                if (existing) {
-                  return prev.map((t) =>
-                    t.tool_call_id === id ? { tool_call_id: id, message: data.message } : t
-                  );
-                }
-                return [...prev, { tool_call_id: id, message: data.message }];
-              });
-            } else if (status === "ended") {
-              setActiveTools((prev) => prev.filter((t) => t.tool_call_id !== id));
-            }
-          } else if (data.type === "model") {
-            setActiveTools([]);
-            setIsLoading(false);
-            const content = data.message || "";
-            setChatList((prevList) => {
-              if (prevList.length === 0) return prevList;
-              const updatedList = [...prevList];
-              const lastMessage = updatedList.at(-1);
-              if (lastMessage?.sender === "ai") {
-                updatedList[updatedList.length - 1] = {
-                  ...lastMessage,
-                  message: lastMessage.message + content,
-                } as any;
-              }
-              return updatedList;
-            });
-          } else if (data.type === "title") {
-            const title = data.message?.title ?? "Untitled";
-            setSessionList((prevList) =>
-              prevList.map((s) => (s.sessionId === sid ? { ...s, sessionName: title } : s))
-            );
-          } else {
-            console.warn("Unknown data type:", data);
-          }
-        }
-      }
-    } catch (err) {
-      console.error("Stream read error:", err);
-      setActiveTools([]);
-      setIsLoading(false);
-    } finally {
-      try {
-        reader.cancel();
-      } catch {}
-    }
-  };
-
-  const sendSuggestion = (q: string) => {
-    if (!q.trim()) return;
-    // Add user message
-    setChatList((prev) => [...prev, { message: q.trim(), sender: "user", message_data: {} }]);
-    // loader state
-    setIsLoading(true);
+  const resetStateForSession = useCallback(() => {
+    setIntroMessage(null);
+    setChatList([]);
+    setIsLoading(false);
     setActiveTools([]);
-    // if it's a new session, update list and optionally navigate in full chat
-    if (newSession) {
-      setSessionList((prevList) => [{ sessionId, sessionName: null }, ...prevList]);
-      if (!isMini) {
-        navigate(`/chat/${sessionId}`);
-      }
-    }
-    // fetch response
-    fetchAIResponse(q.trim(), newSession, sessionId);
-  };
-
-  // Extracted so it can be reused elsewhere (e.g., manual refresh, retry handlers)
-  const fetchChatMessages = async (id: string, targetPage = 1, limit = 20, mode: "initial" | "prepend" = "initial") => {
-    try {
-      if (mode === "prepend") setIsFetchingOlder(true);
-      else setIsFetching(true);
-      const controller = new AbortController();
-      const response = await axiosInstance.get(`/chat_messages`, {
-        params: { sessionId: id, page: targetPage, limit },
-        signal: controller.signal as any,
-      });
-
-      // Reverse and normalize the fetched messages
-      const reversedMessages = (Array.isArray(response.data) ? response.data : [])
-        .reverse()
-        .map((m: any) => ({
-          message: m.message,
-          sender: m.sender,
-          // Normalize backend field name: message_metadata -> message_data
-          message_data: m.message_data ?? m.message_metadata ?? {},
-        } as ChatMessage));
-
-      // Merge based on mode: initial (append to bottom), prepend (older messages at top)
-      if (mode === "prepend") {
-        const el = scrollContainerRef.current;
-        if (el) {
-          // Save current scroll metrics to restore position after prepend
-          prevScrollHeightRef.current = el.scrollHeight;
-          prevScrollTopRef.current = el.scrollTop;
-          lastOpRef.current = "prepend";
-        }
-        setChatList((prevList) => [...reversedMessages, ...prevList]);
-      } else {
-        setChatList((prevList) => [...prevList, ...reversedMessages]);
-      }
-
-      // hasMore: if fewer than limit returned, no more pages
-      if (Array.isArray(response.data) && response.data.length < limit) {
-        setHasMore(false);
-      }
-    } catch (error) {
-      console.error("Error fetching chat messages:", error);
-    } finally {
-      if (mode === "prepend") setIsFetchingOlder(false);
-      else setIsFetching(false);
-    }
-  };
-
-  // Initial fetch and new session check
-  useEffect(() => {
-    if (!sessionId) return;
-    if (fetchCalled.current) return; // 👈 prevent 2nd call in Strict Mode
-
-    fetchCalled.current = true;
-
-    if (newSession) {
-      const message = getRandomAssistantMessage();
-      setIntroMessage(message);
-      // If an initial analyze payload is provided (MiniChat), auto-trigger it
-      if (initialAnalyze && initialAnalyze.articleId) {
-        // 1) create the new session entry visually
-        setSessionList((prevList) => [{ sessionId, sessionName: null }, ...prevList]);
-        // 2) push the user message with article mini card
-        setChatList((prev) => [
-          ...prev,
-          {
-            message: "Analyze above Article",
-            sender: "user",
-            message_data: initialAnalyze.articleMeta
-              ? { type: "article_metadata", data: initialAnalyze.articleMeta }
-              : {},
-          },
-        ]);
-        // 3) prepare loader and stream analyze
-        setIsLoading(true);
-        setActiveTools([]);
-        fetchAnalyzeResponse(initialAnalyze.articleId, true, sessionId);
-      }
-    } else {
-      // Initial page load (await to avoid immediate top-sentinel trigger)
-      const LIMIT = 20;
-      const run = async () => {
-        loadedPagesRef.current.add(1);
-        setPage(1);
-        setHasMore(true);
-        await fetchChatMessages(sessionId, 1, LIMIT, "initial");
-        // Enable top-sentinel only after initial page is loaded
-        setOlderObserverActive(true);
-      };
-      run();
-    }
+    setPage(1);
+    setHasMore(true);
+    setIsFetching(false);
+    setIsFetchingOlder(false);
+    setObserverReady(false);
+    loadedPagesRef.current.clear();
+    prevScrollHeightRef.current = 0;
+    prevScrollTopRef.current = 0;
+    lastOpRef.current = "idle";
+    initGuardRef.current = false;
+    initialAnalyzeRunRef.current = false;
   }, []);
 
-console.log(
-  "ChatMessages Component - sessionId:",
-  sessionId,
-  "new_session:",
-  newSession
-);
+  useEffect(() => {
+    if (!sessionId) return;
+    if (prevSessionIdRef.current === sessionId) return;
+    prevSessionIdRef.current = sessionId;
+    resetStateForSession();
+  }, [sessionId, resetStateForSession]);
+
+  const appendAIPlaceholder = useCallback(() => {
+    setChatList((prev) => [...prev, { message: "", sender: "ai", message_data: {} }]);
+  }, []);
+
+  const handleModelChunk = useCallback((chunk: string) => {
+    if (!chunk) return;
+    setChatList((prev) => {
+      if (prev.length === 0) return prev;
+      const updated = [...prev];
+      const lastMessage = updated[updated.length - 1];
+      if (lastMessage.sender === "ai") {
+        updated[updated.length - 1] = {
+          ...lastMessage,
+          message: lastMessage.message + chunk,
+        };
+      }
+      return updated;
+    });
+  }, []);
+
+  const handleStreamResponse = useCallback(
+    async (response: Response, sid: string, freshSession: boolean) => {
+      if (!response.ok || !response.body) {
+        console.error("Network or streaming not available", response.status);
+        setActiveTools([]);
+        setIsLoading(false);
+        return;
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder("utf-8");
+      let buffer = "";
+
+      appendAIPlaceholder();
+      if (freshSession) setNewSession(false);
+
+      try {
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const segments = buffer.split("\n");
+          buffer = segments.pop() ?? "";
+
+          for (const segment of segments) {
+            if (!segment.trim()) continue;
+
+            let payload: any;
+            try {
+              payload = JSON.parse(segment);
+            } catch (err) {
+              console.warn("Failed to parse line:", segment);
+              continue;
+            }
+
+            if (payload.type === "tool") {
+              const id = payload.tool_call_id as string | undefined;
+              const status = payload.tool_status as string | undefined;
+              if (!id || !status) continue;
+              if (status === "started") {
+                setActiveTools((prev) => {
+                  const existing = prev.find((tool) => tool.tool_call_id === id);
+                  if (existing) {
+                    return prev.map((tool) =>
+                      tool.tool_call_id === id
+                        ? { tool_call_id: id, message: payload.message }
+                        : tool
+                    );
+                  }
+                  return [...prev, { tool_call_id: id, message: payload.message }];
+                });
+              } else if (status === "ended") {
+                setActiveTools((prev) => prev.filter((tool) => tool.tool_call_id !== id));
+              }
+              continue;
+            }
+
+            if (payload.type === "model") {
+              setActiveTools([]);
+              setIsLoading(false);
+              handleModelChunk(String(payload.message ?? ""));
+              continue;
+            }
+
+            if (payload.type === "title") {
+              const title = payload.message?.title ?? "Untitled";
+              setSessionList((prevList) =>
+                prevList.map((session) =>
+                  session.sessionId === sid ? { ...session, sessionName: title } : session
+                )
+              );
+              continue;
+            }
+
+            console.warn("Unknown data type:", payload);
+          }
+        }
+      } catch (err) {
+        console.error("Stream read error:", err);
+      } finally {
+        setActiveTools([]);
+        setIsLoading(false);
+        try {
+          await reader.cancel();
+        } catch (err) {
+          // swallow cancellation errors
+        }
+      }
+    },
+    [appendAIPlaceholder, handleModelChunk, setNewSession, setSessionList]
+  );
+
+  const fetchAIResponse = useCallback(
+    async (userMessage: string, freshSession: boolean, sid: string) => {
+      try {
+        const response = await fetch("http://localhost:8000/agent_test", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify({
+            user_query: userMessage,
+            session_id: sid,
+            newSession: freshSession,
+          }),
+        });
+
+        await handleStreamResponse(response, sid, freshSession);
+      } catch (error) {
+        console.error("Error fetching AI response:", error);
+        setActiveTools([]);
+        setIsLoading(false);
+      }
+    },
+    [accessToken, handleStreamResponse]
+  );
+
+  const fetchAnalyzeResponse = useCallback(
+    async (articleId: number, freshSession: boolean, sid: string) => {
+      try {
+        const response = await fetch("http://localhost:8000/ai_analyze", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify({ article_id: articleId, sessionId: sid }),
+        });
+
+        await handleStreamResponse(response, sid, freshSession);
+      } catch (error) {
+        console.error("Error fetching analyze response:", error);
+        setActiveTools([]);
+        setIsLoading(false);
+      }
+    },
+    [accessToken, handleStreamResponse]
+  );
+
+  const fetchChatMessages = useCallback(
+    async (id: string, targetPage: number, mode: "initial" | "prepend") => {
+      const isPrepend = mode === "prepend";
+      try {
+        if (isPrepend) setIsFetchingOlder(true);
+        else setIsFetching(true);
+
+        const response = await axiosInstance.get(`/chat_messages`, {
+          params: { sessionId: id, page: targetPage, limit: MESSAGES_PAGE_SIZE },
+        });
+
+        const rawMessages = Array.isArray(response.data) ? response.data : [];
+        const normalized: Array<ChatMessage> = rawMessages
+          .reverse()
+          .map((message: any) => ({
+            message: message.message,
+            sender: message.sender,
+            message_data: message.message_data ?? message.message_metadata ?? {},
+          }));
+
+        if (isPrepend) {
+          const container = scrollContainerRef.current;
+          if (container) {
+            prevScrollHeightRef.current = container.scrollHeight;
+            prevScrollTopRef.current = container.scrollTop;
+            lastOpRef.current = "prepend";
+          }
+          setChatList((prev) => [...normalized, ...prev]);
+        } else {
+          setChatList((prev) => (prev.length === 0 ? normalized : [...prev, ...normalized]));
+        }
+
+        if (rawMessages.length < MESSAGES_PAGE_SIZE) {
+          setHasMore(false);
+        }
+
+        return rawMessages.length;
+      } catch (error) {
+        console.error("Error fetching chat messages:", error);
+        return null;
+      } finally {
+        if (isPrepend) setIsFetchingOlder(false);
+        else setIsFetching(false);
+      }
+    },
+    [axiosInstance, MESSAGES_PAGE_SIZE]
+  );
+
+  useEffect(() => {
+    if (!sessionId) return;
+    if (initGuardRef.current) return;
+    initGuardRef.current = true;
+
+    if (newSession) {
+      setIntroMessage(getRandomAssistantMessage());
+      return;
+    }
+
+    const loadInitial = async () => {
+      loadedPagesRef.current.add(1);
+      setPage(1);
+      setHasMore(true);
+      await fetchChatMessages(sessionId, 1, "initial");
+      setObserverReady(true);
+    };
+
+    loadInitial();
+  }, [sessionId, newSession, fetchChatMessages]);
+
+  useEffect(() => {
+    if (!sessionId || !newSession) return;
+    if (!initialAnalyze || initialAnalyzeRunRef.current) return;
+
+    initialAnalyzeRunRef.current = true;
+
+    setSessionList((prevList) => [
+      { sessionId, sessionName: null },
+      ...prevList.filter((session) => session.sessionId !== sessionId),
+    ]);
+
+    setChatList((prev) => [
+      ...prev,
+      {
+        message: "Analyze above Article",
+        sender: "user",
+        message_data: initialAnalyze.articleMeta
+          ? { type: "article_metadata", data: initialAnalyze.articleMeta }
+          : {},
+      },
+    ]);
+
+    setIsLoading(true);
+    setActiveTools([]);
+    fetchAnalyzeResponse(initialAnalyze.articleId, true, sessionId);
+    onConsumedInitialAnalyze?.();
+  }, [
+    sessionId,
+    newSession,
+    initialAnalyze,
+    fetchAnalyzeResponse,
+    setSessionList,
+    onConsumedInitialAnalyze,
+  ]);
+
+  const sendSuggestion = useCallback(
+    (raw: string) => {
+      const trimmed = raw.trim();
+      if (!trimmed) return;
+
+      setChatList((prev) => [...prev, { message: trimmed, sender: "user", message_data: {} }]);
+      setIsLoading(true);
+      setActiveTools([]);
+
+      if (newSession) {
+        setSessionList((prevList) => [
+          { sessionId, sessionName: null },
+          ...prevList.filter((session) => session.sessionId !== sessionId),
+        ]);
+        if (!isMini) {
+          navigate(`/chat/${sessionId}`);
+        }
+      }
+
+      fetchAIResponse(trimmed, newSession, sessionId);
+    },
+    [fetchAIResponse, isMini, navigate, newSession, sessionId, setSessionList]
+  );
 
   // Maintain scroll position: scroll to bottom for normal updates, restore position on prepend
   useEffect(() => {
@@ -391,55 +401,53 @@ console.log(
 
   // IntersectionObserver for top sentinel to load older messages
   useEffect(() => {
-    if (newSession) return; // no messages to load for new session yet
-    const rootEl = scrollContainerRef.current;
+    if (newSession) return;
+    if (!observerReady) return;
+    const container = scrollContainerRef.current;
     const sentinel = topSentinelRef.current;
-    if (!rootEl || !sentinel) return;
-    if (!olderObserverActive) return; // don't start older loader until initial page loaded
-
-  const LIMIT = 20;
+    if (!container || !sentinel) return;
 
     const onIntersect: IntersectionObserverCallback = (entries) => {
       const [entry] = entries;
-      if (!entry.isIntersecting) return;
-      if (isFetchingOlder || !hasMore) return;
+      if (!entry?.isIntersecting) return;
+      if (isFetchingOlder || !hasMore || !sessionId) return;
+
       if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
       debounceTimerRef.current = setTimeout(async () => {
         const nextPage = page + 1;
-        if (loadedPagesRef.current.has(nextPage)) return; // avoid duplicate page fetches
-        try {
-          await fetchChatMessages(sessionId, nextPage, LIMIT, "prepend");
+        if (loadedPagesRef.current.has(nextPage)) return;
+        const count = await fetchChatMessages(sessionId, nextPage, "prepend");
+        if (typeof count === "number" && count > 0) {
           loadedPagesRef.current.add(nextPage);
           setPage(nextPage);
-        } catch (e) {
-          // errors handled in fetchChatMessages
         }
-      }, 200);
+      }, 180);
     };
 
     const observer = new IntersectionObserver(onIntersect, {
-      root: rootEl,
+      root: container,
       threshold: 0.1,
     });
     observer.observe(sentinel);
 
     return () => {
       observer.disconnect();
-      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+        debounceTimerRef.current = null;
+      }
     };
-  }, [sessionId, newSession, isFetchingOlder, hasMore, page, olderObserverActive]);
+  }, [
+    sessionId,
+    newSession,
+    observerReady,
+    isFetchingOlder,
+    hasMore,
+    page,
+    fetchChatMessages,
+  ]);
 
   // Container layout: in mini + newSession, pin MessageBar to bottom
-  const containerClasses = (() => {
-    if (isMini && newSession) {
-      return "h-full min-h-0 flex flex-col justify-between items-stretch gap-4 pb-2.5";
-    }
-    // original behavior for full page and existing sessions
-    return `h-full min-h-0 justify-center items-center flex flex-col ${
-      newSession ? "gap-5 " : "gap-0 pt-0 pb-2.5"
-    }`;
-  })();
-
   return (
     <div className={containerClasses}>
       {newSession && (
@@ -539,5 +547,6 @@ export default memo(
   (prev, next) =>
     prev.sessionId === next.sessionId &&
     prev.newSession === next.newSession &&
-    prev.isMini === next.isMini
+    prev.isMini === next.isMini &&
+    prev.initialAnalyze === next.initialAnalyze
 );

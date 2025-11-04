@@ -63,6 +63,8 @@ const MiniChatWidget: React.FC = () => {
     const id = generateUUID();
     setSessionId(id);
     setNewSession(true);
+    // Ensure any previous one-shot analyze payload doesn't carry over
+    setPendingAnalyze(null);
     setView("chat");
   }, [generateUUID, newSession]);
 
@@ -190,6 +192,8 @@ const MiniChatWidget: React.FC = () => {
                   setNewSession={setNewSession}
                   isMini
                   initialAnalyze={pendingAnalyze}
+                  // Clear the one-shot analyze payload once consumed
+                  onConsumedInitialAnalyze={() => setPendingAnalyze(null)}
                 />
               )
             )}
