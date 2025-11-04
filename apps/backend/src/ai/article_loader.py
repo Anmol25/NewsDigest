@@ -19,17 +19,14 @@ class ArticleSchema(BaseModel):
 
 
 class ArticleLoader(BaseLoader):
-    def __init__(self, article_list: List[dict]):
-        self.articles = article_list
+    def __init__(self, links_list: List[dict]):
+        self.links = links_list
 
     def _fetch_and_create_document(self, item: ArticleSchema) -> Document:
         """Helper function to fetch content and create a Document object for a single article."""
-        page_content = get_article(item.link)
+        page_content = get_article(item)
         metadata = {
-            key: getattr(item, key)
-            for key in ["title", "datetime", "source"]
-            # include only if attribute exists and is truthy
-            if getattr(item, key, None)
+            "link": item
         }
         return Document(
             page_content=page_content if page_content else "",  # Ensure content is not None
@@ -38,7 +35,7 @@ class ArticleLoader(BaseLoader):
 
     def lazy_load(self):
         """Note: This lazy loader remains sequential as it's an iterator."""
-        for item in self.articles:
+        for item in self.links:
             yield self._fetch_and_create_document(item)
 
     def load(self) -> List[Document]:
@@ -47,6 +44,6 @@ class ArticleLoader(BaseLoader):
         """
         with ThreadPoolExecutor() as executor:
             results = list(executor.map(
-                self._fetch_and_create_document, self.articles))
+                self._fetch_and_create_document, self.links))
 
         return results

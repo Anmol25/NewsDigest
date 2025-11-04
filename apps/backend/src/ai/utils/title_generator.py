@@ -13,7 +13,7 @@ class TitleOutput(BaseModel):
 class TitleGenerator:
     def __init__(self):
         self.model = ChatGoogleGenerativeAI(
-            model='gemini-2.5-flash-lite', temperature=0)
+            model='gemini-2.5-flash-lite', temperature=0.5)
 
     def generate_title(self, user_msg, ai_msg):
         model_with_structured_output = self.model.with_structured_output(

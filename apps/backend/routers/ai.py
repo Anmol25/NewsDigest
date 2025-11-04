@@ -31,11 +31,21 @@ def get_sbert(request: Request) -> SBERT:
     return s
 
 
-@router.get("/highlights")
-async def get_hightlights(query: str, db: AsyncSession = Depends(get_async_db), current_user: Users = Depends(get_current_active_user), sbert: SBERT = Depends(get_sbert)):
-    res = await search_article(query, page=1, limit=5, db=db, current_user=current_user, sbert=sbert)
+class HighlightsRequest(BaseModel):
+    query: str
+    sessionId: str
+
+
+@router.post("/highlights")
+async def get_hightlights(request: HighlightsRequest, db: AsyncSession = Depends(get_async_db), current_user: Users = Depends(get_current_active_user), sbert: SBERT = Depends(get_sbert)):
+    print(request)
+    session_id = request.sessionId
+    query = request.query
+    user_id = current_user.id
+
+    res = await search_article(query, page=1, limit=20, db=db, current_user=current_user, sbert=sbert)
     if not res:
-        return []
+        return {"type": "highlights_error", "message": "No articles found for the given query."}
     articles = [
         {
             'title': item['title'],
@@ -45,9 +55,13 @@ async def get_hightlights(query: str, db: AsyncSession = Depends(get_async_db), 
         }
         for item in res
     ]
-    s_high = SearchHighlights()
-    highlights = await s_high.get_highlights(query, articles)
-    return StreamingResponse(highlights, media_type="text/plain")
+    await create_session(db, session_id, user_id)
+    await log_chat_message(db, session_id, 'user', f"Search Highlights: {query}", {"type": 'search_highlights', 'query': query})
+
+    agent = NewsDigestAgent(
+        sbert, db, user_id, session_id, new_session=True)
+    response = await agent.gen_highlights(query, articles)
+    return StreamingResponse(response, media_type="application/x-ndjson")
 
 
 class ChatbotRequest(BaseModel):

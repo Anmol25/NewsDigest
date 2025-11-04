@@ -10,6 +10,10 @@ import { useAuth } from "../../contexts/AuthContext";
 
 const MESSAGES_PAGE_SIZE = 20;
 
+type InitialIntent =
+  | { kind: "analyze"; payload: { articleId: number; articleMeta?: any } }
+  | { kind: "search_highlights"; payload: { query: string } };
+
 type ChatMessagesProps = {
   sessionId: string;
   setSessionList: Dispatch<
@@ -18,9 +22,9 @@ type ChatMessagesProps = {
   newSession: boolean;
   setNewSession: Dispatch<SetStateAction<boolean>>;
   isMini?: boolean; // compact rendering for mini chat window
-  // If provided (only in MiniChat), trigger one-shot analyze flow on mount
-  initialAnalyze?: { articleId: number; articleMeta?: any } | null;
-  onConsumedInitialAnalyze?: () => void;
+  // If provided (only in MiniChat), trigger one-shot flow on mount
+  initialIntent?: InitialIntent | null;
+  onConsumedInitialIntent?: () => void;
 };
 
 function ChatMessages(props: ChatMessagesProps) {
@@ -30,8 +34,8 @@ function ChatMessages(props: ChatMessagesProps) {
     setNewSession,
     setSessionList,
     isMini = false,
-    initialAnalyze = null,
-    onConsumedInitialAnalyze,
+    initialIntent = null,
+    onConsumedInitialIntent,
   } = props;
 
   const axiosInstance = useAxios();
@@ -60,7 +64,7 @@ function ChatMessages(props: ChatMessagesProps) {
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const initGuardRef = useRef<boolean>(false);
   const prevSessionIdRef = useRef<string | null>(null);
-  const initialAnalyzeRunRef = useRef<boolean>(false);
+  const initialIntentRunRef = useRef<boolean>(false);
 
   const containerClasses = useMemo(() => {
     if (isMini && newSession) {
@@ -86,7 +90,7 @@ function ChatMessages(props: ChatMessagesProps) {
     prevScrollTopRef.current = 0;
     lastOpRef.current = "idle";
     initGuardRef.current = false;
-    initialAnalyzeRunRef.current = false;
+  initialIntentRunRef.current = false;
   }, []);
 
   useEffect(() => {
@@ -299,6 +303,28 @@ function ChatMessages(props: ChatMessagesProps) {
     [accessToken, handleStreamResponse]
   );
 
+  const fetchHighlightsResponse = useCallback(
+    async (query: string, freshSession: boolean, sid: string) => {
+      try {
+        const response = await fetch("http://localhost:8000/highlights", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify({ query, sessionId: sid }),
+        });
+
+        await handleStreamResponse(response, sid, freshSession);
+      } catch (error) {
+        console.error("Error fetching highlights response:", error);
+        setActiveTools([]);
+        setIsLoading(false);
+      }
+    },
+    [accessToken, handleStreamResponse]
+  );
+
   const fetchChatMessages = useCallback(
     async (id: string, targetPage: number, mode: "initial" | "prepend") => {
       const isPrepend = mode === "prepend";
@@ -370,37 +396,56 @@ function ChatMessages(props: ChatMessagesProps) {
 
   useEffect(() => {
     if (!sessionId || !newSession) return;
-    if (!initialAnalyze || initialAnalyzeRunRef.current) return;
+    if (!initialIntent || initialIntentRunRef.current) return;
 
-    initialAnalyzeRunRef.current = true;
+    initialIntentRunRef.current = true;
 
     setSessionList((prevList) => [
       { sessionId, sessionName: null },
       ...prevList.filter((session) => session.sessionId !== sessionId),
     ]);
 
-    setChatList((prev) => [
-      ...prev,
-      {
-        message: "Analyze above Article",
-        sender: "user",
-        message_data: initialAnalyze.articleMeta
-          ? { type: "article_metadata", data: initialAnalyze.articleMeta }
-          : {},
-      },
-    ]);
-
-    setIsLoading(true);
     setActiveTools([]);
-    fetchAnalyzeResponse(initialAnalyze.articleId, true, sessionId);
-    onConsumedInitialAnalyze?.();
+
+    if (initialIntent.kind === "analyze") {
+      setChatList((prev) => [
+        ...prev,
+        {
+          message: "Analyze above Article",
+          sender: "user",
+          message_data: initialIntent.payload.articleMeta
+            ? { type: "article_metadata", data: initialIntent.payload.articleMeta }
+            : {},
+        },
+      ]);
+
+      setIsLoading(true);
+      fetchAnalyzeResponse(initialIntent.payload.articleId, true, sessionId);
+    } else if (initialIntent.kind === "search_highlights") {
+      const query = initialIntent.payload.query;
+
+      setChatList((prev) => [
+        ...prev,
+        {
+          message: `Search Highlights: ${query}`,
+          sender: "user",
+          message_data: { type: "search_highlights", query },
+        },
+      ]);
+
+      setIsLoading(true);
+      fetchHighlightsResponse(query, true, sessionId);
+    }
+
+    onConsumedInitialIntent?.();
   }, [
     sessionId,
     newSession,
-    initialAnalyze,
+    initialIntent,
     fetchAnalyzeResponse,
+    fetchHighlightsResponse,
     setSessionList,
-    onConsumedInitialAnalyze,
+    onConsumedInitialIntent,
   ]);
 
   const sendSuggestion = useCallback(
@@ -590,5 +635,5 @@ export default memo(
     prev.sessionId === next.sessionId &&
     prev.newSession === next.newSession &&
     prev.isMini === next.isMini &&
-    prev.initialAnalyze === next.initialAnalyze
+  prev.initialIntent === next.initialIntent
 );

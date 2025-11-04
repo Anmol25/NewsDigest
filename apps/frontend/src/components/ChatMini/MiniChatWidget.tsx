@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import ChatMessages from "../ChatComponents/ChatMessages";
 import { useNavigate } from "react-router-dom";
@@ -16,10 +16,11 @@ const MiniChatWidget: React.FC = () => {
   const [newSession, setNewSession] = useState<boolean>(false);
   const [portalEl, setPortalEl] = useState<HTMLElement | null>(null);
   const [view, setView] = useState<"chat" | "history">("chat");
-  const [pendingAnalyze, setPendingAnalyze] = useState<{
-    articleId: number;
-    articleMeta?: any;
-  } | null>(null);
+  type PendingIntent =
+    | { kind: "analyze"; payload: { articleId: number; articleMeta?: any } }
+    | { kind: "search_highlights"; payload: { query: string } };
+
+  const [pendingIntent, setPendingIntent] = useState<PendingIntent | null>(null);
 
   // local session list holder for ChatMessages' setSessionList prop
   const [sessionList, setSessionList] = useState<
@@ -57,16 +58,19 @@ const MiniChatWidget: React.FC = () => {
 
   const toggle = useCallback(() => setIsOpen((s) => !s), []);
 
-  const startNewChat = useCallback(() => {
-    // Start new chat only if current is not a fresh newSession
-    if (newSession) return; // already a fresh chat
+  const startNewChat = useCallback(
+    (force = false) => {
+      // Start new chat only if current is not a fresh newSession unless forced
+      if (!force && newSession) return;
     const id = generateUUID();
     setSessionId(id);
     setNewSession(true);
-    // Ensure any previous one-shot analyze payload doesn't carry over
-    setPendingAnalyze(null);
+      // Ensure any previous one-shot payload doesn't carry over
+      setPendingIntent(null);
     setView("chat");
-  }, [generateUUID, newSession]);
+    },
+    [generateUUID, newSession]
+  );
 
   // Listen for global event to open mini chat and trigger analyze-once
   useEffect(() => {
@@ -76,16 +80,23 @@ const MiniChatWidget: React.FC = () => {
       if (detail.action === "analyze" && detail.payload) {
         setIsOpen(true);
         // Always ensure a fresh session for analyze
-        if (!newSession) {
-          startNewChat();
-        }
+        startNewChat(true);
         setView("chat");
-        setPendingAnalyze(detail.payload);
+        setPendingIntent({ kind: "analyze", payload: detail.payload });
+      } else if (detail.action === "search_highlights" && detail.payload?.query) {
+        setIsOpen(true);
+        // Always ensure a fresh session for highlights search
+        startNewChat(true);
+        setView("chat");
+        setPendingIntent({
+          kind: "search_highlights",
+          payload: { query: String(detail.payload.query) },
+        });
       }
     };
     window.addEventListener("newsdigest:open-mini-chat", handler as EventListener);
     return () => window.removeEventListener("newsdigest:open-mini-chat", handler as EventListener);
-  }, [newSession, startNewChat]);
+  }, [startNewChat]);
 
   // If portal root missing, render nothing to avoid layout side-effects
   if (!portalEl) return null;
@@ -131,7 +142,7 @@ const MiniChatWidget: React.FC = () => {
               <button
                 type="button"
                 className={`px-2 py-1 text-textSecondary rounded-md transition-colors ${newSession ? "opacity-50 cursor-not-allowed" : "hover:bg-[#F2F2F2] cursor-pointer"}`}
-                onClick={startNewChat}
+                onClick={() => startNewChat()}
                 aria-label="New chat"
                 title="New chat"
                 disabled={newSession}
@@ -191,9 +202,9 @@ const MiniChatWidget: React.FC = () => {
                   newSession={newSession}
                   setNewSession={setNewSession}
                   isMini
-                  initialAnalyze={pendingAnalyze}
-                  // Clear the one-shot analyze payload once consumed
-                  onConsumedInitialAnalyze={() => setPendingAnalyze(null)}
+                  initialIntent={pendingIntent}
+                  // Clear the one-shot payload once consumed
+                  onConsumedInitialIntent={() => setPendingIntent(null)}
                 />
               )
             )}

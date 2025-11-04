@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, List, Optional, Annotated, Literal
+from typing import Any, List, Optional, Annotated, Literal, TypedDict, NotRequired
 import json
 import asyncio
 
@@ -16,7 +16,8 @@ from src.aggregator.search import search_db
 from src.ai.article_loader import ArticleLoader
 from src.database.models import Articles
 
-
+import logging
+logger = logging.getLogger(__name__)
 # BUG: Not using pydantic model for tool inputs due to langchain issue:
 # See https://github.com/langchain-ai/langchain/issues/33646
 
@@ -87,7 +88,7 @@ class SearchDBInput(BaseModel):
 
 
 # @tool("search_db", args_schema=SearchDBInput)
-@tool("search_db")
+@tool("search_db_tool")
 async def search_db_tool(runtime: ToolRuntime[DBContext], query: str, recent: bool, skip: int = 0, limit: int = 10) -> str:
     """
     Search the internal NewsDigest database for articles similar to the given query.
@@ -146,67 +147,92 @@ async def search_db_tool(runtime: ToolRuntime[DBContext], query: str, recent: bo
         combined_score.label("combined_score"),
     )
     writer({"type": "tool", "tool_call_id": tool_call_id, "tool_status": "ended"})
-    return f"Found {len(articles)} articles:\n" + json.dumps(articles, default=str, separators=(",", ":"))
+    return json.dumps(articles, default=str, separators=(",", ":"))
 
 
-class ArticleSchema(BaseModel):
-    link: str = Field(...,
-                      description="Link to the article, (Mandatory for scraping)")
-    title: Optional[str] = Field(..., description="Title of the article")
-    datetime: Optional[str] = Field(...,
-                                    description="Publication date of the article")
-    source: Optional[str] = Field(..., description="Source of the article")
+# class ArticleSchema(BaseModel):
+#     link: str = Field(...,
+#                       description="Link to the article, (Mandatory for scraping)")
+#     title: Optional[str] = Field(..., description="Title of the article")
+#     datetime: Optional[str] = Field(...,
+#                                     description="Publication date of the article")
+#     source: Optional[str] = Field(..., description="Source of the article")
 
 
-class ScrapeInput(BaseModel):
-    articles: List[ArticleSchema] = Field(
-        description="List of articles to scrape with keys: link, title, datetime, source."
-    )
+# class ScrapeInput(BaseModel):
+#     articles: List[ArticleSchema] = Field(
+#         description="List of articles to scrape with keys: link, title, datetime, source."
+#     )
+
+# """
+#     Scrape the content and metadata of the provided article links.
+
+#     This tool fetches full article text and related metadata (e.g., title, publication date,
+#     and source) for a given list of article links. It is primarily used to extract and
+#     standardize article data for further processing within the NewsDigest system.
+
+#     class ArticleSchema(BaseModel):
+#         link: str = Field(...,
+#                         description="Link to the article, (Mandatory for scraping)")
+#         title: Optional[str] = Field(..., description="Title of the article")
+#         datetime: Optional[str] = Field(...,
+#                                         description="Publication date of the article")
+#         source: Optional[str] = Field(..., description="Source of the article")
+
+#     Args:
+#         articles (List[ArticleSchema]):
+#             A list of article objects to scrape, each containing:
+#             - **link** (str): URL of the article (mandatory)
+#             - **title** (Optional[str]): Title of the article
+#             - **datetime** (Optional[str]): Publication date/time
+#             - **source** (Optional[str]): Source or publisher name
+
+#     Returns:
+#         str:
+#             A JSON-formatted string containing a list of scraped articles, where each entry
+#             includes:
+#             - **page_content**: The extracted text content of the article.
+#             - **metadata**: The article’s metadata (title, link, source, datetime, etc.).
+
+#     Notes:
+#         - The `link` field is mandatory, as it is required for fetching the article content.
+#     """
 
 
 # @tool("scrape_articles", args_schema=ScrapeInput)
-@tool("scrape_articles")
-async def scrape_articles_tool(articles: List[ArticleSchema], runtime: ToolRuntime[DBContext]) -> str:
-    # """Scrape articles from provided links and return their content and metadata as JSON."""
+@tool("scrape_articles_tool")
+async def scrape_articles_tool(links: List[str], runtime: ToolRuntime[DBContext]) -> str:
     """
-    Scrape the content and metadata of the provided article links.
+    Scrape articles from the provided list of links.
 
-    This tool fetches full article text and related metadata (e.g., title, publication date, 
-    and source) for a given list of article links. It is primarily used to extract and 
-    standardize article data for further processing within the NewsDigest system.
+    **Input:**
+        links (List[str]): A list of article URLs to scrape.
 
-    Args:
-        articles (List[ArticleSchema]): 
-            A list of article objects to scrape, each containing:
-            - **link** (str): URL of the article (mandatory)
-            - **title** (Optional[str]): Title of the article
-            - **datetime** (Optional[str]): Publication date/time
-            - **source** (Optional[str]): Source or publisher name
+    **Output:**
+        str (JSON encoded list): A list of scraped article data where each item is:
+            {
+                "page_content": "Article text",
+                "metadata": {
+                    "link": "actual_link"
+                }
+            }
 
-    Returns:
-        str:
-            A JSON-formatted string containing a list of scraped articles, where each entry 
-            includes:
-            - **page_content**: The extracted text content of the article.
-            - **metadata**: The article’s metadata (title, link, source, datetime, etc.).
-
-    Notes:
-        - The `link` field is mandatory, as it is required for fetching the article content.
-        - The tool uses `ArticleLoader` internally to handle fetching and parsing logic.
-        - No database writes occur; results are returned directly as JSON for downstream use.
+    The tool fetches and extracts the article text and metadata for each link.
     """
+    logger.debug(f"Scraping {len(links)} articles...")
+    logger.debug(f"Articles: {links}")
     tool_call_id = runtime.tool_call_id
     writer = get_stream_writer()
-    writer({"type": "tool", "tool_call_id": tool_call_id, "message": f"Scraping {len(articles)} articles...",
+    writer({"type": "tool", "tool_call_id": tool_call_id, "message": f"Scraping {len(links)} articles...",
            "tool_status": "started"})
-    loader = ArticleLoader(articles)
+    loader = ArticleLoader(links)
     # documents = loader.load()
     documents = await asyncio.to_thread(loader.load)
 
     result = [{"page_content": doc.page_content, "metadata": doc.metadata}
               for doc in documents]
     writer({"type": "tool", "tool_call_id": tool_call_id, "tool_status": "ended"})
-    return f"Scraped {len(result)} articles:\n" + json.dumps(result, ensure_ascii=False, separators=(",", ":"))
+    return json.dumps(result, ensure_ascii=False, separators=(",", ":"))
 
 # Topics are now constrained at type-level via Literal in latest_by_topic_tool.
 
@@ -245,7 +271,7 @@ async def _retrieve_latest_by_topic(db: AsyncSession, topic: str, limit: int) ->
     ]
 
 
-@tool("latest_by_topic")
+@tool("latest_by_topic_tool")
 async def latest_by_topic_tool(
     runtime: ToolRuntime[DBContext],
     topic: Literal[
@@ -292,6 +318,4 @@ async def latest_by_topic_tool(
     articles = await _retrieve_latest_by_topic(db, topic, limit)
 
     writer({"type": "tool", "tool_call_id": tool_call_id, "tool_status": "ended"})
-    return f"Found {len(articles)} articles:\n" + json.dumps(
-        articles, default=str, separators=(",", ":")
-    )
+    return json.dumps(articles, default=str, separators=(",", ":"))
