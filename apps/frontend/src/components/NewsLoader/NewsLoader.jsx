@@ -10,6 +10,10 @@ const PAGE_SIZE = 20;            // Expected page size from API
 const SCROLL_THRESHOLD = 100;    // px from bottom to trigger next load
 const SCROLL_DEBOUNCE_MS = 200;  // debounce delay for scroll handler
 
+// Deduplicate identical in-flight requests across StrictMode re-mounts
+// Keyed by `${url}|${page}|${JSON.stringify(parameters)}|${JSON.stringify(requestBody)}`
+const inFlightRequests = new Map();
+
 function NewsLoader({ url, parameters, requestBody, setHasArticles }){
     const axiosInstance = useAxios();
 
@@ -23,6 +27,7 @@ function NewsLoader({ url, parameters, requestBody, setHasArticles }){
     const loadingRef = useRef(false);
     const pageRef = useRef(page);
     const hasMoreRef = useRef(hasMore);
+    const isMountedRef = useRef(false);
 
     // Keep refs in sync with state to avoid stale closures in event listeners
     useEffect(() => { pageRef.current = page }, [page]);
@@ -44,13 +49,25 @@ function NewsLoader({ url, parameters, requestBody, setHasArticles }){
         return window;
     };
 
-    // Fetch a page using GET or POST based on presence of requestBody
+    // Fetch a page using GET or POST based on presence of requestBody with de-duplication
     const fetchPage = useCallback(async (currentPage) => {
         const commonParams = { params: { page: currentPage, ...(parameters || {}) } };
-        if (requestBody) {
-            return axiosInstance.post(url, { ...requestBody }, commonParams);
+        const key = `${url}|${currentPage}|${JSON.stringify(parameters || {})}|${JSON.stringify(requestBody || {})}`;
+
+        // If an identical request is already in-flight, reuse it to avoid duplicate network calls
+        if (inFlightRequests.has(key)) {
+            return inFlightRequests.get(key);
         }
-        return axiosInstance.get(url, commonParams);
+
+        const requestPromise = (requestBody
+            ? axiosInstance.post(url, { ...requestBody }, commonParams)
+            : axiosInstance.get(url, commonParams)
+        ).finally(() => {
+            inFlightRequests.delete(key);
+        });
+
+        inFlightRequests.set(key, requestPromise);
+        return requestPromise;
     }, [axiosInstance, url, parameters, requestBody]);
 
     // Load and append items for a given page index
@@ -61,6 +78,8 @@ function NewsLoader({ url, parameters, requestBody, setHasArticles }){
         try {
             const response = await fetchPage(currentPage);
             const newData = response.data || [];
+
+            if (!isMountedRef.current) return; // avoid state updates if unmounted (StrictMode safety)
 
             // Inform parent that we have at least one article
             if (setHasArticles && newData.length > 0) {
@@ -73,7 +92,7 @@ function NewsLoader({ url, parameters, requestBody, setHasArticles }){
             setPage(currentPage + 1);
         } catch (error) {
             console.error('Error loading feed:', error);
-            setHasMore(false);
+            if (isMountedRef.current) setHasMore(false);
         } finally {
             loadingRef.current = false;
         }
@@ -81,6 +100,7 @@ function NewsLoader({ url, parameters, requestBody, setHasArticles }){
 
     // Initial load and reset when key props change
     useEffect(() => {
+        isMountedRef.current = true;
         setItems([]);
         setPage(1);
         setHasMore(true);
@@ -90,6 +110,13 @@ function NewsLoader({ url, parameters, requestBody, setHasArticles }){
         loadItems(1);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [url, JSON.stringify(parameters || {}), JSON.stringify(requestBody || {})]);
+
+    // Mark unmounted to skip state updates from any shared promises (StrictMode)
+    useEffect(() => {
+        return () => {
+            isMountedRef.current = false;
+        };
+    }, []);
 
     // Detect scroll parent after mount
     useEffect(() => {
@@ -121,7 +148,7 @@ function NewsLoader({ url, parameters, requestBody, setHasArticles }){
         // add listener (use passive when possible)
         try {
             scrollParent.addEventListener('scroll', onScroll, { passive: true });
-        } catch (e) {
+        } catch {
             // fallback for window or older browsers
             scrollParent.addEventListener('scroll', onScroll);
         }
@@ -132,7 +159,7 @@ function NewsLoader({ url, parameters, requestBody, setHasArticles }){
         return () => {
             try {
                 scrollParent.removeEventListener('scroll', onScroll, { passive: true });
-            } catch (e) {
+            } catch {
                 scrollParent.removeEventListener('scroll', onScroll);
             }
             onScroll.cancel && onScroll.cancel();
