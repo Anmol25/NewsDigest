@@ -20,6 +20,44 @@ BEGIN
 END
 $$;
 
+-- Create indexes to optimize query performance
+CREATE INDEX IF NOT EXISTS idx_articles_tsv
+    ON articles USING GIN (tsv);
+
+CREATE INDEX IF NOT EXISTS idx_articles_source_published_date
+    ON articles (source, published_date DESC);
+
+CREATE INDEX IF NOT EXISTS idx_articles_topic_published_date
+    ON articles (topic, published_date DESC);
+
+CREATE INDEX IF NOT EXISTS idx_articles_published_date
+    ON articles (published_date DESC);
+
+CREATE INDEX IF NOT EXISTS idx_articles_embeddings
+    ON articles USING ivfflat (embeddings vector_cosine_ops)
+    WITH (lists = 200);
+
+CREATE INDEX IF NOT EXISTS idx_userbookmarks_user_article
+    ON userbookmarks (user_id, article_id);
+
+CREATE INDEX IF NOT EXISTS idx_userbookmarks_user_bookmarked_at
+    ON userbookmarks (user_id, bookmarked_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_userhistory_user_article
+    ON userhistory (user_id, article_id);
+
+CREATE INDEX IF NOT EXISTS idx_userhistory_user_watched_at
+    ON userhistory (user_id, watched_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_usersubscriptions_user
+    ON usersubscriptions (user_id);
+
+CREATE INDEX IF NOT EXISTS idx_chat_sessions_user_last_activity
+    ON chat_sessions (user_id, last_activity DESC);
+
+CREATE INDEX IF NOT EXISTS idx_chat_messages_session_created_at
+    ON chat_messages (session_id, created_at DESC);
+
 -- Create the function to update chat session's last activity timestamp
 CREATE OR REPLACE FUNCTION update_chat_session_last_activity()
 RETURNS TRIGGER AS $$

@@ -31,7 +31,16 @@ function MiniArticle({ data }: { data: ArticleMeta }) {
             {published_date ? (
               <>
                 <span className="mx-1">•</span>
-                <span>{new Date(published_date).toLocaleString()}</span>
+                <span>
+                  {new Date(published_date).toLocaleString(undefined, {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                    hour: "numeric",
+                    minute: "2-digit",
+                    hour12: true,
+                  })}
+                </span>
               </>
             ) : null}
           </div>

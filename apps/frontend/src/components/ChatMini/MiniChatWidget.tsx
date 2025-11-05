@@ -117,7 +117,7 @@ const MiniChatWidget: React.FC = () => {
 
       {/* Panel */}
       {isOpen && (
-        <div className="w-[450px] h-[550px] max-w-[92vw] max-h-[82vh] rounded-2xl shadow-xl border border-[#E5E5E5] bg-white overflow-hidden flex flex-col">
+        <div className="w-[500px] h-[600px] max-w-[92vw] max-h-[82vh] rounded-2xl shadow-xl border border-[#E5E5E5] bg-white overflow-hidden flex flex-col">
           {/* Header */}
           <div className="flex items-center justify-between px-3 py-2 border-b border-[#ECECEC] bg-[#FAFAFA]">
             <div className="flex items-center gap-2">

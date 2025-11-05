@@ -8,6 +8,7 @@ NewsDigest is an AI-powered news aggregator designed to fix the modern news expe
   <img src="https://img.shields.io/badge/Styling-TailwindCSS-cyan?style=for-the-badge&logo=tailwindcss" alt="TailwindCSS">
   <img src="https://img.shields.io/badge/Database-PostgreSQL-blue?style=for-the-badge&logo=postgresql" alt="PostgreSQL">
   <img src="https://img.shields.io/badge/AI-Gemini_&_HuggingFace-orange?style=for-the-badge&logo=google-gemini" alt="AI Models">
+    <img src="https://img.shields.io/badge/Containers-Docker-informational?style=for-the-badge&logo=docker" alt="Docker">
 </p>
 
 ---
@@ -15,6 +16,18 @@ NewsDigest is an AI-powered news aggregator designed to fix the modern news expe
 <p align="center">
   <img src="images/home.gif" alt="NewsDigest Home Page" width="90%">
 </p>
+
+## Table of Contents
+
+- The Problem
+- Features
+- Agentic RAG Chatbot
+- Tech Stack
+- Project Snapshots
+- Requirements
+- Local Setup
+- Run with Docker (optional)
+- Author
 
 ## The Problem
 
@@ -26,11 +39,39 @@ Most news feeds are a mess. You're flooded with articles from countless sources,
 * **No More Duplicates**: Instead of just looking at headlines, NewsDigest uses SBERT embeddings to understand the *semantic meaning* of articles. If two articles are about the same thing, you'll only see the first one.
 * **Quick AI Summaries**: Get the gist of any article without reading the whole thing. Summaries are generated on the fly using a fine-tuned DistilBART model.
 * **Smarter Search with AI Highlights**: Standard search is combined with the Gemini API to provide AI-generated highlights for your query, giving you immediate context and answers.
+* **Agentic RAG Chatbot (Gemini 2.5 Flash)**: Conversational news analyst that scrapes the main article, compares 2–3 similar pieces, and produces search highlights from 5–6 high-signal results.
 * **Clean, Responsive UI**: The interface is built with React and Tailwind CSS for a simple, fast, and clutter-free reading experience on any device.
 * **A Feed That Learns**: The 'For You' page adapts to your reading history to show you more of what you care about.
 * **Standard User Features**: Includes secure JWT authentication, bookmarks, reading history, and source management.
 
 ---
+
+## Agentic RAG Chatbot
+
+Bring an analyst into your feed. The Agentic RAG (Retrieval-Augmented Generation) Chatbot uses a set of purpose-built tools to search, scrape, and cross-check coverage so you get trustworthy, contextual answers. It’s powered by Google Gemini 2.5 Flash for fast, high‑quality reasoning.
+
+Tools used by the Agent:
+
+- `search_db_tool`: Retrieves top relevant articles from the NewsDigest database based on your query.
+- `scrape_articles_tool`: Scrapes full content from article URLs for accurate analysis and summarization.
+- `latest_by_topic_tool`: Pulls the freshest coverage for a topic to ground responses in what’s new.
+
+What it can do:
+
+- AI News Analyzer
+    - Scrapes the main article you’re looking at.
+    - Finds 2–3 closely related articles across sources.
+    - Produces sharp highlights and a quick comparison of how different outlets covered the same story.
+
+- AI Search Highlights
+    - From the top 20 results for your query, selects 5–6 highly relevant articles.
+    - Scrapes them and generates concise, source-grounded highlights so you can skim the landscape in seconds.
+
+Why it’s useful:
+
+- Coverage awareness: See how narratives differ across outlets.
+- Faster decisions: Get the gist without opening a dozen tabs.
+- Grounded answers: Every highlight is backed by scraped content from real articles.
 
 ## Tech Stack
 
@@ -50,9 +91,18 @@ The project uses a modern Python/TypeScript stack:
 
 ## Project Snapshots
 
-![Home](images/home2.png)
+<p align="Center"><strong>Home</strong></p>
 
-![Search](images/AI-Search-Highlights.png)
+![Home](images/home2.png)
+<p align="Center"><strong>AI Assistant</strong></p>
+
+![ChatMessages](images/ChatMessages.png)
+<p align="Center"><strong>Search with AI highlights</strong></p>
+
+![Search](images/Search-AI.png)
+<p align="Center"><strong>AI News Analyze</strong></p>
+
+![AI-Analyze](images/AI-analyze.png)
 
 <p align="center"><img src="images/for-you.png" width=50% alt="For You"><img src="images/News.png" width=50% alt="News"></p>
 
@@ -121,7 +171,6 @@ This is the easiest way to get a Postgres instance with the `pgvector` extension
 
 3.  Install the dependencies: `pip install -r requirements.txt`
 4.  Run the server: `uvicorn main:app`
-    *The first time you run this, SQLAlchemy will automatically create all the tables in the database.*
 
 </details>
 
@@ -138,14 +187,7 @@ This is the easiest way to get a Postgres instance with the `pgvector` extension
 
 ---
 
-## What's Next?
-
-This project is still in active development. Here are a few things I'm planning to work on:
-
--   [ ] **RAG-based Chatbot**: Integrate a conversational AI (using Gemini) that lets you "ask questions" about the news articles in the database.
--   [ ] **Fact-Checking System**: Build a feature to automatically cross-reference claims in articles against verified sources.
-
----
+ 
 
 ## Author
 
