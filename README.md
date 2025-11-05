@@ -19,15 +19,14 @@ NewsDigest is an AI-powered news aggregator designed to fix the modern news expe
 
 ## Table of Contents
 
-- The Problem
-- Features
-- Agentic RAG Chatbot
-- Tech Stack
-- Project Snapshots
-- Requirements
-- Local Setup
-- Run with Docker (optional)
-- Author
+- [The Problem](#the-problem)
+- [Features](#features)
+- [Agentic RAG Chatbot](#agentic-rag-chatbot)
+- [Tech Stack](#tech-stack)
+- [Project Snapshots](#project-snapshots)
+- [Requirements](#requirements)
+- [Local Setup](#local-setup)
+- [Author](#author)
 
 ## The Problem
 
