@@ -17,6 +17,8 @@ NewsDigest is an AI-powered news aggregator designed to fix the modern news expe
   <img src="images/home.gif" alt="NewsDigest Home Page" width="90%">
 </p>
 
+[Youtube Video](https://youtu.be/R7dT2pPauLk?si=uKVrqJRoeJwfhpwI)
+
 ## Table of Contents
 
 - [The Problem](#the-problem)
