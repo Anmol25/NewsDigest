@@ -18,7 +18,7 @@ load_dotenv()
 
 logger = logging.getLogger(__name__)
 
-MODEL_NAME = 'gemini-2.5-flash'
+MODEL_NAME = 'gemini-3-flash-preview'
 
 
 NEWSDIGEST_SYSTEM_PROMPT = """
