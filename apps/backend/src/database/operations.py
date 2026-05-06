@@ -17,6 +17,9 @@ from src.users.schemas import UserCreate
 
 logger = logging.getLogger(__name__)
 
+_ARTICLE_INSERT_BATCH_SIZE = 500
+_ARTICLE_TITLE_MAX_LENGTH = 512
+
 
 def insert_articles(articles: list[dict]):
     """
@@ -32,7 +35,7 @@ def insert_articles(articles: list[dict]):
     mapped_articles = [
         {
             "title": a["title"],
-            "link": a["link"],
+            "link":  a["link"][:_ARTICLE_TITLE_MAX_LENGTH],
             "published_date": a["published"],
             "image": a.get("image"),
             "source": a["source"],
@@ -46,25 +49,29 @@ def insert_articles(articles: list[dict]):
 
     try:
         with context_db() as db:
-            stmt = pg_insert(Articles).values(mapped_articles)
+            for start in range(0, len(mapped_articles), _ARTICLE_INSERT_BATCH_SIZE):
+                batch = mapped_articles[start:start +
+                                        _ARTICLE_INSERT_BATCH_SIZE]
+                stmt = pg_insert(Articles).values(batch)
 
-            # ON CONFLICT for link only
-            stmt = stmt.on_conflict_do_update(
-                index_elements=['link'],
-                set_={
-                    "title": stmt.excluded.title,
-                    "source": stmt.excluded.source,
-                    "published_date": stmt.excluded.published_date,
-                    "image": stmt.excluded.image,
-                    "topic": stmt.excluded.topic,
-                    "embeddings": stmt.excluded.embeddings,
-                    "summary": stmt.excluded.summary,
-                    "tsv": stmt.excluded.tsv
-                },
-                where=(stmt.excluded.published_date > Articles.published_date)
-            )
+                # ON CONFLICT for link only
+                stmt = stmt.on_conflict_do_update(
+                    index_elements=['link'],
+                    set_={
+                        "title": stmt.excluded.title,
+                        "source": stmt.excluded.source,
+                        "published_date": stmt.excluded.published_date,
+                        "image": stmt.excluded.image,
+                        "topic": stmt.excluded.topic,
+                        "embeddings": stmt.excluded.embeddings,
+                        "summary": stmt.excluded.summary,
+                        "tsv": stmt.excluded.tsv
+                    },
+                    where=(stmt.excluded.published_date >
+                           Articles.published_date)
+                )
 
-            db.execute(stmt)
+                db.execute(stmt)
             db.commit()
 
         logger.info(
